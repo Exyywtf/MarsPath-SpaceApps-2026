@@ -21,3 +21,7 @@ MarsPath project
 Source of notification condition: https://www-mars.lmd.jussieu.fr/mars/access
 
 The user confirmed in this chat on 2026-11-14 that the notice was sent to both authors. The agent did not send correspondence or independently verify email delivery. The user-reported notification clears this publication gate.
+
+## V3 development update for the project owner
+
+MarsPath now samples the same retained MCD 6.2 snapshot along calculated routes. It reports modelled temperature, pressure and horizontal wind-speed profiles with valid-length coverage. Visitors can opt in to a preference score for already calculated terrain paths. The score is applied only where the export grid resolves a difference. MarsPath retains the LMD, OU, IAA, ESA and CNES credit, links the original terms, and serves only the previously announced static snapshot. The project remains noncommercial. This text has not been sent.

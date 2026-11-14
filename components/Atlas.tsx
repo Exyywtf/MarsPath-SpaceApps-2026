@@ -37,13 +37,12 @@ import {
   defaultSettings,
   emptyDraft,
   routeAppearance,
-  routeScore,
   type PlannerDraft,
   type Placement,
 } from "@/lib/planner";
 import { useRouteEngine } from "@/lib/useRouteEngine";
-import { groupRoutes } from "@/lib/routePresentation";
 import { useResultsReveal } from "@/lib/useResultsReveal";
+import { defaultClimatePreferences } from "@/lib/routeAnalysis";
 import type { MapHandle, MapRoute } from "./MarsMap";
 import RoutePlanner, { terrainMetadata } from "./RoutePlanner";
 import regions from "@/data/regions.json";
@@ -59,6 +58,7 @@ const MarsMap = dynamic(() => import("./MarsMap"), {
   ),
 });
 type Panel = "places" | "layers" | "directions" | "location" | null;
+const noMapRoutes: MapRoute[] = [];
 const CoordinateReadout = memo(
   forwardRef<{ set: (s: string) => void }>(function CoordinateReadout(_, ref) {
     const [text, setText] = useState("Planetocentric · east-positive");
@@ -83,6 +83,7 @@ export default function Atlas() {
     [active, setActive] = useState<{ generation?: number; id: string } | null>(null),
     [drawing, setDrawing] = useState(false),
     [hideFeatured, setHideFeatured] = useState(false);
+  const [climatePreferences, setClimatePreferences] = useState(defaultClimatePreferences);
   const [query, setQuery] = useState(""),
     [tag, setTag] = useState("All"),
     [basemap, setBasemap] = useState("optical"),
@@ -103,8 +104,8 @@ export default function Atlas() {
     [inspectPoint, setInspectPoint] = useState<LonLat | null>(null);
   const layer = scientificLayers.find((l) => l.id === layerId) ?? null,
     inspection = useLayerData(layer, inspectPoint);
-  const engine = useRouteEngine(draft, settings, revision);
-  const result = useMemo(() => engine.result && groupRoutes(engine.result), [engine.result]);
+  const engine = useRouteEngine(draft, settings, revision, climatePreferences);
+  const result = engine.result;
   const setProfilePoint = useCallback((point: LonLat | null) => map.current?.showProfilePoint(point), []);
   const expandResults = useCallback(() => setSheet((old) => old === "peek" ? "half" : old), []);
   const [attachScroll, collapsed, interruptScroll, viewResults, editRoute, openEditors] = useResultsReveal({
@@ -264,28 +265,23 @@ export default function Atlas() {
     }));
     else pendingFocus.current = focus;
   }, [open]);
-  const comparison = useMemo(() => {
-    const candidates = result?.routes ?? [];
-    const scores = result?.scores ?? routeScore(candidates, settings);
-    const recommended = scores.indexOf(Math.min(...scores));
-    const manual = active && active.generation === engine.generation
-      ? candidates.findIndex((route) => route.id === active.id) : -1;
-    const selectedIndex =
-      manual >= 0
-        ? manual
-        : Math.max(0, recommended);
-    const routes: MapRoute[] = candidates.map((route, index) => ({
+  const candidates = result?.routes;
+  const scores = result?.scores;
+  const recommended = scores ? scores.indexOf(Math.min(...scores)) : -1;
+  const manual = active && active.generation === engine.generation && candidates
+    ? candidates.findIndex((route) => route.id === active.id) : -1;
+  const selectedIndex = manual >= 0 ? manual : Math.max(0, recommended);
+  const mapRoutes = useMemo<MapRoute[]>(() =>
+    candidates ? candidates.map((route, index) => ({
       id: route.id,
       coordinates: route.coordinates,
       ...routeAppearance(index, recommended, route.tier === "geographic"),
       selected: index === selectedIndex,
       connectors: route.connectors,
-    }));
-    return { routes, selectedIndex, recommended };
-  }, [result, settings, active, engine.generation]);
+    })) : noMapRoutes, [candidates, recommended, selectedIndex]);
   useEffect(() => {
     map.current?.showProfilePoint(null);
-  }, [engine.generation, comparison.selectedIndex, panel]);
+  }, [engine.generation, selectedIndex, panel]);
   useLayoutEffect(() => {
     const update = () => {
       const box = panelRef.current?.getBoundingClientRect(),
@@ -326,7 +322,7 @@ export default function Atlas() {
         e.ctrlKey ||
         e.metaKey ||
         e.altKey ||
-        help.current?.open
+        document.querySelector("dialog[open]")
       )
         return;
       if (e.key === "Escape") {
@@ -456,9 +452,9 @@ export default function Atlas() {
           placement={placement}
           onPlace={place}
           onMovePoint={movePoint}
-          routes={comparison.routes}
+          routes={mapRoutes}
           routeGeneration={engine.generation}
-          recommendedRoute={comparison.routes[comparison.recommended]?.id}
+          recommendedRoute={mapRoutes[recommended]?.id}
           onRevealState={setDrawing}
           terrainBounds={terrainMetadata.bounds}
           padding={padding}
@@ -573,7 +569,9 @@ export default function Atlas() {
             <strong aria-live="polite" aria-atomic="true">
               {inspection.loading
                 ? "Loading…"
-                : inspection.value === null
+                : layer.presentation === "historical"
+                  ? inspection.covered ? "Historical image coverage" : "Outside historical image coverage"
+                  : inspection.value === null
                   ? "No numerical value"
                   : layerValue(inspection.value, layer.id) + " " + layer.unit}
             </strong>
@@ -581,7 +579,10 @@ export default function Atlas() {
             <small>
               {layer.id === "topography"
                 ? "Interpolated cell-average elevation"
-                : "Interpolated modelled climatology"}
+                : layer.presentation === "historical" ? "NASA 2002 illustration; no point dose values"
+                  : layer.id === "radiation" ? "Modelled effective dose rate · 700 MV research scenario"
+                    : layer.id === "radiation-column" ? "Vertical atmospheric column mass, not a dose estimate"
+                      : "Interpolated modelled climatology"}
             </small>
             <a href={layer.sourcePage} target="_blank" rel="noreferrer">
               Source & context ↗
@@ -740,15 +741,15 @@ export default function Atlas() {
                     </div>
                     <h2 id="featured-jezero">Jezero Crater</h2>
                     <p>Trace ancient water through a crater delta using detailed terrain and published outcrops.</p>
+                    <div className="feature-actions">
+                      <button className="primary-button" onClick={() => featureJezero(true)}>Plan detailed route</button>
+                      <button className="secondary-button" onClick={() => featureJezero(false)}>Explore Jezero</button>
+                    </div>
                     <dl className="feature-data">
                       <div><dt>20 m</dt><dd>Terrain grid</dd></div>
                       <div><dt>6 m</dt><dd>CTX imagery</dd></div>
                       <div><dt>0.25 m</dt><dd>Selected HiRISE</dd></div>
                     </dl>
-                    <div className="feature-actions">
-                      <button className="primary-button" onClick={() => featureJezero(true)}>Plan detailed route</button>
-                      <button className="secondary-button" onClick={() => featureJezero(false)}>Explore Jezero</button>
-                    </div>
                     <a className="text-link feature-source" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7116714/#Tab2" target="_blank" rel="noreferrer">Published delta outcrops <ArrowUpRight size={14} /></a>
                   </section>
                 )}
@@ -817,7 +818,10 @@ export default function Atlas() {
                 </p>
                 <LayerManager
                   active={layerId}
-                  onActive={setLayerId}
+                  onActive={(id) => {
+                    setLayerId(id);
+                    setLayerStatus(id ? "Loading map overlay…" : "Choose a layer");
+                  }}
                   opacity={layerOpacity}
                   onOpacity={setLayerOpacity}
                   status={inspection.error || layerStatus}
@@ -903,8 +907,13 @@ export default function Atlas() {
                 onEdit={editRoute}
                 pending={engine.pending}
                 error={engine.error}
-                active={comparison.selectedIndex}
-                recommended={comparison.recommended}
+                active={selectedIndex}
+                recommended={recommended}
+                analysis={engine.analysis}
+                analysisError={engine.analysisError}
+                rankingPending={engine.rankingPending}
+                climatePreferences={climatePreferences}
+                onClimatePreferences={setClimatePreferences}
                 onActive={(index) => {
                   const route = result?.routes[index];
                   if (route) setActive({ generation: engine.generation, id: route.id });
@@ -913,7 +922,7 @@ export default function Atlas() {
                 onExample={example}
                 onFit={() =>
                   map.current?.fitRoute(
-                    result?.routes[comparison.selectedIndex]
+                    result?.routes[selectedIndex]
                       ?.coordinates ?? [],
                   )
                 }

@@ -1,0 +1,122 @@
+{
+  "pressureAnchors": [
+    {
+      "lon": 59.0,
+      "lat": -48.0,
+      "simulatedPa": 1200.0,
+      "gridPa": 1200.35595703125
+    },
+    {
+      "lon": 83.0,
+      "lat": -38.0,
+      "simulatedPa": 975.0,
+      "gridPa": 975.726806640625
+    },
+    {
+      "lon": -152.0,
+      "lat": -1.0,
+      "simulatedPa": 753.0,
+      "gridPa": 753.02880859375
+    },
+    {
+      "lon": -125.0,
+      "lat": 34.0,
+      "simulatedPa": 529.0,
+      "gridPa": 529.37158203125
+    },
+    {
+      "lon": -117.0,
+      "lat": -12.0,
+      "simulatedPa": 305.0,
+      "gridPa": 305.7057800292969
+    },
+    {
+      "lon": -134.0,
+      "lat": 18.0,
+      "simulatedPa": 82.0,
+      "gridPa": 82.06737518310547
+    }
+  ],
+  "withheldPressureErrorMsvYear": [
+    -2.4513290156695007,
+    -1.7029969730008645,
+    2.4814025913211424,
+    -0.8302376994964789
+  ],
+  "historicalControlPixels": [
+    {
+      "count": 101,
+      "medianPx": 0.4363445748749888,
+      "p95Px": 1.3881668082893224
+    },
+    {
+      "count": 114,
+      "medianPx": 0.43348499261023477,
+      "p95Px": 1.3599284344889984
+    }
+  ],
+  "historicalLandmarkPixels": [
+    {
+      "name": "Hellas basin",
+      "pixel": [
+        653.0,
+        1578.0
+      ],
+      "coordinates": [
+        70.0,
+        -42.66
+      ],
+      "errorPx": 4.883102561680262
+    },
+    {
+      "name": "Olympus Mons summit",
+      "pixel": [
+        2067.0,
+        1629.0
+      ],
+      "coordinates": [
+        226.8,
+        18.3
+      ],
+      "errorPx": 0.546820327269573
+    },
+    {
+      "name": "Ascraeus Mons summit",
+      "pixel": [
+        2386.0,
+        1696.0
+      ],
+      "coordinates": [
+        255.6,
+        11.2
+      ],
+      "errorPx": 4.233924871671845
+    },
+    {
+      "name": "Pavonis Mons summit",
+      "pixel": [
+        2295.0,
+        1816.0
+      ],
+      "coordinates": [
+        247.5,
+        0.8
+      ],
+      "errorPx": 3.419466128174892
+    },
+    {
+      "name": "Arsia Mons summit",
+      "pixel": [
+        2208.0,
+        1906.0
+      ],
+      "coordinates": [
+        239.6,
+        -9.2
+      ],
+      "errorPx": 3.0788732353495125
+    }
+  ],
+  "historicalAreaPercent": 79.75352640324907,
+  "modelAreaPercent": 99.98476951563912
+}

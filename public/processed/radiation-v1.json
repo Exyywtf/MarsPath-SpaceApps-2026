@@ -1,0 +1,192 @@
+{
+  "id": "radiation-atris-v1",
+  "version": 1,
+  "archive": "https://zenodo.org/api/records/5953666/files/FigureData.tar/content",
+  "archiveSha256": "a17d9965089affc368bdf9188e33759010feefc1d632757bea0eabbec841333a",
+  "files": {
+    "figure2pressures": "38aea19bac96f9d161def1f54081f0cb3d5f7272e32f0c7764113831a252b409",
+    "figure2locations": "38dbcbf9e8276517ddcedd15dd8ccf009977971a8e6fff8af4a66ca2220e4338",
+    "figure11_eff_depth": "0da024d59e554f4a6f635271d251feb655715f92907cab3cf3230dbed633bc0f"
+  },
+  "pressureSha256": "c0fba188ffb9445e742232deaa1323c1cd002841a1c2adab42f6b50e08fd6e02",
+  "pressureShape": [
+    360,
+    179
+  ],
+  "pressureAxis": "Rows +89\u00b0 to \u221289\u00b0 N; columns \u2212180\u00b0 to +179\u00b0 E. Planetocentric grid, 1\u00b0 pressure nodes, periodic longitude.",
+  "pressureUrl": "/processed/radiation-atris-v1-pressure.f32",
+  "pressurePa": [
+    82.0,
+    305.0,
+    529.0,
+    753.0,
+    975.0,
+    1200.0
+  ],
+  "effectiveDoseMsvPerYear": [
+    161.17091924097252,
+    167.67866158667562,
+    169.30193609534481,
+    167.5192166580123,
+    170.6930641608758,
+    172.2381066674945
+  ],
+  "bounds": [
+    -180,
+    -90,
+    180,
+    90
+  ],
+  "imageSize": [
+    1440,
+    720
+  ],
+  "modelRange": [
+    161,
+    173
+  ],
+  "modelPalette": [
+    "#202a47",
+    "#475688",
+    "#83769b",
+    "#c398a4",
+    "#f7d5ba"
+  ],
+  "modelCoverage": 0.9998476951563912,
+  "proxyRange": [
+    20,
+    330
+  ],
+  "proxyGravity": 3.72,
+  "proxyCoverage": 0.9998476951563912,
+  "source": "https://doi.org/10.1029/2021JE007157",
+  "data": "https://doi.org/10.5281/zenodo.5953666",
+  "terms": "https://creativecommons.org/licenses/by/4.0/",
+  "credit": "Jian Zhang and Jingnan Guo (2022); derived by MarsPath",
+  "scenario": "Surface at 0 km \u00b7 GCR and secondaries \u00b7 700 MV solar modulation \u00b7 Ls 0\u00b0 at local midnight \u00b7 uniform dry regolith \u00b7 no additional shielding",
+  "withheldPressureErrors": [
+    -2.4513290156695007,
+    -1.7029969730008645,
+    2.4814025913211424,
+    -0.8302376994964789
+  ],
+  "historical": {
+    "id": "radiation-pia03480-v1",
+    "source": "https://www.jpl.nasa.gov/images/pia03480-estimated-radiation-dosage-on-mars/",
+    "sourceSha256": "e3b6557785c42368db5075d429ebe7a3cb8689d0ea65768843d1398ae98b3a4a",
+    "terms": "https://www.jpl.nasa.gov/jpl-image-use-policy/",
+    "credit": "NASA/Jet Propulsion Laboratory/JSC",
+    "views": [
+      [
+        815.054,
+        1420.286,
+        661.945,
+        90.0,
+        -30.0
+      ],
+      [
+        2211.095,
+        1421.421,
+        662.133,
+        240.0,
+        37.5
+      ]
+    ],
+    "viewCosineCutoff": 0.2,
+    "coverage": 0.7975352640324906,
+    "controls": [
+      {
+        "count": 101,
+        "medianPx": 0.4363445748749888,
+        "p95Px": 1.3881668082893224
+      },
+      {
+        "count": 114,
+        "medianPx": 0.43348499261023477,
+        "p95Px": 1.3599284344889984
+      }
+    ],
+    "landmarks": [
+      {
+        "name": "Hellas basin",
+        "pixel": [
+          653.0,
+          1578.0
+        ],
+        "coordinates": [
+          70.0,
+          -42.66
+        ],
+        "errorPx": 4.883102561680262
+      },
+      {
+        "name": "Olympus Mons summit",
+        "pixel": [
+          2067.0,
+          1629.0
+        ],
+        "coordinates": [
+          226.8,
+          18.3
+        ],
+        "errorPx": 0.546820327269573
+      },
+      {
+        "name": "Ascraeus Mons summit",
+        "pixel": [
+          2386.0,
+          1696.0
+        ],
+        "coordinates": [
+          255.6,
+          11.2
+        ],
+        "errorPx": 4.233924871671845
+      },
+      {
+        "name": "Pavonis Mons summit",
+        "pixel": [
+          2295.0,
+          1816.0
+        ],
+        "coordinates": [
+          247.5,
+          0.8
+        ],
+        "errorPx": 3.419466128174892
+      },
+      {
+        "name": "Arsia Mons summit",
+        "pixel": [
+          2208.0,
+          1906.0
+        ],
+        "coordinates": [
+          239.6,
+          -9.2
+        ],
+        "errorPx": 3.0788732353495125
+      }
+    ],
+    "palette": [
+      "#000073",
+      "#1025ff",
+      "#00a8ff",
+      "#00fff0",
+      "#65ff9c",
+      "#edff00",
+      "#ffb700",
+      "#ff5100",
+      "#d90000",
+      "#780000"
+    ],
+    "originalUrl": "/processed/PIA03480-original.jpg",
+    "originalSha256": "86ad1260d44d2a62c2c9880c01d2b5bd9978ecb9f5e3574b4c935f98f1fdbcf3"
+  },
+  "derivatives": {
+    "radiation-atris-v1.png": "28e43c10c73050993641ab11cd8e09458e5547c27bd3a51c2934eea660783b97",
+    "radiation-column-v1.png": "703fd337042f22373a3790d751f79aa17f71b3b62e4919a3826b7cb62a95fe24",
+    "radiation-pia03480-v1.webp": "56536da69cd478f1f360eb08f41cff2235317826006da0dcb68be9afc1978b44",
+    "radiation-pia03480-v1-legend.webp": "393608cb370ca4e0b5d03ee6350bd5eaa5177db340dd2cbb9f1731ee15a4e043"
+  }
+}

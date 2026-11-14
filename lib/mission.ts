@@ -89,7 +89,7 @@ export async function calculateMission(
   load: (meta: TerrainMeta) => Promise<Terrain>,
   cancelled: () => boolean,
   legs = new LegCache(),
-): Promise<PlannerResult> {
+): Promise<PlannerResult & { pool?: PlannedRoute[] }> {
   const inputPoints = draftPoints(request.draft);
   if (
     inputPoints.length < 2 ||
@@ -133,6 +133,7 @@ export async function calculateMission(
     let cells: number[] = [],
       cost = 0,
       expanded = 0;
+    const stopIndices = [0];
     for (let i = 1; i < ids.length; i++) {
       if (cancelled()) throw new Error("Cancelled");
       const key = [
@@ -158,6 +159,7 @@ export async function calculateMission(
         expanded += leg.expanded;
       }
       cells = cells.concat(i === 1 ? leg.cells : leg.cells.slice(1));
+      stopIndices.push(cells.length - 1);
       cost += leg.cost;
     }
     const measured = measurePath(terrain, cells, request.settings.maxSlope),
@@ -165,14 +167,14 @@ export async function calculateMission(
         marsDistance(p, cellCoordinate(terrain.meta, ids[i])),
       );
     const pathSet = new Set(cells),
+      reachedTargets = tier === "regional"
+        ? scienceTargets.filter((target) => pathSet.has(coordinateCell(terrain.meta, target.coordinates)))
+        : [],
       reached =
         tier === "regional"
           ? [
               ...new Set(
-                scienceTargets
-                  .filter((t) =>
-                    pathSet.has(coordinateCell(terrain.meta, t.coordinates)),
-                  )
+                reachedTargets
                   .flatMap((t) =>
                     t.objectives.filter((o) =>
                       request.settings.objectives.includes(o),
@@ -209,8 +211,10 @@ export async function calculateMission(
         cellCoordinate(terrain.meta, ids[i]),
       ]),
       reached,
+      reachedTargets: reachedTargets.map(({ id }) => id),
       scienceStops: optionalStop ? [optionalStop] : [],
       stops,
+      stopIndices,
       quality: {
         validPathCells: cells.reduce(
           (n, i) => n + (terrain.valid[i] === 1 ? 1 : 0),
@@ -276,8 +280,10 @@ export async function calculateMission(
   const scienceDeadline = performance.now() + 5000;
   for (const target of science) {
     let completed = false;
+    let timedOut = false;
     for (let insertion = 1; insertion < points.length; insertion++) {
       if (performance.now() > scienceDeadline) {
+        timedOut = true;
         warnings.push(
           "Science evaluation reached its five-second budget; unevaluated alternatives are not claimed optimal.",
         );
@@ -300,14 +306,17 @@ export async function calculateMission(
         completed = true;
       } catch (error) {
         if (cancelled()) throw error;
-        if (error instanceof TerrainSearchTimeout)
+        if (error instanceof TerrainSearchTimeout) {
+          timedOut = true;
           warnings.push(target.name + ": evaluation timed out.");
+        }
       }
     }
     if (!completed)
       warnings.push(
-        target.name +
-          ": no feasible optional-stop candidate was found in the tested insertions and budget.",
+        target.name + (timedOut
+          ? ": evaluation incomplete; no feasible insertion established before timeout."
+          : ": no feasible insertion with the current constraints."),
       );
   }
   if (request.settings.objectives.length && tier !== "regional")
@@ -342,6 +351,7 @@ export async function calculateMission(
     scores: finalIndices.map((i) => allScores[i]),
     evaluatedCandidates: candidates.length,
     scienceAttempts,
+    pool: candidates,
   };
 }
 function jId(route: PlannedRoute) {

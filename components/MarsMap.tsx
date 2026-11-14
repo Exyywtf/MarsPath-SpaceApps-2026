@@ -23,6 +23,7 @@ import DragPan from "ol/interaction/DragPan";
 import KeyboardPan from "ol/interaction/KeyboardPan";
 import KeyboardZoom from "ol/interaction/KeyboardZoom";
 import Kinetic from "ol/Kinetic";
+import TileState from "ol/TileState";
 import { locations, asLonLat } from "@/lib/atlas";
 import services from "@/data/services.json";
 import {
@@ -84,7 +85,6 @@ interface Props {
   onRevealState: (drawing: boolean) => void;
   terrainBounds: number[];
   padding: number[];
-  profilePoint?: LonLat | null;
   onInspect?: (point: LonLat) => void;
   layer?: LayerDataset | null;
   layerOpacity?: number;
@@ -738,15 +738,16 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     const start = performance.now();
     const finish = () => {
       cancelAnimationFrame(controller.frame);
-      for (const { geometry, path } of toDraw) geometry.setCoordinates(path.full);
+      for (const { geometry, path, id } of toDraw)
+        if (!complete.has(id)) geometry.setCoordinates(path.full);
       controller.finish = undefined;
       mark("complete", 1);
       handlers.current.onRevealState(false);
     };
+    const complete = new Set<string>();
     controller.finish = finish;
     mark("drawing", 0);
     handlers.current.onRevealState(true);
-    const complete = new Set<string>();
     const frame = (now: number) => {
       for (const [index, { id, geometry, path }] of toDraw.entries()) {
         if (complete.has(id)) continue;
@@ -811,13 +812,6 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     );
   }, [props.terrainBounds]);
   useEffect(() => {
-    profileSource.current.clear();
-    if (props.profilePoint)
-      profileSource.current.addFeature(
-        new Feature(new Point(props.profilePoint)),
-      );
-  }, [props.profilePoint]);
-  useEffect(() => {
     scienceLayer.current?.setVisible(!!props.showScience);
   }, [props.showScience]);
   useEffect(() => {
@@ -854,7 +848,9 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       source.on("tileloadend", () => {
         if (handlers.current.layer?.id === layer.id)
           handlers.current.onLayerState?.(
-            "Overlay ready · click the map to inspect",
+            layer.presentation === "historical"
+              ? "Overlay ready · click to check image coverage"
+              : "Overlay ready · click the map to inspect",
           );
       });
       source.on("tileloaderror", () => {
@@ -865,8 +861,11 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       });
       scalarSources.current.set(layer.id, source);
     }
-    target.setSource(source);
+    if (target.getSource() !== source) target.setSource(source);
     target.setVisible(true);
+    if (source.getTile(0, 0, 0, 1, source.getProjection()!).getState() === TileState.LOADED)
+      handlers.current.onLayerState?.(layer.presentation === "historical"
+        ? "Overlay ready · click to check image coverage" : "Overlay ready · click the map to inspect");
     target.setOpacity(props.layerOpacity ?? 0.7);
   }, [props.layer, props.layerOpacity]);
   return (

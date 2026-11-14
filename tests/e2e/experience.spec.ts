@@ -65,6 +65,20 @@ test("a wheel gesture during a delayed calculation keeps the panel under user co
   await expect.poll(() => headingOffset(page)).toBe(20);
 });
 
+test("recalculating during a reveal cancels it and reveals the new accepted result", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Directions", exact: true }).click();
+  await example(page).click();
+  const map = region(page);
+  await expect(map).toHaveAttribute("data-reveal", "drawing");
+  await expect.poll(async () => Number(await map.getAttribute("data-reveal-progress"))).toBeGreaterThan(.15);
+  await page.getByRole("button", { name: "Recalculate", exact: true }).evaluate((button: HTMLButtonElement) => button.click());
+  await expect(map).toHaveAttribute("data-reveal", "idle", { timeout: 1000 });
+  await expect(map).toHaveAttribute("data-reveal", "drawing");
+  await expect(map).toHaveAttribute("data-reveal", "complete");
+  await expect(page.locator(".route-option")).toHaveCount(3);
+});
+
 test("featured Jezero survives filtering and opening Directions preserves the draft", async ({ page }) => {
   await page.addInitScript(() => {
     sessionStorage.setItem("marspath-draft-v2", JSON.stringify({ start: [77.419, 18.466], end: null, waypoints: [] }));

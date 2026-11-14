@@ -1,61 +1,41 @@
 "use client";
 import { useEffect, useState } from "react";
-import { sampleGrid, type ClimateData, type LayerDataset } from "./layers";
+import { loadClimate, sampleGrid, type LayerDataset } from "./layers";
 import type { LonLat } from "./mars";
-type Grid = {
-  values: ArrayLike<number>;
-  width: number;
-  height: number;
-  nodes: boolean;
-};
-const grids = new Map<string, Promise<Grid>>();
-let climate: Promise<ClimateData> | undefined;
-function load(layer: LayerDataset): Promise<Grid> {
-  if (grids.has(layer.id)) return grids.get(layer.id)!;
+import { historicalCoverage, loadRadiationPressure, sampleColumn, sampleRadiation } from "./radiation";
+import { sampleClimate } from "./routeAnalysis";
+type Sampler = (point: LonLat) => number | null;
+const samplers = new Map<string, Promise<Sampler>>();
+function load(layer: Extract<LayerDataset, { presentation: "numerical" }>): Promise<Sampler> {
+  const id = layer.id;
+  if (samplers.has(id)) return samplers.get(id)!;
   const pending =
-    layer.id === "topography"
+    id === "topography"
       ? fetch(layer.dataUrl).then(async (r) => {
           if (!r.ok) throw new Error("Elevation download failed.");
-          return {
-            values: new Float32Array(await r.arrayBuffer()),
-            width: 1440,
-            height: 720,
-            nodes: false,
-          };
+          const values = new Float32Array(await r.arrayBuffer());
+          return (point: LonLat) => sampleGrid(values, 1440, 720, point, false);
         })
-      : (() => {
-          climate ??= fetch(layer.dataUrl)
-            .then((r) => {
-              if (!r.ok) throw new Error("Climate download failed.");
-              return r.json() as Promise<ClimateData>;
-            })
-            .catch((error) => {
-              climate = undefined;
-              throw error;
-            });
-          return climate.then((data) => ({
-            values: data.fields[layer.id].values,
-            width: data.width,
-            height: data.height,
-            nodes: true,
-          }));
-        })();
-  grids.set(layer.id, pending);
-  pending.catch(() => grids.delete(layer.id));
+      : id === "radiation" || id === "radiation-column"
+        ? loadRadiationPressure().then((grid) => (point: LonLat) =>
+            (id === "radiation" ? sampleRadiation : sampleColumn)(grid, point))
+        : loadClimate().then((data) => (point: LonLat) => sampleClimate(data,id,point));
+  samplers.set(id, pending);
+  pending.catch(() => samplers.delete(id));
   return pending;
 }
 export function useLayerData(layer: LayerDataset | null, point: LonLat | null) {
   const [state, setState] = useState<{
     id: string;
-    grid?: Grid;
+    sample?: Sampler;
     error?: string;
   }>();
   useEffect(() => {
-    if (!layer) return;
+    if (layer?.presentation !== "numerical") return;
     let alive = true;
     load(layer)
-      .then((grid) => {
-        if (alive) setState({ id: layer.id, grid });
+      .then((sample) => {
+        if (alive) setState({ id: layer.id, sample });
       })
       .catch((error) => {
         if (alive) setState({ id: layer.id, error: String(error) });
@@ -64,14 +44,12 @@ export function useLayerData(layer: LayerDataset | null, point: LonLat | null) {
       alive = false;
     };
   }, [layer]);
-  const grid = state?.id === layer?.id ? state?.grid : undefined;
+  const sample = state?.id === layer?.id ? state?.sample : undefined;
   const error = layer && state?.id === layer.id ? state?.error : undefined;
   return {
-    loading: !!layer && !grid && !error,
+    loading: layer?.presentation === "numerical" && !sample && !error,
     error,
-    value:
-      grid && point
-        ? sampleGrid(grid.values, grid.width, grid.height, point, grid.nodes)
-        : null,
+    value: sample && point ? sample(point) : null,
+    covered: layer?.presentation === "historical" && point ? historicalCoverage(point) : undefined,
   };
 }

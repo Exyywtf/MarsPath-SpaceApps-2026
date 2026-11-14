@@ -17,8 +17,10 @@ it('uses bilinear numerical interpolation and blocks invalid neighbours',()=>{
   expect(sampleGrid([0,10,20,NaN],2,2,[0,0],true)).toBeNull();
   expect(sampleGrid([0,10,20,30],2,2,[0,91],true)).toBeNull();
 });
-it('has traceable metadata and native versus derived sampling for all four fields',()=>{
-  expect(scientificLayers).toHaveLength(4);
-  for(const layer of scientificLayers){expect(layer.sha256).toMatch(/^[a-f0-9]{64}$/);expect(layer.palette).toHaveLength(5);expect(layer.imageSize[0]/layer.imageSize[1]).toBe(2);expect(layer.sourcePage).toMatch(/^https:/);}
+it('has traceable metadata for numerical fields and the visual reference',()=>{
+  expect(scientificLayers.map(({ id }) => id)).toEqual([
+    "topography", "temperature", "pressure", "wind", "radiation", "radiation-historical",
+  ]);
+  for(const layer of scientificLayers){expect(layer.sha256).toMatch(/^[a-f0-9]{64}$/);expect(layer.palette.length).toBeGreaterThanOrEqual(5);expect(layer.imageSize[0]/layer.imageSize[1]).toBe(2);expect(layer.sourcePage).toMatch(/^https:/);}
   expect(scientificLayers.find(l=>l.id==='topography')?.sampling).toContain('0.25');
 });

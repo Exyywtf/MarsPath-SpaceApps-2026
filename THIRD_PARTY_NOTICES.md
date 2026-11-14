@@ -16,3 +16,8 @@ Dependency copyright and license files remain in installed packages. Next.js, Re
 
 - MCD 6.2 fields and derived maps: © LMD / OU / IAA / ESA / CNES. Noncommercial scientific use only without separate commercial authorization. Preserve origin/citations, disclaimers and https://www-mars.lmd.jussieu.fr/mars/access ; credits at https://www-mars.lmd.jussieu.fr/mcd_python/credit.html . User confirmed notification to authors sent on 2026-11-14; agent did not send email or independently verify delivery. These data are not relicensed under MIT.
 - Geist Sans and Geist Mono: Copyright The Geist Project Authors; SIL Open Font License 1.1, bundled in app/fonts/OFL.txt. Files copied unmodified from the installed Next.js distribution.
+
+## Radiation products
+
+- Jian Zhang and Jingnan Guo, 2022. Figure 2 surface pressures and Figure 11 effective dose data were transposed, masked, and interpolated by MarsPath. The study archive is licensed under CC BY 4.0. [Data deposit](https://doi.org/10.5281/zenodo.5953666) · [License](https://creativecommons.org/licenses/by/4.0/).
+- PIA03480, NASA/Jet Propulsion Laboratory/JSC, March 2002. MarsPath preserves the original JPEG and reprojects both globes into an approximate historical overlay. [Original caption](https://www.jpl.nasa.gov/images/pia03480-estimated-radiation-dosage-on-mars/) · [JPL Image Use Policy](https://www.jpl.nasa.gov/jpl-image-use-policy/).

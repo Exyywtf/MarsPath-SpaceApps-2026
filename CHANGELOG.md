@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0 — 2026-11-14
+
+- Draw distinct route alternatives progressively and scroll the planning panel to the ready results.
+- Feature Jezero’s planning footprint and improve scientific map labels.
+- Add a modelled cosmic-ray surface field, a reprojected NASA historical illustration, and its original reference viewer.
+- Add map-linked climate and radiation profiles, evidence bounds for optional climate ranking, and full samples and provenance in route export.
+
 ## 0.2.0 — 2026-11-14
 
 - Redesign the atlas around the map with a single responsive panel, explicit endpoint placement, keyboard controls and reduced motion.

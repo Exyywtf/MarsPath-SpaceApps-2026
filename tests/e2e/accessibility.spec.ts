@@ -72,13 +72,18 @@ test("map placement waits for the map bundle when Directions opens first", async
   const held = new Promise<void>((resolve) => {
     releaseMap = resolve;
   });
-  await page.route("**/_next/static/chunks/*.js", async (route) => {
+  await page.route(/\/_next\/static\/(?:immutable\/)?chunks\/[^?#]+\.js(?:[?#]|$)/, async (route) => {
     const response = await route.fetch();
     if ((await response.text()).includes("MARSPATH:2000")) await held;
     await route.fulfill({ response });
   });
   await page.goto("/", { waitUntil: "domcontentloaded" });
-  await page.getByRole("button", { name: "Directions", exact: true }).click();
+  const directions = page.getByRole("button", { name: "Directions", exact: true });
+  // Static buttons can render before React attaches their event handlers.
+  await expect(async () => {
+    await directions.click();
+    await expect(directions).toHaveAttribute("aria-pressed", "true", { timeout: 600 });
+  }).toPass({ timeout: 7000 });
   const setA = page.getByRole("button", { name: "Set A on map", exact: true });
   try {
     await expect(setA).toBeDisabled();

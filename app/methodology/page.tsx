@@ -177,9 +177,9 @@ export default function Methodology() {
         Mars Climate Database 6.2 export. Its fixed context is Ls 21.3°, local
         time 00:00 at every longitude, 10 m above the local surface and
         climatology average solar conditions. The 64 × 48 export samples do not
-        establish native model resolution. These are interpolated model means,
-        not live weather or extreme conditions; no climate field contributes to
-        route costs.
+        establish native model resolution. The means describe this fixed
+        climatology. Terrain search uses elevation and slope. Climate
+        preferences can optionally rank the completed paths.
       </p>
       <p className="lede">
         The provider prints truncated integer longitude labels. We reconstruct
@@ -191,10 +191,45 @@ export default function Methodology() {
         numerical fields. Source bytes, context and checksums are retained; nine
         interior field nodes were independently compared with the source ASCII.
       </p>
+      <h2 id="route-environment">Environmental route profiles</h2>
       <p className="lede">
-        Supplied screenshots remain references. Unverified radiation
-        registration, unverified mineral rasters, weather extremes and
-        rock-scale hazards are excluded from numerical optimization.
+        The worker follows the assessed path with separate spans to and from
+        intended stops. It divides each spherical arc at model grid lines and
+        into intervals of at most 25 km. Sampled means weight midpoint values
+        by valid interval length. Coverage divides that length by total
+        route length. The full samples and their roles travel with the export.
+      </p>
+      <p className="lede">
+        For an opted-in climate preference, the four surrounding export nodes
+        bound the model values in each cell. The definitely-outside fraction
+        gives the lower score bound. Adding ambiguous spans gives the upper
+        bound. Climate can influence the recommendation only when comparable
+        coverage is complete, the relevant routes occupy different model
+        cells and unequal bounds do not overlap. Each usable field contributes
+        equally to the climate component. The remaining weight is apportioned
+        among distance, terrain and missed objectives.
+      </p>
+      <h2 id="radiation-method">Radiation views</h2>
+      <p className="lede">
+        For the quantitative view we interpolate the six surface effective dose
+        rates at 700 MV from Zhang and Guo’s Figure 11. The input is their
+        published Figure 2 surface pressure grid for Ls 0° at local midnight.
+        The plot covers galactic cosmic rays and secondaries under the study’s
+        uniform dry regolith assumption. Dose rates are scenario context.
+        Radiation has zero routing weight. Absolute geographic dose accuracy
+        and cumulative personal exposure remain unknown.
+      </p>
+      <p className="lede">
+        NASA’s PIA03480 illustration has a separate overlay. Each globe is
+        reprojected from a fit to its graticule. The more face-on view wins
+        where they overlap. A viewing cosine cutoff of 0.2 leaves 79.8% of the
+        planet covered. The original colours and legend remain a visual record.
+        Map inspection reports only whether the image covers that point.
+      </p>
+      <p className="lede">
+        <Link href="/sources/#atris-radiation">Zhang and Guo dataset and provenance ↗</Link>
+        {" · "}
+        <Link href="/sources/#pia03480">NASA illustration and registration ↗</Link>
       </p>
       <h2>AI assistance and licensing</h2>
       <p className="lede">

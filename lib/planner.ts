@@ -46,6 +46,8 @@ export interface PlannedRoute {
   note?: string;
   scienceStops?: string[];
   stops?: LonLat[];
+  stopIndices?: number[];
+  reachedTargets?: string[];
   quality?: {
     validPathCells: number;
     pathCells: number;
@@ -159,6 +161,7 @@ export function geographicRoute(draft: PlannerDraft): PlannedRoute {
     assessedDistance: 0,
     connectors: [],
     reached: [],
+    stops: points,
     snapping: [],
   };
 }

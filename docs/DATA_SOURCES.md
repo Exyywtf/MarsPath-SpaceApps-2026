@@ -4,7 +4,9 @@ Core products include [NASA Mars Trek WMTS](https://trek.nasa.gov/tiles/apidoc/t
 
 The atmospheric fields derive from a numerical MCD 6.2 snapshot, archived as `public/processed/mcd-v62-source.txt` with its checksum and sampling context in `public/processed/mcd-v62.json`. See the [MCD access conditions](https://www-mars.lmd.jussieu.fr/mars/access).
 
-The Jezero science stops use published delta type locations. See [Stack et al., Table 2](https://pmc.ncbi.nlm.nih.gov/articles/PMC7116714/#Tab2). The supplied radiation image has no embedded georeferencing or provenance for its stated dose and remains an unverified reference. Curiosity's published observations cover its local traverse. See [NASA's RAD source](https://science.nasa.gov/resource/radiation-measurements-on-mars/).
+The Jezero science stops use published delta type locations. [Stack et al., Table 2](https://pmc.ncbi.nlm.nih.gov/articles/PMC7116714/#Tab2).
+
+The radiation model combines the published Figure 2 pressure grid with the Figure 11 surface row at 700 MV. The historical overlay separately reprojects NASA’s original PIA03480. Curiosity radiation observations pertain to the rover traverse. [Zhang and Guo, 2022](https://doi.org/10.1029/2021JE007157) · [Numerical archive](https://doi.org/10.5281/zenodo.5953666) · [PIA03480](https://www.jpl.nasa.gov/images/pia03480-estimated-radiation-dosage-on-mars/) · [NASA RAD observations](https://science.nasa.gov/resource/radiation-measurements-on-mars/).
 
 - **mawrth / Mawrth Vallis**: [MRO · CRISM](https://science.nasa.gov/resource/clay-minerals-in-mawrth-vallis-region-of-mars/); [coordinate evidence](https://planetarynames.wr.usgs.gov/Feature/3763). Accessed 2026-11-14T11:01:53.894847+00:00. Status: retrieved; concise claim linked to original source.
 - **oxia / Oxia Planum**: [MRO · HiRISE](https://science.nasa.gov/photojournal/possible-future-mars-landing-site-in-oxia-planum/); [coordinate evidence](https://planetarynames.wr.usgs.gov/Feature/15821). Accessed 2026-11-14T11:01:53.894847+00:00. Status: retrieved; concise claim linked to original source.

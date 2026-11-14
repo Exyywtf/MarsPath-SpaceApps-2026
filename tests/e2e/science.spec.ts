@@ -20,7 +20,7 @@ test('science preferences select a real published outcrop and profile is keyboar
   await page.goto('/');await page.getByRole('button',{name:'Directions',exact:true}).click();await page.getByRole('button',{name:'Try Jezero terrain example'}).click();
   await page.locator('.science-objectives>summary').click();await page.getByLabel('Ancient water',{exact:true}).check();await page.getByText('Advanced settings',{exact:true}).click();
   await page.getByLabel('Distance preference',{exact:true}).fill('0');await page.getByLabel('Terrain preference',{exact:true}).fill('0');await page.getByLabel('Science preference',{exact:true}).fill('100');
-  await expect(page.locator('.route-option')).toHaveCount(3,{timeout:45000});await page.locator('.route-option').filter({hasText:'Balanced science'}).click();
+  await page.locator('.route-option').filter({hasText:'Science-aware route'}).click({timeout:15000});
   await expect(page.locator('.science-outcome')).toContainText('1 / 1');await expect(page.locator('.science-outcome')).toContainText('outcrop');
   const scrubber=page.getByLabel('Inspect elevation along route');await scrubber.focus();await page.keyboard.press('ArrowRight');await expect(scrubber).toHaveAttribute('aria-valuetext',/elevation/);
   await page.screenshot({path:'tmp/p2-science-routing.png'});

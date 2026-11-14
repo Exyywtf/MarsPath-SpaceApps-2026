@@ -79,3 +79,11 @@ Inspected the supplied 31 files and live NASA service metadata during planning. 
 
 - Route results, export and editing stay available while the map draws the accepted paths. Exact duplicates are grouped by ordered geometry and stops. The Directions panel reveals the comparison once and yields to manual scrolling and active editing. Jezero has a featured route-planning entry that preserves the draft, and the world map declutters labels without removing destinations.
 - Local static build, type checking, lint, 20 Vitest checks and 19 Chromium journeys passed. Independent Python also reproduced 12 V2 route calculations and nine climate nodes. The independent validation scripts now only write their committed records when invoked with `--write`.
+- Pushed and deployed `a6e9288` to Vercel. Eighteen production browser journeys passed on the first run. The bundle-delay test initially missed Vercel’s immutable chunk path and then attempted a click before hydration. The corrected test passed on the same deployment.
+
+## 2026-11-14 — V3 scientific analysis
+
+- Added worker-side environmental profiles, score-only preference changes, science-aware candidates, and a versioned route export with separate connector features. Terrain search and its validated metrics remain the basis of path generation.
+- Built the radiation scenario from Zhang and Guo’s numerical pressure grid and six published AtRIS outputs. The historical overlay independently reprojects NASA’s PIA03480. Its retained coverage is 79.75% of Mars by area. Independent controls and checksum evidence are in `data/validation/v3-radiation.json`.
+- Confirmed six published pressure anchors against the grid. The largest withheld-pressure interpolation difference was 2.48 mSv/year. Point accuracy remains unknown. No radiation product contributes to the score.
+- Independently checked the numerical raster colours and compared the Jezero GeoJSON means for four environmental factors against Python using the full route. Captured V2 and V3 layouts at four widths and recorded the actual reveal intervals.

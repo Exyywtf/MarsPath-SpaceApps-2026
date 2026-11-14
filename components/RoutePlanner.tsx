@@ -13,6 +13,9 @@ import Link from "next/link";
 import metadata from "@/public/processed/jezero.json";
 import validation from "@/data/validation/v2-independent.json";
 import ScienceObjectives from "./ScienceObjectives";
+import { ClimatePreferenceForm, EnvironmentalAnalysis, RouteProfile } from "./EnvironmentalAnalysis";
+import type { ClimatePreferences, RouteAnalysis } from "@/lib/routeAnalysis";
+import type { ComparisonResult } from "@/lib/routeProtocol";
 import { localObjectives, scienceTargets } from "@/lib/science";
 import { coordinateLabel, type LonLat } from "@/lib/mars";
 import {
@@ -22,7 +25,6 @@ import {
   splitDateLine,
   type PlannerDraft,
   type PlannerSettings,
-  type PlannerResult,
   type Placement,
   type PlannedRoute,
 } from "@/lib/planner";
@@ -36,7 +38,12 @@ interface Props {
   onSettings: (settings: PlannerSettings) => void;
   placement: Placement;
   onPlacement: (p: Placement) => void;
-  result?: PlannerResult;
+  result?: ComparisonResult;
+  analysis?: Record<string, RouteAnalysis>;
+  analysisError?: string;
+  rankingPending: boolean;
+  climatePreferences: ClimatePreferences;
+  onClimatePreferences: (preferences: ClimatePreferences) => void;
   collapsed: boolean;
   onEdit: () => void;
   pending: boolean;
@@ -203,179 +210,17 @@ function PointEditor({
     </div>
   );
 }
-const ProfileChart = memo(function ProfileChart({
-  route,
-  color,
-  onPoint,
-}: {
-  route: PlannedRoute;
-  color: string;
-  onPoint: (p: LonLat | null) => void;
-}) {
-  const [index, setIndex] = useState<number | null>(null);
-  const profile = route.terrain!.profile,
-    coords = route.terrain!.coordinates;
-  const min =
-      Math.floor(
-        profile.reduce((m, p) => Math.min(m, p.elevation), Infinity) / 10,
-      ) *
-        10 -
-      5,
-    max =
-      Math.ceil(
-        profile.reduce((m, p) => Math.max(m, p.elevation), -Infinity) / 10,
-      ) *
-        10 +
-      5;
-  const length = profile.at(-1)!.distance || 1;
-  // Preserve min and max in each bin, including endpoints. Metrics use all samples.
-  const plot = useMemo(() => {
-    const ids = new Set([0, profile.length - 1]),
-      bin = Math.max(1, Math.ceil(profile.length / 100));
-    for (let i = 0; i < profile.length; i += bin) {
-      let lo = i,
-        hi = i;
-      for (let j = i; j < Math.min(profile.length, i + bin); j++) {
-        if (profile[j].elevation < profile[lo].elevation) lo = j;
-        if (profile[j].elevation > profile[hi].elevation) hi = j;
-      }
-      ids.add(lo);
-      ids.add(hi);
-    }
-    return [...ids]
-      .sort((a, b) => a - b)
-      .map((i) =>
-        [
-          50 + (profile[i].distance / length) * 530,
-          145 - ((profile[i].elevation - min) / (max - min)) * 125,
-        ].join(","),
-      )
-      .join(" ");
-  }, [profile, length, min, max]);
-  const point = index === null ? null : profile[index];
-  const select = (i: number | null) => {
-    setIndex(i);
-    onPoint(i === null ? null : coords[i]);
-  };
-  return (
-    <div className="profile-chart">
-      <div className="section-title">
-        <strong>Elevation profile</strong>
-        <span>m above datum</span>
-      </div>
-      <svg
-        viewBox="0 0 600 180"
-        role="img"
-        aria-label="Route elevation profile"
-        onPointerMove={(e) => {
-          const box = e.currentTarget.getBoundingClientRect(),
-            distance =
-              Math.max(
-                0,
-                Math.min(
-                  1,
-                  (((e.clientX - box.left) / box.width) * 600 - 50) / 530,
-                ),
-              ) * length;
-          let lo = 0,
-            hi = profile.length - 1;
-          while (lo < hi) {
-            const mid = (lo + hi) >> 1;
-            if (profile[mid].distance < distance) lo = mid + 1;
-            else hi = mid;
-          }
-          select(lo);
-        }}
-        onPointerLeave={() => select(null)}
-      >
-        {[0, 0.5, 1].map((t) => (
-          <g key={t}>
-            <line
-              x1="50"
-              x2="580"
-              y1={20 + 125 * t}
-              y2={20 + 125 * t}
-              stroke="#394440"
-            />
-            <text
-              x="43"
-              y={25 + 125 * t}
-              textAnchor="end"
-              fill="#b3bcb5"
-              fontSize="22"
-            >
-              {Math.round(max - (max - min) * t)}
-            </text>
-          </g>
-        ))}
-        <polyline
-          points={plot}
-          fill="none"
-          stroke={color}
-          strokeWidth="3"
-          vectorEffect="non-scaling-stroke"
-        />
-        <text x="50" y="173" fill="#b3bcb5" fontSize="22">
-          0
-        </text>
-        <text x="580" y="173" textAnchor="end" fill="#b3bcb5" fontSize="22">
-          {formatDistance(length)}
-        </text>
-        {point && (
-          <g>
-            <line
-              x1={50 + (point.distance / length) * 530}
-              x2={50 + (point.distance / length) * 530}
-              y1="20"
-              y2="145"
-              stroke="#fff1dc"
-              strokeDasharray="4 4"
-            />
-            <circle
-              cx={50 + (point.distance / length) * 530}
-              cy={145 - ((point.elevation - min) / (max - min)) * 125}
-              r="5"
-              fill="#fff1dc"
-            />
-          </g>
-        )}
-      </svg>
-      <label className="profile-scrubber">
-        Inspect profile{" "}
-        <span>
-          {point
-            ? formatDistance(point.distance) +
-              " · " +
-              point.elevation.toFixed(0) +
-              " m"
-            : "Hover or use the slider"}
-        </span>
-        <input
-          aria-label="Inspect elevation along route"
-          type="range"
-          min="0"
-          max={profile.length - 1}
-          value={index ?? 0}
-          onChange={(e) => select(Number(e.target.value))}
-          onBlur={() => select(null)}
-          aria-valuetext={
-            point
-              ? formatDistance(point.distance) +
-                ", elevation " +
-                point.elevation.toFixed(0) +
-                " metres"
-              : undefined
-          }
-        />
-      </label>
-    </div>
-  );
-});
 export default memo(function RoutePlanner(p: Props) {
   const routes = p.result?.routes ?? noRoutes,
     recommended = p.recommended;
   const current = routes[p.active] ?? routes[0],
     terrain = current?.terrain;
+  const analysis = current ? p.analysis?.[current.id] : undefined;
+  const [assumedSpeed, setAssumedSpeed] = useState("");
+  const speed = Number(assumedSpeed);
+  const travelTime = speed > 0 && current ? current.distance / 1000 / speed : NaN;
+  const duration = Number.isFinite(travelTime) ? travelTime : undefined;
+  const ranking = p.result?.ranking;
   const terrainComparison = useMemo(
     () =>
       compareTerrainCandidates(
@@ -386,50 +231,65 @@ export default memo(function RoutePlanner(p: Props) {
   );
   function exportRoute() {
     if (!current) return;
-    const parts = splitDateLine(current.coordinates),
-      blob = new Blob(
-        [
-          JSON.stringify(
-            {
-              type: "Feature",
-              geometry: { type: "MultiLineString", coordinates: parts },
-              properties: {
-                body: "Mars",
-                latitudeType: "planetocentric",
-                longitude: "east-positive",
-                sphereRadiusM: metadata.radius,
-                tier: current.tier,
-                source: p.result?.meta?.sourcePage,
-                terrainSha256: p.result?.meta?.sha256,
-                derivedElevationSha256: p.result?.meta?.derivedSha256,
-                terrainDataset: p.result?.meta?.id,
-                name: current.name,
-                strategies: current.strategies,
-                lambda: terrain?.lambda,
-                modelCost: terrain?.cost,
-                terrainPenalty: terrain?.riskIntegral,
-                distanceM: current.distance,
-                assessedDistanceM: current.assessedDistance,
-                unassessedConnectors: current.connectors,
-                ascentM: terrain?.ascent,
-                descentM: terrain?.descent,
-                maxSlopeDegrees: terrain?.maxSlope,
-                meanSlopeDegrees: terrain?.meanSlope,
-                settings: p.settings,
-                reachedObjectives: current.reached,
-                scienceStops: current.scienceStops,
-                stops: current.stops,
-                quality: current.quality,
-                warning:
-                  "Research and education; not operational astronaut navigation",
-              },
-            },
-            null,
-            2,
-          ),
-        ],
-        { type: "application/geo+json" },
-      );
+    const connectors = current.connectors.flatMap((connector, index) => {
+      const offset = current.snapping[index];
+      if (!offset) return [];
+      return [{
+        type: "Feature",
+        geometry: { type: "MultiLineString", coordinates: splitDateLine(connector) },
+        properties: {
+          role: "unassessed terrain connector",
+          stopIndex: index,
+          offsetM: offset,
+          traversals: index === 0 || index === current.connectors.length-1 ? 1 : 2,
+        },
+      }];
+    });
+    const path = {
+      type: "Feature",
+      geometry: { type: "MultiLineString", coordinates: splitDateLine(current.coordinates) },
+      properties: {
+        role: terrain ? "assessed terrain" : "geographic connection",
+        body: "Mars",
+        latitudeType: "planetocentric",
+        longitude: "east-positive",
+        sphereRadiusM: metadata.radius,
+        tier: current.tier,
+        source: p.result?.meta?.sourcePage,
+        terrainSha256: p.result?.meta?.sha256,
+        derivedElevationSha256: p.result?.meta?.derivedSha256,
+        terrainDataset: p.result?.meta?.id,
+        name: current.name,
+        strategies: current.strategies,
+        lambda: terrain?.lambda,
+        modelCost: terrain?.cost,
+        terrainPenalty: terrain?.riskIntegral,
+        distanceM: current.distance,
+        assessedDistanceM: current.assessedDistance,
+        unassessedConnectors: current.connectors,
+        ascentM: terrain?.ascent,
+        descentM: terrain?.descent,
+        maxSlopeDegrees: terrain?.maxSlope,
+        meanSlopeDegrees: terrain?.meanSlope,
+        settings: p.settings,
+        reachedObjectives: current.reached,
+        reachedTargets: current.reachedTargets,
+        scienceStops: current.scienceStops,
+        stops: current.stops,
+        quality: current.quality,
+        elevationProfile: terrain?.profile,
+        analysis,
+        analysisStatus: analysis ? "ready" : p.analysisError ? "unavailable" : "pending",
+        climatePreferences: p.climatePreferences,
+        ranking: p.rankingPending ? undefined : ranking,
+        score: p.rankingPending ? undefined : p.result?.scores?.[p.active],
+        assumedSpeedKmh: duration === undefined ? undefined : speed,
+        hypotheticalDurationHours: duration,
+        purpose: "Research and education",
+      },
+    };
+    const record = { type: "FeatureCollection", schemaVersion: "marspath-route-v3", features: [path,...connectors] };
+    const blob = new Blob([JSON.stringify(record,null,2)], { type: "application/geo+json" });
     const url = URL.createObjectURL(blob),
       a = document.createElement("a");
     a.href = url;
@@ -442,7 +302,6 @@ export default memo(function RoutePlanner(p: Props) {
       {p.collapsed && (
         <div className="plan-summary">
           <span><strong>A → B</strong><small>{p.draft.waypoints.length ? p.draft.waypoints.length + " waypoints" : "Direct plan"}</small></span>
-          <button className="text-button" onClick={p.onEdit}>Edit route</button>
         </div>
       )}
       <div id="route-planning" hidden={p.collapsed}>
@@ -579,6 +438,7 @@ export default memo(function RoutePlanner(p: Props) {
           <div className="section-title route-result-title">
             <h2 id="compare-routes">Compare routes</h2>
             <div className="result-actions">
+            <button className="text-button" onClick={p.onEdit}>Edit route</button>
             <button className="icon-button" aria-label="Export route & provenance" title="Export route & provenance" onClick={exportRoute}>
               <Download size={18} />
             </button>
@@ -627,7 +487,7 @@ export default memo(function RoutePlanner(p: Props) {
           </div>
           {current?.tier === "geographic" ? (
             <div className="data-note">
-              <strong>Distance only</strong>
+              <strong>Geographic distance</strong>
               <p>
                 A great-circle connection through your stops. Terrain, ascent,
                 slope, hazards and feasibility have not been assessed. This is
@@ -678,18 +538,6 @@ export default memo(function RoutePlanner(p: Props) {
                       </strong>
                     </div>
                   </div>
-                  <ProfileChart
-                    key={
-                      current.id +
-                      "-" +
-                      current.terrain?.cost +
-                      "-" +
-                      current.terrain?.distance
-                    }
-                    route={current}
-                    color={routeAppearance(p.active, recommended).color}
-                    onPoint={p.onProfile}
-                  />
                 </>
               )}
               {current.tier === "coarse" && (
@@ -705,16 +553,13 @@ export default memo(function RoutePlanner(p: Props) {
               <details className="route-explanation" open>
                 <summary>Why this route?</summary>
                 {terrainComparison && <p>{terrainComparison}</p>}
-                <p>
-                  {routes[recommended]?.name} has the best weighted score among
-                  the evaluated candidates. The score compares normalized
-                  distance, terrain penalty and missed verified objectives. Your
-                  preference weights are {p.settings.distanceWeight} distance /{" "}
-                  {p.settings.terrainWeight} terrain /{" "}
-                  {p.settings.scienceWeight} science; unavailable science is
-                  removed and weights renormalized. Lower modelled risk is not a
-                  safety guarantee.
-                </p>
+                <p>{routes.length === 1 ? "Only one distinct path was found." :
+                  (p.result?.scores?.filter((score) => Math.abs(score-p.result!.scores![recommended]) < 1e-8).length ?? 0) > 1
+                    ? "The lowest score is tied. The first tied candidate is highlighted."
+                    : routes[recommended]?.name + " has the lowest weighted score among the displayed candidates."}</p>
+                {ranking && <p>Effective weights · {Object.entries(ranking.weights)
+                  .map(([key, weight]) => Math.round(weight * 100) + "% " + key).join(" · ")}.
+                  Missing criteria receive no weight. Radiation is context only.</p>}
                 {p.settings.objectives.length > 0 && (
                   <p className="science-outcome">
                     Selected objectives reached: {current.reached.length} /{" "}
@@ -733,11 +578,22 @@ export default memo(function RoutePlanner(p: Props) {
                     {current.note}
                   </p>
                 )}
+                {current.reachedTargets && current.reachedTargets.length > 0 && (
+                  <p>Published outcrop cells reached · {current.reachedTargets.map((id) =>
+                    scienceTargets.find((target) => target.id === id)?.name ?? id).join(", ")}.</p>
+                )}
+                {!!current.scienceStops?.length && <p>{(() => {
+                  const shortest = routes.find((route) => route.strategies?.some((s) => s.id === "shortest"));
+                  const diff = shortest && current.distance-shortest.distance;
+                  return diff === undefined ? "No shortest candidate is available for the comparison." :
+                    diff > 0.5 ? formatDistance(diff) + " farther than the shortest candidate with the same mandatory waypoints." :
+                    diff < -0.5 ? formatDistance(-diff) + " shorter than the displayed distance-first candidate after accounting for snapping." :
+                    "The stop does not change the rounded distance compared with the shortest candidate.";
+                })()}</p>}
                 <p>
                   {p.result?.evaluatedCandidates} feasible candidates evaluated;{" "}
                   {p.result?.scienceAttempts ?? 0} optional-stop insertions
-                  attempted. The balanced candidate is selected from that tested
-                  pool; no global science optimum is claimed.
+                  attempted. Science comparisons use those tested insertions.
                 </p>
                 <p>
                   Endpoints and stops snap by{" "}
@@ -802,8 +658,7 @@ export default memo(function RoutePlanner(p: Props) {
                   <dd>Blocked during terrain search</dd>
                 </dl>
                 <p className="small-note">
-                  Coverage is not a probability of safety. Rocks, climate and
-                  radiation are excluded.
+                  Terrain scores use elevation and slope. Local rocks and obstacles fall below the DEM’s sampling.
                 </p>
                 <a
                   className="text-link"
@@ -819,8 +674,24 @@ export default memo(function RoutePlanner(p: Props) {
               </details>
             </>
           )}
+          {current && <>
+            <EnvironmentalAnalysis route={current} alternatives={routes} analyses={p.analysis} error={p.analysisError} ranking={ranking} />
+            <RouteProfile key={current.id + "-" + current.distance} route={current} analysis={analysis}
+              color={routeAppearance(p.active, recommended, current.tier === "geographic").color} onPoint={p.onProfile} />
+            <details className="quality-details trip-duration">
+              <summary>Travel time estimate</summary>
+              <label>Assumed constant speed (km/h)
+                <input type="number" min="0" step="any" value={assumedSpeed} onChange={(e) => setAssumedSpeed(e.target.value)} />
+              </label>
+              <p className="small-note">{duration === undefined
+                ? "Enter a positive speed to estimate time from total distance."
+                : duration.toLocaleString(undefined, { maximumSignificantDigits: 3 }) + " hours at this constant speed. Stops and terrain conditions are excluded."}</p>
+            </details>
+          </>}
         </>
       )}
+      <ClimatePreferenceForm value={p.climatePreferences} onChange={p.onClimatePreferences}
+        ranking={p.rankingPending ? undefined : ranking} pending={p.rankingPending} />
       <details className="advanced-settings">
         <summary>Advanced settings</summary>
         <label className="slider-label">

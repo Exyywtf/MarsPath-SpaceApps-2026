@@ -22,4 +22,4 @@ Endpoints snap to their containing valid cell centres; offsets are displayed. Ou
 
 ## Exclusions
 
-No climate, radiation, rock hazards, astronaut physiology, travel duration, life support, or unverified mineral-target weights enter these costs. Numerical checks establish algorithm consistency, not operational traversability. See `docs/VALIDATION.md`.
+Terrain search uses distance and slope. An opt-in climate comparison can change the ranking of completed paths only when the numerical model supports the distinction. Radiation and the optional constant-speed travel time provide context. See `docs/VALIDATION.md`.

@@ -54,21 +54,22 @@ py -m venv .venv
 $env:UPDATE_VALIDATION = '1'
 npm test
 Remove-Item Env:UPDATE_VALIDATION
-.\.venv\Scripts\python.exe scripts/validation/verify_routes.py
-.\.venv\Scripts\python.exe scripts/validation/verify_v2.py
+.\.venv\Scripts\python.exe scripts/validation/verify_routes.py --write
+.\.venv\Scripts\python.exe scripts/validation/verify_v2.py --write
+.\.venv\Scripts\python.exe scripts/gis/process_radiation.py --write
 ```
 
 The GIS scripts preserve the originals. `scripts/gis/process_v2_layers.py` uses the supplied MOLA raster and the retained numerical MCD ASCII export to regenerate the 0.25° terrain derivative, climate arrays, and overlay PNGs. The build uses the tracked derivatives directly. Keep the large original rasters out of Git.
 
 ## Architecture
 
-Next.js static export serves React and OpenLayers with a custom 3,396,190 m Mars sphere. NASA WMTS imagery loads directly from Mars Trek. A persistent Web Worker fetches numerical terrain on demand and caches terrain and computed legs. Climate, terrain derivatives and the 13 destination records ship as static assets. Visitors can use the public deployment without an account or API key.
+Next.js static export serves React and OpenLayers with a custom 3,396,190 m Mars sphere. NASA WMTS imagery loads directly from Mars Trek. A persistent worker caches terrain, computed legs, and environmental profiles for the current route candidates. The application reveals result geometry independently of the worker's measurements. Both radiation views, climate arrays, terrain derivatives and 13 destination records ship as static assets.
 
 ## Limits and release scope
 
 - Fine terrain routing uses the 20 m Jezero DEM. The global MOLA tier uses 0.25° cells with approximately 14.8 km north–south spacing. Unresolved connections can use distance-only geographic planning.
 - Local science comparisons use three published representative Jezero delta type locations. Global science themes link to regions and original evidence.
-- MCD overlays show one modelled climatology snapshot. Radiation registration and a georeferenced global mineral layer are unresolved. Route costs use terrain distance and slope.
+- MCD overlays show one climatology snapshot. Climate preferences can rank existing paths when the grid resolves a difference. Radiation provides one numerical cosmic-ray scenario and an approximately registered historical illustration. Its absolute dose accuracy is unknown and it carries zero route weight.
 - Terrain coverage and numerical validation measure inputs and calculations. Safety, rock-scale obstacles and physical alignment accuracy remain outside the model.
 - GitHub is private. The public Vercel deployment is managed through the CLI.
 

@@ -1,7 +1,10 @@
 import records from "../data/layers.json";
 import { normalizeLon, type LonLat } from "./mars";
-export type LayerId = "topography" | "temperature" | "pressure" | "wind";
-export interface LayerDataset {
+import { radiationManifest as rad, radiationProduct } from "./radiation";
+export type ClimateId = "temperature" | "pressure" | "wind";
+export type RadiationId = "radiation" | "radiation-historical" | "radiation-column";
+export type LayerId = "topography" | ClimateId | RadiationId;
+interface RasterDataset {
   id: LayerId;
   name: string;
   unit: string;
@@ -14,12 +17,21 @@ export interface LayerDataset {
   nativeResolution: string;
   kind: string;
   sourcePage: string;
-  dataUrl: string;
   sha256: string;
-  processedAt: string;
+  processedAt?: string;
   context: string;
   terms: string;
 }
+interface NumericalDataset extends RasterDataset {
+  id: Exclude<LayerId, "radiation-historical">;
+  dataUrl: string;
+  presentation: "numerical";
+}
+interface ReferenceDataset extends RasterDataset {
+  id: "radiation-historical";
+  presentation: "historical";
+}
+export type LayerDataset = NumericalDataset | ReferenceDataset;
 export interface ClimateData {
   width: number;
   height: number;
@@ -30,7 +42,74 @@ export interface ClimateData {
   sha256: string;
   providerGeneratedAt: string;
 }
-export const scientificLayers = records as LayerDataset[];
+const cosmicRays: NumericalDataset = {
+  id: "radiation", name: "Modelled cosmic rays", unit: "mSv/year",
+  presentation: "numerical", range: rad.modelRange, palette: rad.modelPalette,
+  imageUrl: "/processed/radiation-atris-v1.png", imageSize: rad.imageSize, bounds: rad.bounds,
+  sampling: "1° pressure nodes · six radiation simulations",
+  nativeResolution: "A transport simulation at six atmospheric pressures",
+  kind: "Modelled surface effective dose rate",
+  sourcePage: rad.source, dataUrl: rad.pressureUrl, sha256: rad.archiveSha256,
+  context: rad.scenario + ". Model sensitivity is not known at a point; excludes solar particle events.",
+  terms: rad.terms,
+};
+const column: NumericalDataset = {
+  ...cosmicRays, id: "radiation-column", name: "Atmospheric shielding proxy", unit: "kg/m²",
+  range: rad.proxyRange, kind: "Modelled vertical atmospheric column mass",
+  imageUrl: "/processed/radiation-column-v1.png",
+  sampling: "1° published surface pressure nodes",
+  nativeResolution: "Pressure export spacing, not local atmospheric accuracy",
+  context: "Ls 0° at local midnight. Surface pressure divided by 3.72 m/s² under hydrostatic equilibrium. Column mass only; radiation dose is unavailable.",
+};
+const historical: ReferenceDataset = {
+  id: "radiation-historical", name: "NASA historical map · 2002", unit: "rem/year",
+  presentation: "historical", range: [10, 20], palette: rad.historical.palette,
+  imageUrl: "/processed/radiation-pia03480-v1.webp", imageSize: rad.imageSize, bounds: rad.bounds,
+  sampling: "Two orthographic views fitted to NASA’s printed graticule",
+  nativeResolution: "Original model grid unknown. Artwork: 3000 × 2400 pixels.",
+  kind: "Historical dose-equivalent illustration",
+  sourcePage: rad.historical.source, sha256: rad.historical.sourceSha256,
+  context: "NASA/JPL/JSC, 2002. Colours and scale come from the original illustration. Areas outside the usable views remain transparent.",
+  terms: rad.historical.terms,
+};
+export const scientificLayers: LayerDataset[] = [
+  ...records.map((record) => ({ ...record, presentation: "numerical" } as NumericalDataset)),
+  radiationProduct === "radiation" ? cosmicRays : column,
+  historical,
+];
+
+export function isRadiation(id: LayerId | null): id is RadiationId {
+  return id === "radiation" || id === "radiation-historical" || id === "radiation-column";
+}
+
+export function sourceAnchor(id: LayerId) {
+  return id === "topography" ? "mola" : isRadiation(id)
+    ? id === "radiation-historical" ? "pia03480" : "atris-radiation"
+    : "mcd";
+}
+
+export const climateSnapshot = {
+  url: "/processed/mcd-v62.json",
+  sha256: "aabe016b2609e0a083d47f9be782de94f13204e8d5c0c1c6f11867b8eeb02cbd",
+  source: "https://www-mars.lmd.jussieu.fr/mcd_python/",
+  terms: "https://www-mars.lmd.jussieu.fr/mars/access",
+  credit: "Mars Climate Database © LMD / OU / IAA / ESA / CNES",
+  scenario: "MCD 6.2 · Ls 21.3° · local time 00:00 everywhere · 10 m above the local surface · average-solar climatology",
+  sampling: "64 × 48 export nodes (5.714° × 3.830°); native resolution unknown",
+} as const;
+let climatePromise: Promise<ClimateData> | undefined;
+export function loadClimate() {
+  climatePromise ??= fetch(climateSnapshot.url).then(async (r) => {
+    if (!r.ok) throw new Error("Climate snapshot could not load.");
+    const data = await r.json() as ClimateData;
+    if (data.sha256 !== climateSnapshot.sha256 || data.width !== 64 || data.height !== 48 ||
+      (["temperature", "pressure", "wind"] as const).some((id) =>
+        data.fields[id]?.values.length !== data.width * data.height))
+      throw new Error("Climate snapshot does not match its manifest.");
+    return data;
+  }).catch((error) => { climatePromise = undefined; throw error; });
+  return climatePromise;
+}
 // Both image generation and inspection use the same numerical linear sampling.
 export function sampleGrid(
   values: ArrayLike<number>,
@@ -65,6 +144,6 @@ export function sampleGrid(
 }
 export function layerValue(value: number, id: LayerId) {
   return value.toLocaleString(undefined, {
-    maximumFractionDigits: id === "wind" ? 2 : id === "topography" ? 0 : 1,
+    maximumFractionDigits: id === "wind" ? 2 : id === "topography" || isRadiation(id) ? 0 : 1,
   });
 }
