@@ -1,6 +1,10 @@
 # Image credits
 
-Illustrations are source-page derivatives, not necessarily natural-colour photographs or whole-region views. Follow each original caption for location/coverage, observation date, processing, exact institutional credit and usage terms. No blanket relicensing is asserted.
+The V4 galleries use the per-slide records in [the image registry](../data/gallery.json). Each record gives the observation or illustration type, geographic relationship, instrument, original credit, source page, downloaded rendition and both file checksums. The [Sources library](https://marspath-spaceapps-2026.vercel.app/sources/) shows the corresponding credits and original files. WebP derivatives preserve the source aspect ratio and leave maps and figure legends visible. The original image terms apply to each derivative.
+
+## Earlier single-image assets
+
+The following source records document the imagery previously used by the atlas.
 
 - **Mawrth Vallis**: derivative `/images/mawrth.jpg`; [original image](https://assets.science.nasa.gov/content/dam/science/psd/mars/resources/detail_files/6/636_20080807_PR-full2.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg); [caption, credits and usage](https://science.nasa.gov/resource/clay-minerals-in-mawrth-vallis-region-of-mars/); accessed 2026-11-14T11:01:53.894847+00:00.
 - **Oxia Planum**: derivative `/images/oxia.jpg`; [original image](https://assets.science.nasa.gov/content/dam/science/psd/photojournal/pia/pia18/pia18817/figures/PIA18817_fig1_thumb.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg); [caption, credits and usage](https://science.nasa.gov/photojournal/possible-future-mars-landing-site-in-oxia-planum/); accessed 2026-11-14T11:01:53.894847+00:00.
@@ -13,4 +17,4 @@ Illustrations are source-page derivatives, not necessarily natural-colour photog
 - **Holden Crater**: derivative `/images/holden.jpg`; [original image](https://assets.science.nasa.gov/content/dam/science/psd/mars/resources/detail_files/7/73_20081119_MSL_final4_MOLAmap-full2.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg); [caption, credits and usage](https://science.nasa.gov/resource/four-finalist-landing-site-candidates-for-mars-science-laboratory/); accessed 2026-11-14T11:01:53.894847+00:00.
 - **Terra Sirenum · Chlorides**: derivative `/images/sirenum.jpg`; [original image](https://assets.science.nasa.gov/content/dam/science/psd/mars/resources/detail_files/6/620_Chlorides_MRO_fig4_na-web.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg); [caption, credits and usage](https://science.nasa.gov/resource/bright-exposures-of-chloride-salt-on-southern-mars/); accessed 2026-11-14T11:01:53.894847+00:00.
 
-No image is shown for a location whose source-page image was not retrieved. This avoids misidentifying a supplied, unverified file as an authenticated site photograph. All supplied images remain recorded in the audit.
+All supplied images remain recorded in the earlier audit.

@@ -3,7 +3,7 @@ import EvidenceLink from "./EvidenceLink";
 import StyledSelect from "./StyledSelect";
 import Accordion from "./Accordion";
 import { useRef, useState } from "react";
-import { Check, Gauge, Mountain, Radiation, Thermometer, Wind } from "lucide-react";
+import { Check, Gem, Gauge, Layers3, Mountain, Radiation, Thermometer, Wind } from "lucide-react";
 import {
   scientificLayers,
   isRadiation,
@@ -12,6 +12,7 @@ import {
   type LayerDataset,
 } from "@/lib/layers";
 import { radiationManifest as rad, radiationProduct } from "@/lib/radiation";
+import { explorationScience, mineralStyles, scienceSources } from "@/lib/explorationScience";
 import type { OverlayState } from "@/lib/scientificOverlay";
 import AtlasDialog, { type DialogHandle } from "./AtlasDialog";
 const icons = {
@@ -22,8 +23,25 @@ const icons = {
   radiation: Radiation,
   "radiation-historical": Radiation,
   "radiation-column": Radiation,
+  geology: Layers3,
+  minerals: Gem,
+  "thermal-inertia": Thermometer,
 };
-export function LayerLegend({ layer }: { layer: LayerDataset }) {
+export function LayerLegend({ layer, compact = false }: { layer: LayerDataset; compact?: boolean }) {
+  if (layer.presentation === "observations") return (
+    <ul className="categorical-legend" aria-label="Mineral observations legend">
+      {Object.entries(mineralStyles).map(([type, item]) =>
+        <li key={type}><i data-symbol={type} style={{ backgroundColor: item.color }} />{item.label}</li>)}
+    </ul>
+  );
+  if (layer.presentation === "categorical") return compact
+    ? <p className="small-note">44 units · full legend in Layers</p>
+    : <Accordion className="quality-details" title="Geologic unit legend">
+      <ul className="categorical-legend" aria-label="Global geology legend">
+        {explorationScience.geology.units.map((unit) =>
+          <li key={unit.code}><i style={{ backgroundColor: unit.color }} /><code>{unit.code}</code>{unit.name}</li>)}
+      </ul>
+    </Accordion>;
   return (
     <div className="layer-legend" aria-label={layer.name + " legend"}>
       {layer.presentation === "historical" ? (
@@ -43,7 +61,7 @@ export function LayerLegend({ layer }: { layer: LayerDataset }) {
           {layer.unit}
         </span>
         <span>
-          {layer.range[1].toLocaleString(undefined, {
+          {layer.id === "thermal-inertia" ? "≥" : ""}{layer.range[1].toLocaleString(undefined, {
             maximumFractionDigits: 1,
           })}{" "}
           {layer.unit}
@@ -52,6 +70,14 @@ export function LayerLegend({ layer }: { layer: LayerDataset }) {
     </div>
   );
 }
+const layerGroups = [
+  { label: "Terrain", ids: ["topography"] },
+  { label: "Atmosphere", ids: ["temperature", "pressure", "wind"] },
+  { label: "Radiation", ids: ["radiation", "radiation-column"] },
+  { label: "Geology & minerals", ids: ["geology", "minerals"] },
+  { label: "Surface properties", ids: ["thermal-inertia"] },
+];
+
 export default function LayerManager({
   active,
   displayed,
@@ -73,51 +99,7 @@ export default function LayerManager({
   const reference = useRef<DialogHandle>(null);
   const radiationActive = isRadiation(active);
   const actualRadiation = isRadiation(displayed?.id ?? null);
-  return (
-    <section aria-labelledby="scientific-layer-title">
-      <h2 className="section-heading" id="scientific-layer-title">
-        Scientific overlays
-      </h2>
-      <p className="small-note">
-        Choose a layer, then click the map to inspect the value or image coverage.
-      </p>
-      <div className="scientific-layers">
-        {scientificLayers.filter((l) => l.presentation !== "historical").map((l) => {
-          const Icon = icons[l.id];
-          const radiation = isRadiation(l.id);
-          const selected = radiation ? radiationActive : active === l.id;
-          return (
-            <button
-              key={l.id}
-              className={
-                "scientific-layer" + (selected ? " chosen" : "")
-              }
-              aria-pressed={selected}
-              onClick={() => onActive(selected ? null : radiation ? radiationMode : l.id)}
-            >
-              <Icon size={20} />
-              <span>
-                <strong>{radiation ? "Radiation" : l.name}</strong>
-                <small>
-                  {radiation ? "Model and historical illustration" : l.kind + " · " + l.unit}
-                </small>
-              </span>
-              {selected ? (
-                <Check size={18} />
-              ) : (
-                <span
-                  className="layer-preview"
-                  style={{
-                    background:
-                      "linear-gradient(to top," + l.palette.join(",") + ")",
-                  }}
-                />
-              )}
-            </button>
-          );
-        })}
-      </div>
-      {(active || displayed) && (
+  const information = (active || displayed) && (
         <div className="layer-information" data-hiding={status.phase === "hiding"} inert={status.phase === "hiding"}>
           {radiationActive && (
             <label className="radiation-mode">
@@ -161,7 +143,58 @@ export default function LayerManager({
             </AtlasDialog>
           </>}
         </div>
-      )}
+      );
+  return (
+    <section aria-labelledby="scientific-layer-title">
+      <h2 className="section-heading" id="scientific-layer-title">
+        Scientific overlays
+      </h2>
+      <p className="small-note">
+        Choose a layer, then click the map to inspect its evidence.
+      </p>
+      <div className="scientific-layers">
+        {layerGroups.map((group) => <div key={group.label} className="layer-group" role="group" aria-label={group.label}>
+          <h3 className="layer-group-heading">{group.label}</h3>
+          {scientificLayers.filter((layer) => group.ids.includes(layer.id)).map((l) => {
+            const Icon = icons[l.id];
+          const radiation = isRadiation(l.id);
+          const selected = radiation ? radiationActive : active === l.id;
+          const detailsHere = radiation ? isRadiation(active ?? displayed?.id ?? null) : (active ?? displayed?.id) === l.id;
+          return (
+            <div key={l.id}>
+            <button
+              className={
+                "scientific-layer" + (selected ? " chosen" : "")
+              }
+              aria-pressed={selected}
+              onClick={() => onActive(selected ? null : radiation ? radiationMode : l.id)}
+            >
+              <Icon size={20} />
+              <span>
+                <strong>{radiation ? "Radiation" : l.name}</strong>
+                <small>
+                  {radiation ? "Model and historical illustration" : l.kind + (l.unit ? " · " + l.unit : "")}
+                </small>
+              </span>
+              {selected ? (
+                <Check size={18} />
+              ) : (
+                <span
+                  className="layer-preview"
+                  style={{
+                    background: l.presentation === "categorical" ? "#c5aa75"
+                      : l.presentation === "observations" ? mineralStyles.crism.color
+                        : "linear-gradient(to top," + l.palette.join(",") + ")",
+                  }}
+                />
+              )}
+            </button>
+            {detailsHere && information}
+            </div>
+          );
+          })}
+        </div>)}
+      </div>
       <Accordion className="quality-details" title={<>Radiation observations & minerals</>}>
         <p>
           Curiosity measured radiation along its traverse in Gale Crater.
@@ -178,6 +211,11 @@ export default function LayerManager({
         <p>Explore destination sources for orbital evidence of minerals.</p>
         <EvidenceLink className="text-link" href="/sources/#nili">
           Mineral evidence at Nili Fossae</EvidenceLink>
+      </Accordion>
+      <Accordion className="quality-details" title="Subsurface ice & dust references">
+        <p>See the SWIM depth maps for regional ice evidence and the TES dust-cover index for spectral dust context.</p>
+        <EvidenceLink className="text-link" href="/sources/#swim">SWIM coverage and product availability</EvidenceLink>
+        <EvidenceLink className="text-link" href="/sources/#tes-dust">TES dust-cover product status</EvidenceLink>
       </Accordion>
     </section>
   );
@@ -198,6 +236,10 @@ function LayerDetails({ layer, radiation }: { layer: LayerDataset; radiation: bo
               <dd>{(100 * (layer.presentation === "historical" ? rad.historical.coverage :
                 layer.id === "radiation-column" ? rad.proxyCoverage : rad.modelCoverage)).toFixed(1)}% of Mars by area</dd>
             </>}
+            {(layer.id === "geology" || layer.id === "thermal-inertia") && <>
+              <dt>Map coverage</dt>
+              <dd>{(100 * (layer.id === "geology" ? explorationScience.geology.coverage : explorationScience.thermal.coverage)).toFixed(1)}% of Mars by area</dd>
+            </>}
           </dl>
           <p className="small-note">
             {layer.id === "topography"
@@ -207,7 +249,10 @@ function LayerDetails({ layer, radiation }: { layer: LayerDataset; radiation: bo
                 : layer.id === "radiation"
                   ? "Interpolated at six simulated pressures. Largest withheld-pressure error: about 2.5 mSv/year. Absolute surface accuracy is unknown."
                   : layer.id === "radiation-column" ? "This shows how much atmosphere sits above a point."
-                    : "Model means, not current weather or extreme conditions. Export sampling is not the native climate-model resolution."}
+                    : layer.id === "thermal-inertia" ? "Apparent thermal inertia describes a modelled thermal response and depends on surface heterogeneity. Local traction is unassessed."
+                      : layer.presentation === "categorical" ? "Source polygons rasterized at cell centres. Unit membership and boundaries describe regional mapped geology."
+                        : layer.presentation === "observations" ? "Markers locate catalogue records. Mineral interpretation and observation footprints are distinct."
+                          : "Model means, not current weather or extreme conditions. Export sampling is not the native climate-model resolution."}
           </p>
           <EvidenceLink
             className="text-link"
@@ -216,6 +261,9 @@ function LayerDetails({ layer, radiation }: { layer: LayerDataset; radiation: bo
             rel="noreferrer"
           >
             Dataset source</EvidenceLink>
+          {layer.id === "minerals" && <EvidenceLink className="text-link" href={scienceSources.minerals.chloride} target="_blank" rel="noreferrer">
+            Chloride catalogue
+          </EvidenceLink>}
           <EvidenceLink
             className="text-link"
             href={"/sources/#" + sourceAnchor(layer.id)}

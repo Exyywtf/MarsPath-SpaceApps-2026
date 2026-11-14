@@ -24,6 +24,23 @@ export default function Methodology() {
         and HiRISE 0.25 m imagery appear only within available footprints; they
         do not create matching terrain resolution.
       </p>
+      <h2 id="exploration-science">Geology, minerals and surface properties</h2>
+      <p className="lede">
+        The USGS SIM 3292 atlas layer assigns each 0.125° cell the polygon containing its centre.
+        It preserves the published unit codes and colours from the 1:20,000,000 map.
+        The global classifications describe regional geologic units. Local boundaries and small outcrops may be unresolved.
+      </p>
+      <p className="lede">
+        Terra Sirenum CRISM centres retain the interpretations in the authors’ catalogue, including possible detections.
+        The chloride catalogue provides locations of records identified using THEMIS imagery.
+        Mineral footprints and ground sampling locations remain unassessed.
+      </p>
+      <p className="lede">
+        The TES layer aggregates 5 × 5 source pixels into 0.25° apparent thermal inertia cells with area weighting.
+        Only cells with direct observational support throughout are shown.
+        The source spacing is 0.05°. Apparent thermal inertia characterizes a modelled thermal response.
+      </p>
+      <EvidenceLink className="text-link" href="/sources/#geology">Geology, mineral and thermal sources</EvidenceLink>
       <h2>Three levels of route support</h2>
       <ul>
         <li>

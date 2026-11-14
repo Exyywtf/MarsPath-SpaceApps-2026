@@ -1,18 +1,15 @@
 import records from "../data/layers.json";
 import { normalizeLon, type LonLat } from "./mars";
 import { radiationManifest as rad, radiationProduct } from "./radiation";
+import { explorationScience, scienceSources, thermalUnit } from "./explorationScience";
 export type ClimateId = "temperature" | "pressure" | "wind";
 export type RadiationId = "radiation" | "radiation-historical" | "radiation-column";
-export type LayerId = "topography" | ClimateId | RadiationId;
-interface RasterDataset {
+export type ExplorationLayerId = "geology" | "minerals" | "thermal-inertia";
+export type LayerId = "topography" | ClimateId | RadiationId | ExplorationLayerId;
+interface LayerMetadata {
   id: LayerId;
   name: string;
   unit: string;
-  range: number[];
-  palette: string[];
-  imageUrl: string;
-  imageSize: number[];
-  bounds: number[];
   sampling: string;
   nativeResolution: string;
   kind: string;
@@ -22,16 +19,34 @@ interface RasterDataset {
   context: string;
   terms: string;
 }
-interface NumericalDataset extends RasterDataset {
-  id: Exclude<LayerId, "radiation-historical">;
+interface RasterDataset extends LayerMetadata {
+  imageUrl: string;
+  imageSize: number[];
+  bounds: number[];
+  interpolate?: boolean;
+}
+interface ScalarDataset extends RasterDataset {
+  range: number[];
+  palette: string[];
+}
+interface NumericalDataset extends ScalarDataset {
+  id: Exclude<LayerId, "radiation-historical" | "geology" | "minerals">;
   dataUrl: string;
   presentation: "numerical";
 }
-interface ReferenceDataset extends RasterDataset {
+interface ReferenceDataset extends ScalarDataset {
   id: "radiation-historical";
   presentation: "historical";
 }
-export type LayerDataset = NumericalDataset | ReferenceDataset;
+interface CategoricalDataset extends RasterDataset {
+  id: "geology";
+  presentation: "categorical";
+}
+interface ObservationsDataset extends LayerMetadata {
+  id: "minerals";
+  presentation: "observations";
+}
+export type LayerDataset = NumericalDataset | ReferenceDataset | CategoricalDataset | ObservationsDataset;
 export interface ClimateData {
   width: number;
   height: number;
@@ -72,10 +87,42 @@ const historical: ReferenceDataset = {
   context: "NASA/JPL/JSC, 2002. Colours and scale come from the original illustration. Areas outside the usable views remain transparent.",
   terms: rad.historical.terms,
 };
+
+const geology: CategoricalDataset = {
+  id: "geology", presentation: "categorical", name: "Global geology", unit: "",
+  imageUrl: explorationScience.geology.image.url, imageSize: [explorationScience.geology.width, explorationScience.geology.height],
+  bounds: explorationScience.geology.bounds, interpolate: false,
+  sampling: "Polygon membership at 0.125° cell centres · about 7.4 km north–south",
+  nativeResolution: "SIM 3292 · 1:20,000,000 map scale",
+  kind: "USGS mapped geologic units", sourcePage: scienceSources.geology.url,
+  sha256: explorationScience.geology.data.sha256, terms: scienceSources.geology.terms,
+  context: "44 units with published codes and colours. Click to inspect the mapped unit and polygon ID. Boundaries are regional interpretations; small outcrops may be unresolved.",
+};
+const minerals: ObservationsDataset = {
+  id: "minerals", presentation: "observations", name: "Mineral observations", unit: "",
+  sampling: "Published observation and deposit record centres",
+  nativeResolution: "Coordinate precision varies by catalogue; observation footprints are unavailable here",
+  kind: "Published CRISM and THEMIS records", sourcePage: scienceSources.minerals.url,
+  sha256: explorationScience.minerals.data.sha256, terms: scienceSources.minerals.terms,
+  context: `${explorationScience.minerals.crismCount} Terra Sirenum CRISM observation centres and ${explorationScience.minerals.chlorideCount} chloride catalogue records. Coverage follows the studies’ observations. Each CRISM marker locates an image centre, and interpretations retain the authors’ qualifiers.`,
+};
+const thermal: NumericalDataset = {
+  id: "thermal-inertia", presentation: "numerical", name: "Thermal inertia", unit: thermalUnit,
+  range: explorationScience.thermal.displayRange, palette: explorationScience.thermal.palette,
+  imageUrl: explorationScience.thermal.image.url,
+  imageSize: [explorationScience.thermal.width, explorationScience.thermal.height],
+  bounds: explorationScience.thermal.bounds, interpolate: false, dataUrl: explorationScience.thermal.data.url,
+  sampling: "0.25° area-weighted cells · about 14.8 km north–south",
+  nativeResolution: "20 pixels/degree · about 2.96 km per pixel at the equator",
+  kind: "TES nightside apparent thermal inertia", sourcePage: scienceSources.thermal.url,
+  sha256: explorationScience.thermal.data.sha256, terms: scienceSources.thermal.terms,
+  context: "MGS TES nightside bolometer temperatures from 1999–2004, modelled as apparent thermal inertia. Only cells fully supported by the PDS observation mask are shown. High values share the top legend colour.",
+};
 export const scientificLayers: LayerDataset[] = [
   ...records.map((record) => ({ ...record, presentation: "numerical" } as NumericalDataset)),
   radiationProduct === "radiation" ? cosmicRays : column,
   historical,
+  geology, minerals, thermal,
 ];
 
 export function isRadiation(id: LayerId | null): id is RadiationId {
@@ -83,6 +130,7 @@ export function isRadiation(id: LayerId | null): id is RadiationId {
 }
 
 export function sourceAnchor(id: LayerId) {
+  if (id === "geology" || id === "minerals" || id === "thermal-inertia") return id;
   return id === "topography" ? "mola" : isRadiation(id)
     ? id === "radiation-historical" ? "pia03480" : "atris-radiation"
     : "mcd";

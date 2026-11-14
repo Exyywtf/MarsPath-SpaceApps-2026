@@ -1,0 +1,420 @@
+{
+  "version": "science-v1",
+  "geology": {
+    "image": {
+      "url": "/processed/science-v1/geology.png",
+      "sha256": "5f4cfaa83d3f2ab505d7226548f6e4e5bfcc6c4216c1a3ef10c9a1c59911a777",
+      "bytes": 240248
+    },
+    "data": {
+      "url": "/processed/science-v1/geology.bin.gz",
+      "sha256": "6d3555154abc2a4930771631aae83fac057b56020236efcde7077f5c06377cf5",
+      "bytes": 176215
+    },
+    "width": 2880,
+    "height": 1440,
+    "bounds": [
+      -180,
+      -90,
+      180,
+      90
+    ],
+    "registration": "Planetocentric Mars, east-positive longitude, pixel edges at ±180° and ±90°; north row first",
+    "coverage": 1.0,
+    "nodata": 0,
+    "encoding": "rle16",
+    "catalog": {
+      "url": "/processed/science-v1/geology-catalog.json",
+      "sha256": "4aeb126b4805be73c1ba5cb559fc21f7a03d1aa3d2e8b6754dce02f425e55b20",
+      "bytes": 15963
+    },
+    "units": [
+      {
+        "code": "AHi",
+        "name": "Amazonian and Hesperian impact unit",
+        "color": "#ffff00"
+      },
+      {
+        "code": "AHtu",
+        "name": "Amazonian and Hesperian transition undivided unit",
+        "color": "#faead6"
+      },
+      {
+        "code": "AHv",
+        "name": "Amazonian and Hesperian volcanic",
+        "color": "#cd4e37"
+      },
+      {
+        "code": "ANa",
+        "name": "Amazonian and Noachian apron unit",
+        "color": "#ccad00"
+      },
+      {
+        "code": "Aa",
+        "name": "Amazonian apron unit",
+        "color": "#ffd900"
+      },
+      {
+        "code": "Ap",
+        "name": "Amazonian polar unit",
+        "color": "#00e8f0"
+      },
+      {
+        "code": "Apu",
+        "name": "Amazonian polar undivided unit",
+        "color": "#0000cc"
+      },
+      {
+        "code": "Av",
+        "name": "Amazonian volcanic unit",
+        "color": "#ff6347"
+      },
+      {
+        "code": "Ave",
+        "name": "Amazonian volcanic edifice",
+        "color": "#cc3600"
+      },
+      {
+        "code": "HNb",
+        "name": "Hesperian and Noachian basin unit",
+        "color": "#698c69"
+      },
+      {
+        "code": "HNhu",
+        "name": "Hesperian and Noachian highland undivided unit",
+        "color": "#b2b2b2"
+      },
+      {
+        "code": "HNt",
+        "name": "Hesperian and Noachian transition unit",
+        "color": "#cdbd70"
+      },
+      {
+        "code": "Hp",
+        "name": "Hesperian polar unit",
+        "color": "#00858a"
+      },
+      {
+        "code": "Hpe",
+        "name": "Hesperian polar edifice unit",
+        "color": "#6ba5cc"
+      },
+      {
+        "code": "Hpu",
+        "name": "Hesperian polar undivided unit",
+        "color": "#9ab2e6"
+      },
+      {
+        "code": "Ht",
+        "name": "Hesperian transition unit",
+        "color": "#ffeb8a"
+      },
+      {
+        "code": "Hto",
+        "name": "Hesperian transition outflow unit",
+        "color": "#bdffff"
+      },
+      {
+        "code": "Htu",
+        "name": "Hesperian transition undivided unit",
+        "color": "#cccccc"
+      },
+      {
+        "code": "Hve",
+        "name": "Hesperian volcanic edifice unit",
+        "color": "#ff0000"
+      },
+      {
+        "code": "Nhe",
+        "name": "Noachian highland edifice unit",
+        "color": "#730000"
+      },
+      {
+        "code": "Nhu",
+        "name": "Noachian highland undivided unit",
+        "color": "#686868"
+      },
+      {
+        "code": "Nve",
+        "name": "Noachian volcanic edifice unit",
+        "color": "#cc0000"
+      },
+      {
+        "code": "eAb",
+        "name": "Early Amazonian basin unit",
+        "color": "#99ffff"
+      },
+      {
+        "code": "eHb",
+        "name": "Early Hesperian basin unit",
+        "color": "#9dcd9d"
+      },
+      {
+        "code": "eHh",
+        "name": "Early Hesperian highland unit",
+        "color": "#efd5b8"
+      },
+      {
+        "code": "eHt",
+        "name": "Early Hesperian transition unit",
+        "color": "#cf980c"
+      },
+      {
+        "code": "eHv",
+        "name": "Early Hesperian volcanic unit",
+        "color": "#8a668a"
+      },
+      {
+        "code": "eNh",
+        "name": "Early Noachian highland unit",
+        "color": "#8b4513"
+      },
+      {
+        "code": "eNhm",
+        "name": "Early Noachian highland massif unit",
+        "color": "#848b8b"
+      },
+      {
+        "code": "lAa",
+        "name": "Late Amazonian apron unit",
+        "color": "#8a7500"
+      },
+      {
+        "code": "lApc",
+        "name": "Late Amazonian polar cap unit",
+        "color": "#f5f5f5"
+      },
+      {
+        "code": "lApd",
+        "name": "Late Amazonian polar dunes unit",
+        "color": "#ffe3b3"
+      },
+      {
+        "code": "lAv",
+        "name": "Late Amazonian volcanic unit",
+        "color": "#ffb8c1"
+      },
+      {
+        "code": "lAvf",
+        "name": "Late Amazonian volcanic field unit",
+        "color": "#b29999"
+      },
+      {
+        "code": "lHb",
+        "name": "Late Hesperian basin unit",
+        "color": "#518a8a"
+      },
+      {
+        "code": "lHl",
+        "name": "Late Hesperian lowland unit",
+        "color": "#228c22"
+      },
+      {
+        "code": "lHt",
+        "name": "Late Hesperian transition unit",
+        "color": "#ffc124"
+      },
+      {
+        "code": "lHv",
+        "name": "Late Hesperian volcanic unit",
+        "color": "#cd6aca"
+      },
+      {
+        "code": "lHvf",
+        "name": "Late Hesperian volcanic field unit",
+        "color": "#ccb2b2"
+      },
+      {
+        "code": "lNh",
+        "name": "Late Noachian highland unit",
+        "color": "#cdab7e"
+      },
+      {
+        "code": "lNv",
+        "name": "Late Noachian volcanic unit",
+        "color": "#531a89"
+      },
+      {
+        "code": "mAl",
+        "name": "Middle Amazonian lowland unit",
+        "color": "#6a8c22"
+      },
+      {
+        "code": "mNh",
+        "name": "Middle Noachian highland unit",
+        "color": "#8b7355"
+      },
+      {
+        "code": "mNhm",
+        "name": "Middle Noachian highland massif unit",
+        "color": "#c1cdcd"
+      }
+    ],
+    "sources": [
+      {
+        "name": "geo-0000.json",
+        "url": "https://astrogeology.usgs.gov/pygeoapi/collections/mars/sim3292_global_geologic_map/units/items?f=json&limit=100&offset=0",
+        "sha256": "b6d6ce153b73c811fe4b9d62d84246d5eb8e957c1ecfb353f4d6d9f9050c004c"
+      },
+      {
+        "name": "geo-0100.json",
+        "url": "https://astrogeology.usgs.gov/pygeoapi/collections/mars/sim3292_global_geologic_map/units/items?f=json&limit=100&offset=100",
+        "sha256": "37d477f48cd6c813ab1a2e19fcad97a7a504f3bf8ad2f671a2eb231974123ee1"
+      },
+      {
+        "name": "geo-0200.json",
+        "url": "https://astrogeology.usgs.gov/pygeoapi/collections/mars/sim3292_global_geologic_map/units/items?f=json&limit=100&offset=200",
+        "sha256": "a0680677bde43c8af311a8cad6d67238ff788184e1c27baf63e7484d9e45bb6c"
+      },
+      {
+        "name": "geo-0300.json",
+        "url": "https://astrogeology.usgs.gov/pygeoapi/collections/mars/sim3292_global_geologic_map/units/items?f=json&limit=100&offset=300",
+        "sha256": "fb5cf64c2ad4e6010cc1531535dc07090ee0e3ef92b23f326ddcc26fdf9ebde9"
+      },
+      {
+        "name": "geo-0400.json",
+        "url": "https://astrogeology.usgs.gov/pygeoapi/collections/mars/sim3292_global_geologic_map/units/items?f=json&limit=100&offset=400",
+        "sha256": "e1f30a56b717d17179bf6a8a49e6150244d27b8524e14d21138979faf2ead9ba"
+      },
+      {
+        "name": "geo-0500.json",
+        "url": "https://astrogeology.usgs.gov/pygeoapi/collections/mars/sim3292_global_geologic_map/units/items?f=json&limit=100&offset=500",
+        "sha256": "6ec5b8b662b9a611f85f5e5951b68843da0222ae5def7f1d5c9b87ae5ba60e41"
+      },
+      {
+        "name": "geo-0600.json",
+        "url": "https://astrogeology.usgs.gov/pygeoapi/collections/mars/sim3292_global_geologic_map/units/items?f=json&limit=100&offset=600",
+        "sha256": "728bb3127368985df685b317ef1615ce4f41f05dc4a8580f6d2d3368990c5741"
+      },
+      {
+        "name": "geo-0700.json",
+        "url": "https://astrogeology.usgs.gov/pygeoapi/collections/mars/sim3292_global_geologic_map/units/items?f=json&limit=100&offset=700",
+        "sha256": "cf517c235493ef98e693a3f449fe71f3e657d76226b08d4a47404e7457f9c253"
+      },
+      {
+        "name": "geo-0800.json",
+        "url": "https://astrogeology.usgs.gov/pygeoapi/collections/mars/sim3292_global_geologic_map/units/items?f=json&limit=100&offset=800",
+        "sha256": "337d44f320808bfff0f3306d32f47cf3256503534a21026913afc99acf27d1b7"
+      },
+      {
+        "name": "geo-0900.json",
+        "url": "https://astrogeology.usgs.gov/pygeoapi/collections/mars/sim3292_global_geologic_map/units/items?f=json&limit=100&offset=900",
+        "sha256": "253dd0f26c1c4c705dc0861c82cea4de908fc240701b52b3fae668875f310bec"
+      },
+      {
+        "name": "geo-1000.json",
+        "url": "https://astrogeology.usgs.gov/pygeoapi/collections/mars/sim3292_global_geologic_map/units/items?f=json&limit=100&offset=1000",
+        "sha256": "1492799d532d03702d1d9286d69c740e064857be8c351ef7d249e7ba82fabb7d"
+      },
+      {
+        "name": "geo-1100.json",
+        "url": "https://astrogeology.usgs.gov/pygeoapi/collections/mars/sim3292_global_geologic_map/units/items?f=json&limit=100&offset=1100",
+        "sha256": "c46f3a03767ff23a36de91370babf81d54523e1fbe3feb5918065024062608c9"
+      },
+      {
+        "name": "geo-1200.json",
+        "url": "https://astrogeology.usgs.gov/pygeoapi/collections/mars/sim3292_global_geologic_map/units/items?f=json&limit=100&offset=1200",
+        "sha256": "6fe27a34523aa50d98948d23f3180abbf5d1f0b3fd57703a99958ee718485108"
+      },
+      {
+        "name": "geo-1300.json",
+        "url": "https://astrogeology.usgs.gov/pygeoapi/collections/mars/sim3292_global_geologic_map/units/items?f=json&limit=100&offset=1300",
+        "sha256": "9fd45f8557bda599b2ce64ff3f6d6f42616e065d21cdea3b14101b4e0c5c18c0"
+      },
+      {
+        "name": "geo.sld",
+        "url": "https://asc-docs.s3.us-west-2.amazonaws.com/pygeoapi/sld/Global_Geology.sld",
+        "sha256": "bb7b47b2fcce4114a0ce40e356422ee7dee5ef4f6b97d642a952574f0f28a5f6"
+      }
+    ]
+  },
+  "minerals": {
+    "data": {
+      "url": "/processed/science-v1/mineral-observations.json",
+      "sha256": "1a41900f0f6471b9573dbead083007a069d364f5f9cd378df7373d6f77ea31e6",
+      "bytes": 69155
+    },
+    "crismCount": 135,
+    "chlorideCount": 642,
+    "crismBoundsEast360": [
+      172.485,
+      -38.761,
+      211.746,
+      -22.709
+    ],
+    "sources": [
+      {
+        "name": "mineral-crism.csv",
+        "url": "https://data.caltech.edu/records/yhd9q-q8g95/files/Leask_etal_Table_of_TerraSirenum_targeted_crism_mineral_detections.csv",
+        "sha256": "67edc747185202c64cee32d8f8dbf614df5237316c2a4e0ccfe3c6ae7aed9ce0"
+      },
+      {
+        "name": "mineral-chloride.csv",
+        "url": "https://data.caltech.edu/records/kasms-vp209/files/Leask_and_Ehlmann_2021_2010_osterloo_chl_pts_w_tanaka_2014_age.csv",
+        "sha256": "7bf25baa9d98f91f5e8481ea5cd50ea0b090ccdabccbc0e567da2eb9d9ecf8a2"
+      }
+    ]
+  },
+  "thermal": {
+    "image": {
+      "url": "/processed/science-v1/thermal-inertia.png",
+      "sha256": "56cefba9d44fc3b874e601232e892091c6f641388fada2c6efc679fabd0b24f4",
+      "bytes": 1043781
+    },
+    "data": {
+      "url": "/processed/science-v1/thermal-inertia.bin.gz",
+      "sha256": "cb76a0286770c3eee8c058556e78d4a72bed3a52a9e5873834ae8ab49ee53565",
+      "bytes": 783661
+    },
+    "width": 1440,
+    "height": 720,
+    "bounds": [
+      -180,
+      -90,
+      180,
+      90
+    ],
+    "registration": "Planetocentric Mars, east-positive longitude, pixel edges at ±180° and ±90°; north row first",
+    "coverage": 0.530313,
+    "nodata": 0,
+    "encoding": "uint16",
+    "palette": [
+      "#301744",
+      "#55408c",
+      "#127e9c",
+      "#59bd88",
+      "#f9dc7d"
+    ],
+    "displayRange": [
+      5,
+      1800
+    ],
+    "sampleRange": [
+      14,
+      4797
+    ],
+    "nativeCoverage": 0.924328,
+    "sources": [
+      {
+        "name": "tes-ti.lbl",
+        "url": "https://pds-geosciences.wustl.edu/mgs/mgs-m-tes-5-timap-v1/mgst_9001/data/global_ti_night_2007.lbl",
+        "sha256": "c1c897d9bd5399292166f99d84a29a73e42432cedfb9dd9a81a1441b3004b72b"
+      },
+      {
+        "name": "tes-ti.img",
+        "url": "https://pds-geosciences.wustl.edu/mgs/mgs-m-tes-5-timap-v1/mgst_9001/data/global_ti_night_2007.img",
+        "sha256": "faee32838da40045ee7ebd21bed156cc649620312c01165b556d77a2128258f4"
+      },
+      {
+        "name": "tes-mask.lbl",
+        "url": "https://pds-geosciences.wustl.edu/mgs/mgs-m-tes-5-timap-v1/mgst_9001/data/global_ti_msk_night_2007.lbl",
+        "sha256": "164838970c1405b2dc6cf367a74c60c0de96d18f05f5e924db6c00f77038ee8a"
+      },
+      {
+        "name": "tes-mask.img",
+        "url": "https://pds-geosciences.wustl.edu/mgs/mgs-m-tes-5-timap-v1/mgst_9001/data/global_ti_msk_night_2007.img",
+        "sha256": "fca7ec6fab8b3e81226e1d14dbb3a22509ad111bda4e03bf2b64f050bd550d0b"
+      }
+    ]
+  }
+}

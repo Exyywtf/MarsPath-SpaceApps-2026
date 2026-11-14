@@ -56,6 +56,7 @@ import regions from "@/data/regions.json";
 import { scientificLayers, layerValue, type LayerId } from "@/lib/layers";
 import type { OverlayState } from "@/lib/scientificOverlay";
 import { useLayerData } from "@/lib/useLayerData";
+import { mineralStyles } from "@/lib/explorationScience";
 import LayerManager, { LayerLegend } from "./LayerManager";
 import AtlasHelp from "./AtlasHelp";
 import ScrollArea from "./ScrollArea";
@@ -142,10 +143,12 @@ export default function Atlas() {
     [layerOpacity, setLayerOpacity] = useState(0.75),
     [overlay, setOverlay] = useState<OverlayState>({ active: null, phase: "idle", message: "Choose a field to inspect" }),
     [layerRetry, setLayerRetry] = useState(0),
-    [inspectPoint, setInspectPoint] = useState<LonLat | null>(null);
+    [inspectionAnchor, setInspectionAnchor] = useState<{ point: LonLat; observationIds?: string[] } | null>(null);
+  const inspectPoint = inspectionAnchor?.point ?? null;
+  const inspect = useCallback((point: LonLat, observationIds?: string[]) => setInspectionAnchor({ point, observationIds }), []);
   const requestedLayer = scientificLayers.find((l) => l.id === layerId) ?? null;
   const layer = scientificLayers.find((l) => l.id === overlay.active) ?? null,
-    inspection = useLayerData(layer, inspectPoint);
+    inspection = useLayerData(layer, inspectPoint, inspectionAnchor?.observationIds);
   const engine = useRouteEngine(draft, settings, revision, climatePreferences, removalRevision);
   const result = engine.result ?? engine.previous?.result;
   const updating = !!engine.previous;
@@ -542,7 +545,7 @@ export default function Atlas() {
           layerOpacity={layerOpacity}
           layerRetry={layerRetry}
           onLayerState={setOverlay}
-          onInspect={setInspectPoint}
+          onInspect={inspect}
           showScience={panel === "directions" || settings.objectives.length > 0}
           onScienceSelect={(id) => {
             openDirections();
@@ -632,19 +635,20 @@ export default function Atlas() {
         {layer && !placement && (
           <div className="map-legend" key={layer.id} data-hiding={overlay.phase === "hiding"}>
             <strong>{layer.name}</strong>
-            <LayerLegend layer={layer} />
+            <LayerLegend layer={layer} compact />
             <span>{layer.kind}</span>
           </div>
         )}
         {layer && inspectPoint && !placement && overlay.phase !== "hiding" && (
           <aside
             className="inspection-card"
+            data-categorical={layer.presentation === "categorical" || layer.presentation === "observations"}
             aria-label="Scientific value inspection"
           >
             <button
               className="icon-button"
               aria-label="Close value inspection"
-              onClick={() => setInspectPoint(null)}
+              onClick={() => setInspectionAnchor(null)}
             >
               <X size={16} />
             </button>
@@ -654,6 +658,12 @@ export default function Atlas() {
                 ? "Loading…"
                 : layer.presentation === "historical"
                   ? inspection.covered ? "Historical image coverage" : "Outside historical image coverage"
+                  : layer.presentation === "categorical"
+                  ? inspection.unit ? `${inspection.unit.code} · ${inspection.unit.name}` : "No mapped unit"
+                  : layer.presentation === "observations"
+                  ? inspection.observations.length
+                    ? `${inspection.observations.length} published record${inspection.observations.length === 1 ? "" : "s"}`
+                    : "No marker at this point"
                   : inspection.value === null
                   ? "No numerical value"
                   : layerValue(inspection.value, layer.id) + " " + layer.unit}
@@ -663,10 +673,23 @@ export default function Atlas() {
               {layer.id === "topography"
                 ? "Interpolated cell-average elevation"
                 : layer.presentation === "historical" ? "NASA 2002 illustration; no point dose values"
+                  : layer.presentation === "categorical" ? inspection.unit ? `USGS polygon ${inspection.unit.featureId} · 0.125° derivative cell` : layer.sampling
+                    : layer.presentation === "observations" ? "Catalogue locations · overlap varies with zoom"
+                      : layer.id === "thermal-inertia" ? "TES nightside estimate · 0.25° area-weighted cell"
                   : layer.id === "radiation" ? "Modelled effective dose rate · 700 MV research scenario"
                     : layer.id === "radiation-column" ? "Vertical atmospheric column mass, not a dose estimate"
                       : "Interpolated modelled climatology"}
             </small>
+            {!!inspection.observations.length && <ul className="inspection-records">
+              {inspection.observations.map((item) => (
+                <li key={`${item.kind}:${item.id}`}>
+                  <strong>{mineralStyles[item.kind].label}</strong>
+                  <span>{item.kind === "crism" ? item.interpretation : item.label}</span>
+                  <span>{mineralStyles[item.kind].instrument} · {item.id}</span>
+                  <EvidenceLink href={mineralStyles[item.kind].source} target="_blank" rel="noreferrer">Catalogue source</EvidenceLink>
+                </li>
+              ))}
+            </ul>}
             <EvidenceLink href={layer.sourcePage} target="_blank" rel="noreferrer">
               Source & context</EvidenceLink>
           </aside>

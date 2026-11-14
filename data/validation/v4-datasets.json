@@ -1,0 +1,66 @@
+{
+  "geology": {
+    "polygons": 1311,
+    "units": 44,
+    "checkedCenters": 608,
+    "anchors": [
+      {
+        "lon": 77.44,
+        "lat": 18.41,
+        "featureId": 1071,
+        "unit": "HNt"
+      },
+      {
+        "lon": 137.81,
+        "lat": -5.37,
+        "featureId": 754,
+        "unit": "Htu"
+      },
+      {
+        "lon": -134,
+        "lat": 18.4,
+        "featureId": 1046,
+        "unit": "Ave"
+      },
+      {
+        "lon": 70,
+        "lat": -42,
+        "featureId": 399,
+        "unit": "lHb"
+      },
+      {
+        "lon": 179.99,
+        "lat": 45,
+        "featureId": 1303,
+        "unit": "lHl"
+      },
+      {
+        "lon": -179.99,
+        "lat": 45,
+        "featureId": 1192,
+        "unit": "mAl"
+      },
+      {
+        "lon": 20,
+        "lat": 89.99,
+        "featureId": 1311,
+        "unit": "lApc"
+      },
+      {
+        "lon": 30,
+        "lat": -89.99,
+        "featureId": 1,
+        "unit": "lApc"
+      }
+    ]
+  },
+  "thermal": {
+    "supported": 288,
+    "missing": 317
+  },
+  "minerals": {
+    "records": 777,
+    "crism": 135,
+    "chloride": 642
+  }
+}

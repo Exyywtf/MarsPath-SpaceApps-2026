@@ -42,7 +42,7 @@ import {
   type PlannerDraft,
 } from "@/lib/planner";
 import type { LayerDataset } from "@/lib/layers";
-import { createScientificOverlay, type OverlayState } from "@/lib/scientificOverlay";
+import { createObservationLayer, createScientificOverlay, type OverlayState } from "@/lib/scientificOverlay";
 import { scienceTargets } from "@/lib/science";
 import { prepareReveal, revealPrefix } from "@/lib/routePresentation";
 import { installEndpointGestures } from "@/lib/endpointGestures";
@@ -129,7 +129,7 @@ interface Props {
   terrainBounds: number[];
   getInsets: (width: number, height: number) => MapInsets;
   getLayout: () => MapLayout;
-  onInspect?: (point: LonLat) => void;
+  onInspect?: (point: LonLat, observationIds?: string[]) => void;
   layer?: LayerDataset | null;
   layerOpacity?: number;
   layerRetry?: number;
@@ -491,8 +491,10 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     const scalarLayers: [TileLayer<XYZ>, TileLayer<XYZ>] = [
       new TileLayer<XYZ>({ visible: false }), new TileLayer<XYZ>({ visible: false }),
     ];
+    const pointLayers: [ReturnType<typeof createObservationLayer>, ReturnType<typeof createObservationLayer>] =
+      [createObservationLayer(), createObservationLayer()];
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const overlay = createScientificOverlay(scalarLayers, projection, motion, (state) => {
+    const overlay = createScientificOverlay(scalarLayers, pointLayers, projection, motion, (state) => {
       if (host.current) host.current.dataset.overlay = state.active ?? "none";
       handlers.current.onLayerState?.(state);
     });
@@ -519,6 +521,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       layers: [
         ...tiles,
         ...scalarLayers,
+        ...pointLayers,
         boundsLayer,
         markerLayer,
         labelLayer,
@@ -590,7 +593,13 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
         handlers.current.onPlace(target ? asLonLat(target) : point);
       } else if (hit?.location) handlers.current.onSelect(hit.location);
       else if (hit?.science) handlers.current.onScienceSelect?.(hit.science);
-      else if (overlay.getActive()) handlers.current.onInspect?.(point);
+      else if (overlay.getActive()) {
+        const layer = overlay.observationLayer();
+        const observationIds = layer ? [...new Set(instance.getFeaturesAtPixel(pixel, {
+          hitTolerance: 4, layerFilter: (candidate) => candidate === layer,
+        }).map((feature) => feature.get("observationId") as string))] : undefined;
+        handlers.current.onInspect?.(point, observationIds);
+      }
     }
     instance.on("singleclick", (event) => mapTap(event.pixel, event.coordinate));
     const disposeEndpointGestures = installEndpointGestures(instance, (pixel) => {

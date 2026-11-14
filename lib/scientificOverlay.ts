@@ -1,10 +1,16 @@
 import type ImageTile from "ol/ImageTile";
 import type TileLayer from "ol/layer/Tile";
+import VectorLayer from "ol/layer/Vector";
+import VectorSource from "ol/source/Vector";
+import Feature from "ol/Feature";
+import Point from "ol/geom/Point";
+import { Circle, Fill, RegularShape, Stroke, Style } from "ol/style";
 import type Projection from "ol/proj/Projection";
 import XYZ from "ol/source/XYZ";
 import TileGrid from "ol/tilegrid/TileGrid";
 import type { LayerDataset, LayerId } from "./layers";
 import { prepareLayerInspection } from "./useLayerData";
+import { loadMineralObservations, mineralStyles } from "./explorationScience";
 
 export type OverlayState = {
   active: LayerId | null;
@@ -13,44 +19,68 @@ export type OverlayState = {
 };
 
 const fadeMs = 260;
+type PointLayer = VectorLayer<VectorSource<Feature<Point>>>;
+type OverlayAsset = { raster: XYZ } | { points: VectorSource<Feature<Point>> };
+const pointStyle = {
+  crism: new Style({ image: new Circle({ radius: 5, fill: new Fill({ color: mineralStyles.crism.color }),
+    stroke: new Stroke({ color: "#131b1c", width: 1.5 }) }) }),
+  chloride: new Style({ image: new RegularShape({ points: 4, radius: 5, fill: new Fill({ color: mineralStyles.chloride.color }),
+    stroke: new Stroke({ color: "#131b1c", width: 1.5 }) }) }),
+};
+
+export function createObservationLayer(): PointLayer {
+  return new VectorLayer({ visible: false, style: (feature) => pointStyle[feature.get("kind") as keyof typeof pointStyle] });
+}
 
 export function createScientificOverlay(
-  layers: [TileLayer<XYZ>, TileLayer<XYZ>],
+  rasters: [TileLayer<XYZ>, TileLayer<XYZ>],
+  points: [PointLayer, PointLayer],
   projection: Projection,
   reduced: MediaQueryList,
   report: (state: OverlayState) => void,
 ) {
-  const slots = layers.map((layer) => ({ layer, id: null as LayerId | null, weight: 0 }));
-  const assets = new Map<LayerId, Promise<XYZ>>();
+  const slots = rasters.map((raster, i) => ({ raster, points: points[i], id: null as LayerId | null, weight: 0 }));
+  const assets = new Map<LayerId, Promise<OverlayAsset>>();
   let active: LayerId | null = null;
   let opacity = 0.75, request = 0, frame = 0, onTop = -1;
   let queued: (() => void) | undefined;
 
+  async function loadAsset(dataset: LayerDataset): Promise<OverlayAsset> {
+    if (dataset.presentation === "observations") {
+      const [items] = await Promise.all([loadMineralObservations(), prepareLayerInspection(dataset)]);
+      const features = items.map((item) => new Feature({
+        geometry: new Point(item.point), kind: item.kind, observationId: `${item.kind}:${item.id}`,
+      }));
+      return { points: new VectorSource({ features, wrapX: true }) };
+    }
+    const image = new Image();
+    image.src = dataset.imageUrl;
+    await Promise.all([image.decode(), prepareLayerInspection(dataset)]);
+    const [width, height] = dataset.imageSize;
+    if (image.naturalWidth !== width || image.naturalHeight !== height)
+      throw new Error("Overlay dimensions differ from the dataset manifest.");
+    const source = new XYZ({
+      projection,
+      tileGrid: new TileGrid({
+        extent: dataset.bounds,
+        origin: [-180, 90],
+        resolutions: [360 / width],
+        tileSize: [width, height],
+      }),
+      tileUrlFunction: () => dataset.imageUrl,
+      tileLoadFunction: (tile) => (tile as ImageTile).setImage(image),
+      wrapX: true,
+      transition: 0,
+      interpolate: dataset.interpolate,
+    });
+    source.setTileUrlFunction(() => dataset.imageUrl, dataset.imageUrl);
+    return { raster: source };
+  }
+
   function load(dataset: LayerDataset) {
     const existing = assets.get(dataset.id);
     if (existing) return existing;
-    const image = new Image();
-    image.src = dataset.imageUrl;
-    const pending = Promise.all([image.decode(), prepareLayerInspection(dataset)]).then(() => {
-      const [width, height] = dataset.imageSize;
-      if (image.naturalWidth !== width || image.naturalHeight !== height)
-        throw new Error("Overlay dimensions differ from the dataset manifest.");
-      const source = new XYZ({
-        projection,
-        tileGrid: new TileGrid({
-          extent: dataset.bounds,
-          origin: [-180, 90],
-          resolutions: [360 / width],
-          tileSize: [width, height],
-        }),
-        tileUrlFunction: () => dataset.imageUrl,
-        tileLoadFunction: (tile) => (tile as ImageTile).setImage(image),
-        wrapX: true,
-        transition: 0,
-      });
-      source.setTileUrlFunction(() => dataset.imageUrl, dataset.imageUrl);
-      return source;
-    });
+    const pending = loadAsset(dataset);
     assets.set(dataset.id, pending);
     pending.catch(() => assets.delete(dataset.id));
     return pending;
@@ -61,7 +91,10 @@ export function createScientificOverlay(
     // Preserve the effective overlay alpha when stacking opaque rasters during the fade.
     slots.forEach((slot, i) => {
       const alpha = slot.weight * opacity;
-      slot.layer.setOpacity(i === onTop || topAlpha === 1 ? alpha : alpha / (1 - topAlpha));
+      // Marker layers are sparse. Use ordinary fading when a point overlay participates.
+      const adjusted = i === onTop || topAlpha === 1 || slots[onTop]?.points.getVisible() ? alpha : alpha / (1 - topAlpha);
+      slot.raster.setOpacity(adjusted);
+      slot.points.setOpacity(alpha);
     });
   }
 
@@ -80,8 +113,10 @@ export function createScientificOverlay(
         frame = 0;
         for (const [i, slot] of slots.entries()) {
           if (i === index) continue;
-          slot.layer.setVisible(false);
-          slot.layer.setSource(null);
+          for (const layer of [slot.raster, slot.points]) {
+            layer.setVisible(false);
+            layer.setSource(null);
+          }
           slot.id = null;
         }
         const next = queued;
@@ -112,7 +147,8 @@ export function createScientificOverlay(
       phase: "ready",
       message: dataset.presentation === "historical"
         ? "Overlay ready · click to check image coverage"
-        : "Overlay ready · click the map to inspect",
+        : dataset.presentation === "observations" ? "Overlay ready · click a marker to inspect"
+          : "Overlay ready · click the map to inspect",
     });
     const showing = slots.findIndex((slot) => slot.id === dataset.id);
     if (showing !== -1) {
@@ -129,10 +165,15 @@ export function createScientificOverlay(
         const next = slots[index];
         onTop = index;
         next.id = dataset.id;
-        slots[1 - index].layer.setZIndex(-1);
-        next.layer.setZIndex(0);
-        next.layer.setSource(source);
-        next.layer.setVisible(true);
+        for (const layer of [slots[1 - index].raster, slots[1 - index].points]) layer.setZIndex(-1);
+        for (const layer of [next.raster, next.points]) layer.setZIndex(0);
+        if ("raster" in source) {
+          next.raster.setSource(source.raster);
+          next.raster.setVisible(true);
+        } else {
+          next.points.setSource(source.points);
+          next.points.setVisible(true);
+        }
         active = dataset.id;
         ready();
         fadeTo(index);
@@ -150,6 +191,7 @@ export function createScientificOverlay(
     select,
     setOpacity(value: number) { opacity = value; render(); },
     getActive: () => active,
+    observationLayer: () => opacity > 0 && active === "minerals" ? slots.find((slot) => slot.id === active)?.points : undefined,
     dispose() { ++request; cancelAnimationFrame(frame); assets.clear(); queued = undefined; },
   };
 }
