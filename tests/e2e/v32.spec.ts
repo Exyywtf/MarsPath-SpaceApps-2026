@@ -144,7 +144,7 @@ test("HUD docking and Show map preserve the camera across nine sizes and workflo
   }
 });
 
-test("all thirteen cards keep equal header columns and full-width 205 px source images", async ({ page }) => {
+test("all thirteen cards align categories, tags, headers and full-width source images", async ({ page }) => {
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
@@ -161,10 +161,24 @@ test("all thirteen cards keep equal header columns and full-width 205 px source 
       expect(geometry.back).toBe(44);
       expect(geometry.close).toBe(44);
       expect(Math.abs(geometry.center - geometry.panel)).toBeLessThan(1);
+      const category = page.locator('.location-category');
+      await expect(category).toHaveText(location.category);
+      await expect(category).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+      await expect(category).toHaveCSS('font-size', '14px');
+      await expect(category).toHaveCSS('font-weight', '400');
+      await expect(page.locator('.location-body .tag-list > *')).toHaveText(location.tags);
+      const metadata = await category.evaluate((node) => {
+        const row = node.getBoundingClientRect();
+        const coordinates = node.nextElementSibling!.getBoundingClientRect();
+        return { x: row.x - coordinates.x, gap: coordinates.top - row.bottom, y: row.top };
+      });
+      expect(Math.abs(metadata.x)).toBeLessThan(0.5);
+      expect(metadata.gap).toBeCloseTo(8, 0);
       if (location.image) {
         const image = (await page.locator('.location-image').boundingBox())!;
         expect(image.height).toBe(205);
         expect(image.width).toBe(await page.locator('.scroll-viewport[aria-label="Destination details"]').evaluate((node) => node.clientWidth));
+        expect(metadata.y - image.y - image.height).toBeCloseTo(12, 0);
       }
     }
   }

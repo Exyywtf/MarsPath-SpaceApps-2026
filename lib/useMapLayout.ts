@@ -18,6 +18,7 @@ export function useMapLayout(revision: string, onChange: () => void) {
     const header = host.querySelector('.topbar')!, footer = host.querySelector('.map-footer')!;
     const controls = host.querySelector<HTMLElement>('.map-controls')!, imagery = host.querySelector('.imagery-label')!;
     const panel = host.querySelector<HTMLElement>('.workflow-panel[data-open="true"]');
+    const panelHeader = panel?.querySelector('.workflow-header');
     const inspection = host.querySelector<HTMLElement>('.inspection-card');
     const information = inspection ?? host.querySelector<HTMLElement>('.map-legend');
     if (!header || !footer || !controls || !imagery) return layout.current;
@@ -50,6 +51,10 @@ export function useMapLayout(revision: string, onChange: () => void) {
       previous.overlays.length !== overlays.length || previous.overlays.some((r, i) => {
         const n = overlays[i]; return !n || r.x !== n.x || r.y !== n.y || r.width !== n.width || r.height !== n.height;
       });
+    if (panel && panelHeader) {
+      const height = Math.ceil(panelHeader.getBoundingClientRect().height) + 'px';
+      if (panel.style.getPropertyValue('--sheet-header-height') !== height) panel.style.setProperty('--sheet-header-height', height);
+    }
     layout.current = next;
     if (changed) change.current();
     return next;
@@ -60,7 +65,7 @@ export function useMapLayout(revision: string, onChange: () => void) {
     let frame = 0;
     const schedule = () => { if (!frame) frame = requestAnimationFrame(() => { frame = 0; measure(); }); };
     const observer = new ResizeObserver(schedule);
-    for (const node of host.querySelectorAll('.topbar,.map-footer,.workflow-panel,.imagery-label,.map-controls,.map-legend,.inspection-card,.route-feedback')) observer.observe(node);
+    for (const node of host.querySelectorAll('.topbar,.map-footer,.workflow-panel,.workflow-header,.imagery-label,.map-controls,.map-legend,.inspection-card,.route-feedback')) observer.observe(node);
     observer.observe(host);
     window.addEventListener('resize', schedule);
     schedule();

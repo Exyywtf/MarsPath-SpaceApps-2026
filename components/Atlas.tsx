@@ -701,74 +701,76 @@ export default function Atlas() {
           }
           aria-label={title}
         >
-          <div
-            className="sheet-grip"
-            onPointerDown={(e) => {
-              if ((e.target as Element).closest("button")) return;
-              interruptScroll();
-              dragStart.current = e.clientY;
-              e.currentTarget.setPointerCapture(e.pointerId);
-            }}
-            onPointerUp={(e) => {
-              if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
-              e.currentTarget.releasePointerCapture(e.pointerId);
-              const delta = e.clientY - dragStart.current;
-              if (Math.abs(delta) > 30)
-                setSheet(
-                  delta > 0
-                    ? sheet === "full"
-                      ? "half"
-                      : "peek"
-                    : sheet === "peek"
-                      ? "half"
-                      : "full",
-                );
-            }}
-          >
-            <span />
-            <button className="text-button show-map" onClick={() => {
-              interruptScroll(); setSheet("half");
-              requestAnimationFrame(() => document.getElementById("interactive-mars-map")?.focus({ preventScroll: true }));
-            }}>Show map</button>
-            <div className="sheet-buttons">
-              <button className="icon-button" aria-label={sheet === "peek" ? "Expand panel" : "Collapse panel"}
-                onClick={() => { interruptScroll(); setSheet(sheet === "peek" ? "half" : "peek"); }}>
-                {sheet === "peek" ? <ChevronUp size={19} /> : <ChevronDown size={19} />}
-              </button>
-              <button className="icon-button" aria-label={sheet === "full" ? "Reduce panel" : "Expand panel fully"}
-                onClick={() => { interruptScroll(); setSheet(sheet === "full" ? "half" : "full"); }}>
-                <ChevronUp size={19} />
-              </button>
-            </div>
-          </div>
-          <div className="panel-header">
-            {visiblePanel === "location" && (
-              <button
-                className="icon-button"
-                aria-label="Back to destinations"
-                onClick={() => open("places")}
-              >
-                <ArrowLeft size={20} />
-              </button>
-            )}
-            <h1 id="workflow-title" tabIndex={-1}>
-              {title}
-            </h1>
-            {visiblePanel === "directions" && result?.routes.length ? (
-              <button className="text-button result-jump" onClick={viewResults}>View results</button>
-            ) : null}
-
-            <button
-              className="icon-button"
-              aria-label="Close panel"
-              onClick={() => {
-                switchPanel(null);
-                setPlacement(null);
-                document.querySelector<HTMLElement>(".nav-explore")?.focus();
+          <div className="workflow-header">
+            <div
+              className="sheet-grip"
+              onPointerDown={(e) => {
+                if ((e.target as Element).closest("button")) return;
+                interruptScroll();
+                dragStart.current = e.clientY;
+                e.currentTarget.setPointerCapture(e.pointerId);
+              }}
+              onPointerUp={(e) => {
+                if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
+                e.currentTarget.releasePointerCapture(e.pointerId);
+                const delta = e.clientY - dragStart.current;
+                if (Math.abs(delta) > 30)
+                  setSheet(
+                    delta > 0
+                      ? sheet === "full"
+                        ? "half"
+                        : "peek"
+                      : sheet === "peek"
+                        ? "half"
+                        : "full",
+                  );
               }}
             >
-              <X size={20} />
-            </button>
+              <span />
+              <button className="text-button show-map" onClick={() => {
+                interruptScroll(); setSheet("half");
+                requestAnimationFrame(() => document.getElementById("interactive-mars-map")?.focus({ preventScroll: true }));
+              }}>Show map</button>
+              <div className="sheet-buttons">
+                <button className="icon-button" aria-label={sheet === "peek" ? "Expand panel" : "Collapse panel"}
+                  onClick={() => { interruptScroll(); setSheet(sheet === "peek" ? "half" : "peek"); }}>
+                  {sheet === "peek" ? <ChevronUp size={19} /> : <ChevronDown size={19} />}
+                </button>
+                <button className="icon-button" aria-label={sheet === "full" ? "Reduce panel" : "Expand panel fully"}
+                  onClick={() => { interruptScroll(); setSheet(sheet === "full" ? "half" : "full"); }}>
+                  <ChevronUp size={19} />
+                </button>
+              </div>
+            </div>
+            <div className="panel-header">
+              {visiblePanel === "location" && (
+                <button
+                  className="icon-button"
+                  aria-label="Back to destinations"
+                  onClick={() => open("places")}
+                >
+                  <ArrowLeft size={20} />
+                </button>
+              )}
+              <h1 id="workflow-title" tabIndex={-1}>
+                {title}
+              </h1>
+              {visiblePanel === "directions" && result?.routes.length ? (
+                <button className="text-button result-jump" onClick={viewResults}>View results</button>
+              ) : null}
+
+              <button
+                className="icon-button"
+                aria-label="Close panel"
+                onClick={() => {
+                  switchPanel(null);
+                  setPlacement(null);
+                  document.querySelector<HTMLElement>(".nav-explore")?.focus();
+                }}
+              >
+                <X size={20} />
+              </button>
+            </div>
           </div>
           <div className="workflow-stack" inert={sheet === "peek" && placement !== null}>
             <ScrollArea className="workflow-view" viewportClassName="panel-scroll" label="Explore destinations"
@@ -1037,8 +1039,8 @@ export default function Atlas() {
             {visited.has("location") && location && (
               <ScrollArea className="workflow-view" viewportClassName="panel-scroll" viewportRef={locationScroll}
                 label="Destination details" active={panel === "location"} {...workflowState("location")}>
-                <div className="location-visual">
-                  {location.image && (
+                {location.image && (
+                  <div className="location-visual">
                     <Image
                       className="location-image"
                       src={location.image}
@@ -1049,10 +1051,10 @@ export default function Atlas() {
                         "Source illustration for " + location.name
                       }
                     />
-                  )}
-                  <span>{location.category}</span>
-                </div>
+                  </div>
+                )}
                 <div className="location-body">
+                  <p className="location-category">{location.category}</p>
                   <p className="coordinates">
                     {coordinateLabel(asLonLat(location.coordinates))}
                   </p>

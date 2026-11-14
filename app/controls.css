@@ -102,10 +102,13 @@ html::-webkit-scrollbar, .scroll-viewport::-webkit-scrollbar { display: none; }
 .evidence-tail > svg { display: inline; vertical-align: -.16em; margin-inline-start: 5px; }
 .evidence-compact { display: none; }
 .map-footer > .evidence-link::after { content: none; }
+.workflow-header { flex-shrink: 0; }
 .detail-panel .panel-header { display: grid; grid-template-columns: 44px minmax(0,1fr) 44px; padding-inline: 8px; gap: 6px; }
 .detail-panel .panel-header h1 { text-align: center; overflow-wrap: anywhere; font-size: 24px; }
 .detail-panel .panel-header .icon-button { width: 44px; min-width: 44px; }
+.location-visual { margin: calc(-1 * var(--scroll-padding, 24px)) calc(-1 * var(--scroll-padding, 24px)) 12px; }
 .location-body { display: flow-root; }
+.location-category { margin-block: 0 8px; color: var(--accent); font-size: var(--type-body); font-weight: 400; line-height: 1.5; }
 .location-body > .coordinates { margin-block: 0 16px; }
 .location-body .location-summary { margin: 0 0 18px; }
 .location-body .location-directions { margin-block: 0 12px; }
@@ -127,12 +130,6 @@ html::-webkit-scrollbar, .scroll-viewport::-webkit-scrollbar { display: none; }
   .sheet-grip > span { pointer-events: none; }
   .sheet-grip .sheet-buttons { position: absolute; inset: 0 6px 0 auto; display: flex; }
   .sheet-grip .icon-button { min-width: 44px; min-height: 44px; }
-  .workflow-panel.sheet-peek { height: 116px; }
-}
-@media (min-width: 1100px) and (max-width: 1279px) and (orientation: landscape),
-  (min-width: 680px) and (max-height: 525px) and (orientation: landscape) {
-  .sheet-grip { display: none; }
-  .workflow-panel.sheet-peek { height: auto; }
 }
 @media (max-width: 450px) {
   .detail-panel .panel-header h1 { font-size: 22px; }

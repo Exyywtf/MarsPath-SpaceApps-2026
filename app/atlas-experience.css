@@ -311,9 +311,9 @@
     height: min(43dvh, calc(50dvh - var(--panel-bottom) - 16px));
     max-height: calc(100dvh - var(--header-bottom) - var(--panel-bottom) - 24px);
   }
-  .workflow-panel.sheet-peek { height: 82px; }
+  .workflow-panel.sheet-peek { height: calc(var(--sheet-header-height, 92px) + 2px); }
   .workflow-panel.sheet-full { height: calc(100dvh - var(--header-bottom) - var(--panel-bottom) - 24px); }
-  .panel-header { min-height: 62px; padding: 6px 8px 8px 16px; }
+  .panel-header { min-height: 48px; padding: 1px 8px 2px 16px; }
   .panel-scroll { padding: 0; }
 
 }
