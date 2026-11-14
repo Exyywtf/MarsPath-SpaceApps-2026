@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
 import './atlas-experience.css';
+import './documents.css';
 import 'ol/ol.css';
 export const metadata: Metadata={title:'MarsPath — Planetary atlas & mission planning',description:'Explore 13 Mars science destinations, plan terrain routes and compare numerical climate and modelled radiation profiles.'};
 export const viewport: Viewport = { viewportFit: "cover", themeColor: "#090e12" };

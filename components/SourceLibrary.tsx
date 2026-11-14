@@ -1,13 +1,118 @@
-'use client';
-import { useState } from 'react';
-import Link from 'next/link';
-import { ArrowUpRight, Search } from 'lucide-react';
-import { locations } from '@/lib/atlas';
-import sourceRecords from '@/data/sources.json';
-import services from '@/data/services.json';
-export default function SourceLibrary(){
-  const [query,setQuery]=useState('');const [type,setType]=useState('All');
-  const records=sourceRecords;
-  const filtered=records.filter(r=>(type==='All'||r.type===type)&&`${r.title} ${r.institution} ${r.description}`.toLowerCase().includes(query.toLowerCase()));
-  return <main className="document-page"><nav className="document-nav"><Link className="brand" href="/"><span className="brand-orbit"/>MarsPath</Link><Link href="/">Explorer</Link><Link href="/methodology/">Methodology</Link></nav><span className="eyebrow orange">EVIDENCE, NOT INVENTION</span><h1>Scientific Sources<br/>& Methodology</h1><p className="lede">Trace the imagery, coordinates and scientific descriptions back to the people and missions that produced them.</p><div className="notice">Research and educational decision support. MarsPath is not operated or endorsed by NASA and does not certify astronaut safety. Dataset resolution, coverage and uncertainty limit every interpretation.</div><div className="source-search"><label className="search"><Search size={17}/><input value={query} onChange={e=>setQuery(e.target.value)} aria-label="Search sources" placeholder="Search by region, mission or dataset…"/></label><select aria-label="Filter source type" value={type} onChange={e=>setType(e.target.value)}>{['All',...new Set(records.map(r=>r.type))].map(t=><option key={t}>{t}</option>)}</select><span className="subtle">{filtered.length} sources</span></div>{filtered.map(r=><article className="source-record" key={r.id} id={r.id}><span className="source-type">{r.type}<br/><br/>{r.id}</span><div><h3>{r.title}</h3><span className="eyebrow">{r.institution}</span><p>{r.description}</p><a href={r.url} target="_blank" rel="noreferrer">Original source <ArrowUpRight size={13}/></a><details className="dataset-details"><summary>Provenance, units & limitations</summary><dl>{[['Source ID',r.id],['Institution / mission',r.institution],['Accessed','accessed' in r?r.accessed:'Not recorded for supplied original; see audit'],['Format','format' in r?r.format:'Original linked source'],['Coverage','coverage' in r?r.coverage:'Representative region; see coordinate evidence'],['Resolution','resolution' in r?r.resolution:'Not a quantitative measurement product'],['Units','units' in r?r.units:'Scientific description'],['Coordinate system','crs' in r?r.crs:'See linked coordinate evidence'],['Processing',r.processing],['Limitations',r.limitations],['Usage / credits',r.usage],['Checksum','sha256' in r?r.sha256:'See source-specific provenance where available']].map(([label,value])=><span style={{display:'contents'}} key={label}><dt>{label}</dt><dd>{value}</dd></span>)}</dl>{r.id==='trek'&&services.map(service=><p key={service.id}><a href={service.capabilities} target="_blank" rel="noreferrer">{service.title} · {service.matrixIds.length} tile levels <ArrowUpRight size={12}/></a></p>)}</details>{'coordinateSource' in r&&<><p>{r.coordinateNote}</p><a href={r.coordinateSource} target="_blank" rel="noreferrer">Coordinate evidence <ArrowUpRight size={13}/></a><p className="small-note">Access check: {r.sourceStatus}</p></>}</div></article>)}<h2>Image credits and processing</h2><p className="lede">Displayed illustrations are resized derivatives retrieved from their linked source pages. Their original captions govern location, false colour, and interpretation. Full credits and usage terms remain linked with each image.</p>{locations.filter(l=>l.image).map(l=><article className="source-record" key={l.id}><span className="source-type">Image / {l.id}</span><div><h3>{l.name}</h3><p>{l.imageCaption} {l.imageCredit}</p><a href={l.imageSource!} target="_blank" rel="noreferrer">Original image file <ArrowUpRight size={13}/></a><br/><a href={l.sourceUrl} target="_blank" rel="noreferrer">Caption, credits & usage <ArrowUpRight size={13}/></a></div></article>)}<h2>Reference layers and missing data</h2><p className="lede">The original climate screenshots remain visual references. V2 overlays use a separately acquired numerical MCD 6.2 export with reconstructed coordinates, source checksums and explicit model context. Radiation-image registration and global mineral boundaries remain unverified and are excluded from numerical routing. No missing input is filled with invented values.</p><Link className="text-link" href="/methodology/">Read methods, limitations & AI disclosure <ArrowUpRight size={14}/></Link></main>;
+"use client";
+
+import { useState, type ReactNode } from "react";
+import Link from "next/link";
+import { ArrowUpRight, ChevronDown, Search } from "lucide-react";
+import { locations } from "@/lib/atlas";
+import records from "@/data/sources.json";
+import services from "@/data/services.json";
+import DocumentNav from "./DocumentNav";
+
+const sourceTypes = ["All", ...new Set(records.map((record) => record.type))];
+
+function OriginalLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <a className="original-link" href={href} target="_blank" rel="noreferrer">
+      {children}<ArrowUpRight size={15} aria-hidden="true" />
+    </a>
+  );
+}
+
+export default function SourceLibrary() {
+  const [query, setQuery] = useState("");
+  const [type, setType] = useState("All");
+  const term = query.trim().toLowerCase();
+  const filtered = records.filter((record) =>
+    (type === "All" || record.type === type) &&
+    [record.id, record.title, record.institution, record.type, record.description].join(" ").toLowerCase().includes(term)
+  );
+  return (
+    <main className="document-page sources-page page-arrival">
+      <DocumentNav current="sources" />
+      <header className="document-heading">
+        <p className="eyebrow orange">Scientific sources</p>
+        <h1>Evidence behind the exploration</h1>
+        <p className="lede">Trace the imagery, coordinates and scientific descriptions back to the people and missions that produced them.</p>
+      </header>
+      <div className="source-search">
+        <label className="search">
+          <Search size={17} aria-hidden="true" />
+          <input value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Search sources"
+            placeholder="Search by region, mission or dataset…" />
+        </label>
+        <div className="source-select">
+          <select aria-label="Filter source type" value={type} onChange={(event) => setType(event.target.value)}>
+            {sourceTypes.map((option) => <option key={option}>{option}</option>)}
+          </select>
+          <ChevronDown size={16} aria-hidden="true" />
+        </div>
+        <p className="source-count" role="status">{filtered.length} {filtered.length === 1 ? "source" : "sources"}</p>
+      </div>
+      {filtered.length === 0 && <p className="empty">No sources match those filters.</p>}
+      {filtered.map((record) => (
+        <article className="source-record" key={record.id} id={record.id}>
+          <div className="source-type">
+            <strong>{record.type}</strong>
+            <span className="source-id">{record.id}</span>
+          </div>
+          <div className="source-description">
+            <h2>{record.title}</h2>
+            <p className="source-institution">{record.institution}</p>
+            <p>{record.description}</p>
+            <OriginalLink href={record.url}>Original source</OriginalLink>
+            <details className="dataset-details">
+              <summary>Provenance, units &amp; limitations</summary>
+              <dl>
+                {[
+                  ["Source ID", record.id],
+                  ["Institution / mission", record.institution],
+                  ["Accessed", "accessed" in record ? record.accessed : "Not recorded for supplied original"],
+                  ["Format", "format" in record ? record.format : "Original linked source"],
+                  ["Coverage", "coverage" in record ? record.coverage : "Representative region; see coordinate evidence"],
+                  ["Resolution", "resolution" in record ? record.resolution : "Not a quantitative measurement product"],
+                  ["Units", "units" in record ? record.units : "Scientific description"],
+                  ["Coordinate system", "crs" in record ? record.crs : "See linked coordinate evidence"],
+                  ["Processing", record.processing],
+                  ["Limitations", record.limitations],
+                  ["Usage / credits", record.usage],
+                  ["Checksum", "sha256" in record ? record.sha256 : "See source-specific provenance where available"],
+                ].map(([label, value]) => (
+                  <div className="provenance-row" key={label}><dt>{label}</dt><dd>{value}</dd></div>
+                ))}
+              </dl>
+              {record.id === "trek" && services.map((service) => (
+                <p key={service.id}>
+                  <OriginalLink href={service.capabilities}>{service.title} · {service.matrixIds.length} tile levels</OriginalLink>
+                </p>
+              ))}
+            </details>
+            {record.coordinateSource && <>
+              <p>{record.coordinateNote}</p>
+              <OriginalLink href={record.coordinateSource}>Coordinate evidence</OriginalLink>
+              <p className="small-note">Access check: {record.sourceStatus}</p>
+            </>}
+          </div>
+        </article>
+      ))}
+      <h2>Image credits and processing</h2>
+      <p className="lede">Displayed illustrations are resized derivatives from the linked sources. The original captions describe their locations, false colour and interpretation.</p>
+      {locations.filter((location) => location.image).map((location) => (
+        <article className="source-record" key={location.id}>
+          <div className="source-type"><strong>Image</strong><span className="source-id">{location.id}</span></div>
+          <div className="source-description">
+            <h3>{location.name}</h3>
+            <p>{location.imageCaption} {location.imageCredit}</p>
+            <div className="source-image-links">
+              {location.imageSource && <OriginalLink href={location.imageSource}>Original image file</OriginalLink>}
+              <OriginalLink href={location.sourceUrl}>Caption, credits &amp; usage</OriginalLink>
+            </div>
+          </div>
+        </article>
+      ))}
+      <h2>Reference layers and missing data</h2>
+      <p className="lede">The atmospheric overlays use a numerical MCD 6.2 export with reconstructed coordinates and source checksums. The NASA historical radiation layer shows registered illustration colours and image coverage. Its original model grid is unknown. Missing measurements remain unavailable.</p>
+      <div className="notice">MarsPath supports research and education. Dataset resolution, coverage and uncertainty limit each interpretation. NASA provides source imagery and has not endorsed MarsPath.</div>
+      <Link className="text-link" href="/methodology/">Read methods, limitations &amp; AI disclosure <ArrowUpRight size={14} aria-hidden="true" /></Link>
+    </main>
+  );
 }

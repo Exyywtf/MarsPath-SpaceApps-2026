@@ -24,6 +24,10 @@ function load(layer: Extract<LayerDataset, { presentation: "numerical" }>): Prom
   pending.catch(() => samplers.delete(id));
   return pending;
 }
+
+export function prepareLayerInspection(layer: LayerDataset) {
+  return layer.presentation === "numerical" ? load(layer) : Promise.resolve();
+}
 export function useLayerData(layer: LayerDataset | null, point: LonLat | null) {
   const [state, setState] = useState<{
     id: string;

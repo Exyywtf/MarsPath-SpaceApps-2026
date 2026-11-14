@@ -2,7 +2,7 @@
 import http from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { resolve, sep, extname } from 'node:path';
-const root=resolve('out');
+const root=resolve(process.env.MARSPATH_STATIC_ROOT || 'out');
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.svg':'image/svg+xml','.woff2':'font/woff2','.f32':'application/octet-stream','.u8':'application/octet-stream','.i16':'application/octet-stream'};
 http.createServer(async(req,res)=>{
   try{

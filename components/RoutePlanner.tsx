@@ -436,11 +436,11 @@ export default memo(function RoutePlanner(p: Props) {
             <h2 id="compare-routes">Compare routes</h2>
             <div className="result-actions">
             <button className="text-button" onClick={p.onEdit}>Edit route</button>
-            <button className="icon-button" aria-label="Export route & provenance" title="Export route & provenance" disabled={p.updating} onClick={exportRoute}>
-              <Download size={18} />
-            </button>
             <button className="text-button" disabled={p.updating} onClick={p.onFit}>
               Fit on map
+            </button>
+            <button className="icon-button" aria-label="Export route & provenance" title="Export route & provenance" disabled={p.updating} onClick={exportRoute}>
+              <Download size={18} />
             </button>
             </div>
           </div>

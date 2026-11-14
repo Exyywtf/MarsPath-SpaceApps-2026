@@ -25,6 +25,7 @@ import {
   HelpCircle,
   Layers,
   LoaderCircle,
+  Microscope,
   Minus,
   Mountain,
   Plus,
@@ -48,8 +49,11 @@ import type { MapHandle, MapInsets, MapRoute } from "./MarsMap";
 import RoutePlanner, { terrainMetadata } from "./RoutePlanner";
 import regions from "@/data/regions.json";
 import { scientificLayers, layerValue, type LayerId } from "@/lib/layers";
+import type { OverlayState } from "@/lib/scientificOverlay";
 import { useLayerData } from "@/lib/useLayerData";
 import LayerManager, { LayerLegend } from "./LayerManager";
+import AtlasHelp from "./AtlasHelp";
+import type { DialogHandle } from "./AtlasDialog";
 const MarsMap = dynamic(() => import("./MarsMap"), {
   ssr: false,
   loading: () => (
@@ -58,7 +62,8 @@ const MarsMap = dynamic(() => import("./MarsMap"), {
     </div>
   ),
 });
-type Panel = "places" | "layers" | "directions" | "location" | null;
+type Workflow = "places" | "layers" | "directions" | "location";
+type Panel = Workflow | null;
 const noMapRoutes: MapRoute[] = [];
 const CoordinateReadout = memo(
   forwardRef<{ set: (s: string) => void }>(function CoordinateReadout(_, ref) {
@@ -76,10 +81,24 @@ export default function Atlas() {
     headerRef = useRef<HTMLElement>(null),
     footerRef = useRef<HTMLElement>(null),
     controlsRef = useRef<HTMLDivElement>(null),
+    scrollRef = useRef<HTMLDivElement>(null),
+    scrollPositions = useRef<Partial<Record<Workflow, number>>>({}),
     searchRef = useRef<HTMLInputElement>(null),
-    help = useRef<HTMLDialogElement>(null);
-  const [panel, setPanel] = useState<Panel>("places"),
-    [selected, setSelected] = useState<string | null>(null),
+    help = useRef<DialogHandle>(null),
+    helpButton = useRef<HTMLButtonElement>(null);
+  const [{ panel, lastPanel, visited }, setWorkflow] = useState<{
+    panel: Panel; lastPanel: Workflow; visited: ReadonlySet<Workflow>;
+  }>(() => ({ panel: "places", lastPanel: "places", visited: new Set(["places"]) }));
+  const visiblePanel = panel ?? lastPanel;
+  const switchPanel = useCallback((next: Panel) => {
+    if (panel && scrollRef.current) scrollPositions.current[panel] = scrollRef.current.scrollTop;
+    setWorkflow((current) => current.panel === next ? current : {
+      panel: next,
+      lastPanel: next ?? current.lastPanel,
+      visited: next && !current.visited.has(next) ? new Set([...current.visited, next]) : current.visited,
+    });
+  }, [panel]);
+  const [selected, setSelected] = useState<string | null>(null),
     [sheet, setSheet] = useState<"peek" | "half" | "full">("half");
   const [draft, setDraft] = useState<PlannerDraft>(emptyDraft),
     [settings, setSettings] = useState(defaultSettings),
@@ -100,13 +119,16 @@ export default function Atlas() {
     [scale, setScale] = useState(""),
     [tileState, setTileState] = useState<boolean | null>(null);
   const [shortcuts, setShortcuts] = useState(true),
+    [keyboardHelp, setKeyboardHelp] = useState(false),
     [onboarding, setOnboarding] = useState(false),
     [preferencesReady, setPreferencesReady] = useState(false);
   const [layerId, setLayerId] = useState<LayerId | null>(null),
     [layerOpacity, setLayerOpacity] = useState(0.75),
-    [layerStatus, setLayerStatus] = useState("Choose a field to inspect"),
+    [overlay, setOverlay] = useState<OverlayState>({ active: null, phase: "idle", message: "Choose a field to inspect" }),
+    [layerRetry, setLayerRetry] = useState(0),
     [inspectPoint, setInspectPoint] = useState<LonLat | null>(null);
-  const layer = scientificLayers.find((l) => l.id === layerId) ?? null,
+  const requestedLayer = scientificLayers.find((l) => l.id === layerId) ?? null;
+  const layer = scientificLayers.find((l) => l.id === overlay.active) ?? null,
     inspection = useLayerData(layer, inspectPoint);
   const engine = useRouteEngine(draft, settings, revision, climatePreferences);
   const result = engine.result ?? engine.previous?.result;
@@ -148,7 +170,7 @@ export default function Atlas() {
       const linked = locationFromSearch(window.location.search);
       if (linked) {
         setSelected(linked.id);
-        setPanel("location");
+        setWorkflow((old) => ({ panel: "location", lastPanel: "location", visited: new Set([...old.visited, "location"]) }));
       }
       try {
         setShortcuts(localStorage.getItem("marspath-shortcuts") !== "off");
@@ -167,14 +189,14 @@ export default function Atlas() {
       } catch {}
   }, [shortcuts, preferencesReady]);
   const open = useCallback((next: Panel) => {
-    setPanel(next);
+    switchPanel(next);
     setPlacement(null);
-    setSheet("half");
+    setSheet((current) => current === "peek" ? "half" : current);
     setOnboarding(false);
     try {
       localStorage.setItem("marspath-onboarded", "1");
     } catch {}
-  }, []);
+  }, [switchPanel]);
   const openDirections = useCallback(() => open("directions"), [open]);
   const place = useCallback(
     (point: LonLat) => {
@@ -195,7 +217,7 @@ export default function Atlas() {
     (p: Placement) => {
       if (p && !mapReady) return;
       setPlacement(p);
-      setPanel("directions");
+      switchPanel("directions");
       setSheet(p ? "peek" : "half");
       setOnboarding(false);
       if (p)
@@ -203,7 +225,7 @@ export default function Atlas() {
           .getElementById("interactive-mars-map")
           ?.focus({ preventScroll: true });
     },
-    [mapReady],
+    [mapReady, switchPanel],
   );
   const mapDidInitialize = useCallback(() => {
     setMapReady(true);
@@ -240,17 +262,19 @@ export default function Atlas() {
       setOnboarding(false);
       if (placement) {
         place(asLonLat(l.coordinates));
-        setPanel("directions");
+        switchPanel("directions");
         return;
       }
+      switchPanel("location");
+      scrollPositions.current.location = 0;
+      if (panel === "location" && scrollRef.current) scrollRef.current.scrollTop = 0;
       setSelected(id);
-      setPanel("location");
       setSheet("half");
       const point = asLonLat(l.coordinates);
       const zoom = destinationZoom(id);
       moveCamera((target) => target.focus(point, zoom));
     },
-    [moveCamera, placement, place],
+    [moveCamera, panel, placement, place, switchPanel],
   );
   const setCoordinate = useCallback(
     (label: string) => readout.current?.set(label),
@@ -326,7 +350,7 @@ export default function Atlas() {
           setPlacement(null);
           setSheet("half");
         } else {
-          setPanel(null);
+          switchPanel(null);
           document.querySelector<HTMLElement>(".nav-explore")?.focus();
         }
         return;
@@ -347,7 +371,8 @@ export default function Atlas() {
       else if (k === "b") pick("end");
       else if (k === "?") {
         e.preventDefault();
-        help.current?.showModal();
+        setKeyboardHelp(true);
+        help.current?.open();
       } else if ((k === "+" || k === "-") && target.closest(".map-canvas")) {
         e.preventDefault();
         map.current?.zoomBy(k === "+" ? 1 : -1);
@@ -355,28 +380,35 @@ export default function Atlas() {
     };
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
-  }, [shortcuts, open, openDirections, pick, placement]);
+  }, [shortcuts, open, openDirections, pick, placement, switchPanel]);
   function dismissOnboarding() {
     setOnboarding(false);
     try {
       localStorage.setItem("marspath-onboarded", "1");
     } catch {}
   }
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (panel && !placement && document.activeElement !== document.body)
       document.getElementById("workflow-title")?.focus({ preventScroll: true });
   }, [panel, placement]);
+  const attachPanelScroll = useCallback((node: HTMLDivElement | null) => {
+    scrollRef.current = node;
+    attachScroll(node);
+  }, [attachScroll]);
+  useLayoutEffect(() => {
+    if (panel && scrollRef.current) scrollRef.current.scrollTop = scrollPositions.current[panel] ?? 0;
+  }, [panel]);
   const dragStart = useRef(0);
   const title =
-    panel === "places"
+    visiblePanel === "places"
       ? "Explore Mars"
-      : panel === "layers"
+      : visiblePanel === "layers"
         ? "Map layers"
-        : panel === "directions"
+        : visiblePanel === "directions"
           ? "Directions"
           : (location?.name ?? "Destination");
   return (
-    <main className="atlas">
+    <main className="atlas page-arrival">
       <a className="skip-link" href="#workflow-panel">
         Skip to controls
       </a>
@@ -421,9 +453,18 @@ export default function Atlas() {
             <BookOpen size={18} />
             <span>Sources</span>
           </Link>
+          <Link href="/methodology/" aria-label="Methodology" title="Methodology">
+            <Microscope size={18} aria-hidden="true" />
+            <span>Methodology</span>
+          </Link>
           <button
+            ref={helpButton}
             aria-label="Help and keyboard shortcuts"
-            onClick={() => help.current?.showModal()}
+            title="Help"
+            onClick={(event) => {
+              setKeyboardHelp(event.detail === 0);
+              help.current?.open(event.currentTarget);
+            }}
           >
             <HelpCircle size={19} />
             <span>Help</span>
@@ -454,9 +495,10 @@ export default function Atlas() {
           onRevealState={updateDrawing}
           terrainBounds={terrainMetadata.bounds}
           getInsets={getMapInsets}
-          layer={layer}
+          layer={requestedLayer}
           layerOpacity={layerOpacity}
-          onLayerState={setLayerStatus}
+          layerRetry={layerRetry}
+          onLayerState={setOverlay}
           onInspect={setInspectPoint}
           showScience={panel === "directions" || settings.objectives.length > 0}
           onScienceSelect={(id) => {
@@ -464,12 +506,18 @@ export default function Atlas() {
             openEditors();
             requestAnimationFrame(() => {
               const target = document.getElementById(id);
+              const disclosures: HTMLDetailsElement[] = [];
               let details = target?.closest("details") ?? null;
               while (details) {
+                disclosures.push(details);
+                details.dataset.openForFocus = "true";
                 details.open = true;
                 details = details.parentElement?.closest("details") ?? null;
               }
-              target?.focus();
+              requestAnimationFrame(() => {
+                target?.focus();
+                for (const disclosure of disclosures) delete disclosure.dataset.openForFocus;
+              });
             });
           }}
         />
@@ -552,7 +600,7 @@ export default function Atlas() {
           </div>
         )}
         {layer && !placement && (
-          <div className="map-legend">
+          <div className="map-legend" key={layer.id}>
             <strong>{layer.name}</strong>
             <LayerLegend layer={layer} />
             <span>{layer.kind}</span>
@@ -609,17 +657,18 @@ export default function Atlas() {
           </a>
         </footer>
       </section>
-      {panel && (
         <aside
           id="workflow-panel"
           tabIndex={-1}
           ref={panelRef}
-          data-open="true"
+          data-open={!!panel}
+          inert={!panel}
+          aria-hidden={!panel || undefined}
           className={
             "workflow-panel sheet-" +
             sheet +
-            (panel === "directions" ? " directions-panel" : "") +
-            (panel === "location" ? " detail-panel" : "")
+            (visiblePanel === "directions" ? " directions-panel" : "") +
+            (visiblePanel === "location" ? " detail-panel" : "")
           }
           aria-label={title}
         >
@@ -647,7 +696,7 @@ export default function Atlas() {
             <span />
           </div>
           <div className="panel-header">
-            {panel === "location" && (
+            {visiblePanel === "location" && (
               <button
                 className="icon-button"
                 aria-label="Back to destinations"
@@ -659,7 +708,7 @@ export default function Atlas() {
             <h1 id="workflow-title" tabIndex={-1}>
               {title}
             </h1>
-            {panel === "directions" && result?.routes.length ? (
+            {visiblePanel === "directions" && result?.routes.length ? (
               <button className="text-button result-jump" onClick={viewResults}>View results</button>
             ) : null}
             <div className="sheet-buttons">
@@ -696,7 +745,7 @@ export default function Atlas() {
               className="icon-button"
               aria-label="Close panel"
               onClick={() => {
-                setPanel(null);
+                switchPanel(null);
                 setPlacement(null);
                 document.querySelector<HTMLElement>(".nav-explore")?.focus();
               }}
@@ -704,7 +753,8 @@ export default function Atlas() {
               <X size={20} />
             </button>
           </div>
-          <div className="panel-scroll" ref={attachScroll}
+          <div className="panel-scroll" ref={attachPanelScroll}
+            inert={sheet === "peek" && placement !== null}
             onWheel={interruptScroll}
             onTouchMove={interruptScroll}
             onKeyDown={(e) => {
@@ -715,8 +765,7 @@ export default function Atlas() {
               if (e.target === e.currentTarget) interruptScroll();
             }}
           >
-            {panel === "places" && (
-              <>
+            <div className="workflow-view" hidden={visiblePanel !== "places"}>
                 <label className="search">
                   <Search size={18} />
                   <input
@@ -745,7 +794,8 @@ export default function Atlas() {
                     <p>Explore a destination, inspect a scientific layer, or compare routes between A and B.</p>
                     <button className="text-button" onClick={() => {
                       dismissOnboarding();
-                      help.current?.showModal();
+                      setKeyboardHelp(false);
+                      help.current?.open(helpButton.current);
                     }}>
                       How it works <ArrowUpRight size={15} />
                     </button>
@@ -830,22 +880,20 @@ export default function Atlas() {
                 <p className="small-note panel-footnote">
                   Source-linked research and education. No NASA endorsement.
                 </p>
-              </>
-            )}
-            {panel === "layers" && (
-              <div className="layer-content">
+            </div>
+            {visited.has("layers") && (
+              <div className="layer-content workflow-view" hidden={visiblePanel !== "layers"}>
                 <p className="panel-intro">
                   See the surface through different evidence.
                 </p>
                 <LayerManager
                   active={layerId}
-                  onActive={(id) => {
-                    setLayerId(id);
-                    setLayerStatus(id ? "Loading map overlay…" : "Choose a layer");
-                  }}
+                  displayed={layer}
+                  onActive={setLayerId}
                   opacity={layerOpacity}
                   onOpacity={setLayerOpacity}
-                  status={inspection.error || layerStatus}
+                  status={overlay}
+                  onRetry={() => setLayerRetry((n) => n + 1)}
                 />
                 <h2 className="section-heading">Orbital imagery</h2>
                 <div className="basemap-options">
@@ -914,7 +962,8 @@ export default function Atlas() {
                 </Link>
               </div>
             )}
-            {panel === "directions" && (
+            {visited.has("directions") && (
+              <div className="workflow-view" hidden={visiblePanel !== "directions"}>
               <RoutePlanner
                 draft={draft}
                 mapReady={mapReady}
@@ -957,9 +1006,10 @@ export default function Atlas() {
                   open("places");
                 }}
               />
+              </div>
             )}
-            {panel === "location" && location && (
-              <>
+            {visited.has("location") && location && (
+              <div className="workflow-view" key={location.id} hidden={visiblePanel !== "location"}>
                 <div className="location-visual">
                   {location.image && (
                     <Image
@@ -1060,80 +1110,11 @@ export default function Atlas() {
                     All references & limitations ↗
                   </Link>
                 </div>
-              </>
+              </div>
             )}
           </div>
         </aside>
-      )}
-      <dialog ref={help} className="help-dialog" aria-labelledby="help-title">
-        <div className="panel-header">
-          <h2 id="help-title">Your guide to MarsPath</h2>
-          <button
-            className="icon-button"
-            aria-label="Close help"
-            onClick={() => help.current?.close()}
-          >
-            <X size={21} />
-          </button>
-        </div>
-        <div className="help-body">
-          <p>
-            Explore thirteen scientific destinations, inspect source-linked
-            layers, and plan with the terrain available.
-          </p>
-          <ol>
-            <li>
-              <strong>Explore:</strong> search a place or select its map marker.
-            </li>
-            <li>
-              <strong>Layers:</strong> choose imagery and scientific context.
-            </li>
-            <li>
-              <strong>Directions:</strong> set A and B, compare candidates and
-              inspect their limits.
-            </li>
-          </ol>
-          <h3>Keyboard shortcuts</h3>
-          <dl className="shortcut-list">
-            {[
-              ["/", "Search places"],
-              ["L", "Map layers"],
-              ["R", "Directions"],
-              ["A / B", "Place start / destination"],
-              ["Enter", "Inspect at map centre; place point when selecting"],
-              ["Arrow keys", "Pan the focused map"],
-              ["+ / −", "Zoom the focused map"],
-              ["Escape", "Cancel placement or close panel"],
-              ["?", "Open this guide"],
-            ].map(([k, v]) => (
-              <div key={k}>
-                <dt>
-                  <kbd>{k}</kbd>
-                </dt>
-                <dd>{v}</dd>
-              </div>
-            ))}
-          </dl>
-          <label className="layer-toggle">
-            <span>
-              Enable character shortcuts
-              <small>Ignored while typing in a field.</small>
-            </span>
-            <input
-              type="checkbox"
-              checked={shortcuts}
-              onChange={(e) => setShortcuts(e.target.checked)}
-            />
-          </label>
-          <p className="small-note">
-            Planetocentric latitude, east-positive longitude. Research and
-            education; modelled routes do not guarantee safety.
-          </p>
-          <Link className="text-link" href="/methodology/">
-            Read the methods ↗
-          </Link>
-        </div>
-      </dialog>
+      <AtlasHelp ref={help} keyboard={keyboardHelp} shortcuts={shortcuts} onShortcuts={setShortcuts} />
     </main>
   );
 }

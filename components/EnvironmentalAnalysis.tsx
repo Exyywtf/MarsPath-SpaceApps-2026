@@ -204,7 +204,8 @@ export const RouteProfile = memo(function RouteProfile({
           {(Object.keys(factorInfo) as FactorId[]).map((id) => <option key={id} value={id}>{labels[id]}</option>)}
         </select>
       </label>
-      {plot ? <>
+      <div className="profile-frame">
+      {plot ? <div className="profile-plot" key={track}>
         <div className="profile-units">{labels[track]} · {unit}</div>
         <svg viewBox="0 0 600 180" role="img" aria-label={labels[track]+" profile along route"}
           onPointerMove={(e) => {
@@ -238,7 +239,8 @@ export const RouteProfile = memo(function RouteProfile({
             value={index ?? 0} onChange={(e) => select(+e.target.value)} onBlur={() => select(null)}
             aria-valuetext={current ? labels[track].toLowerCase() + " · " + display : undefined} />
         </label>
-      </> : <p className="small-note">{analysis && track !== "elevation" ? analysis.factors[track].reason : "Numerical profile unavailable while route sampling is pending."}</p>}
+      </div> : <p key={track} className="small-note profile-unavailable">{analysis && track !== "elevation" ? analysis.factors[track].reason : "Numerical profile unavailable while route sampling is pending."}</p>}
+      </div>
     </div>
   );
 });

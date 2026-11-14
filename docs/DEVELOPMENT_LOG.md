@@ -99,3 +99,10 @@ Inspected the supplied 31 files and live NASA service metadata during planning. 
 
 - Pushed the startup checkpoint `6c88805`. Reused endpoint features, eased the distance-based route reveal, and added a delayed calculation status that shares the Skip reveal control's position.
 - A same-input recalculation retains the comparison position and marks the prior values as updating. Current geometry export resumes on worker completion. Verified cancellation, immediate export, scroll interruption, Edit route focus, resizing, endpoint dragging, geographic fallback and the published Jezero outcrop journey in local Chromium.
+- Deployed `9fb9ba1` as an early prebuilt static export on the existing Vercel project. All 13 targeted public Chromium journeys passed in 33.5 seconds.
+
+## 2026-11-14 — V3.1 map and reference interface
+
+- Visited workflows keep their controls and scroll position. Scientific rasters crossfade between reused layers after the new image and inspection data load. A failed layer keeps the last working layer visible, and an older response cannot replace a newer selection.
+- Added map label fades, a stable profile frame, native disclosure transitions, shared Sources and Methodology navigation, and centred Help and NASA illustration dialogs. Touch Help uses three short sections; keyboard activation exposes the shortcut controls.
+- Tests exercised rapid switching and retry, focus on the published outcrop after opening nested evidence, touch Help at five sizes, document navigation and numerical radiation inspection. Radiation raster checksums, masks and numeric-to-legend checks passed the independent Python verifier.

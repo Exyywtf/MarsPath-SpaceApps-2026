@@ -1,22 +1,12 @@
 import Link from "next/link";
 import validation from "@/data/validation/v2-independent.json";
+import DocumentNav from "@/components/DocumentNav";
 export default function Methodology() {
   return (
-    <main className="document-page">
-      <nav className="document-nav">
-        <Link className="brand" href="/">
-          <span className="brand-orbit" />
-          MarsPath
-        </Link>
-        <Link href="/">Explorer</Link>
-        <Link href="/sources/">Sources</Link>
-      </nav>
-      <span className="eyebrow orange">Methods & limitations</span>
-      <h1>
-        Know what the
-        <br />
-        map can tell you.
-      </h1>
+    <main className="document-page methodology-page page-arrival">
+      <DocumentNav current="methodology" />
+      <p className="eyebrow orange">Methods &amp; limitations</p>
+      <h1>MarsPath methodology</h1>
       <p className="lede">
         MarsPath makes calculations traceable to their inputs. A route is a
         model result; neither a fine image nor a precise coordinate establishes

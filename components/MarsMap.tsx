@@ -8,8 +8,7 @@ import TileLayer from "ol/layer/Tile";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import WMTS from "ol/source/WMTS";
-import XYZ from "ol/source/XYZ";
-import TileGrid from "ol/tilegrid/TileGrid";
+import type XYZ from "ol/source/XYZ";
 import WMTSTileGrid from "ol/tilegrid/WMTS";
 import Feature from "ol/Feature";
 import Point from "ol/geom/Point";
@@ -23,7 +22,6 @@ import DragPan from "ol/interaction/DragPan";
 import KeyboardPan from "ol/interaction/KeyboardPan";
 import KeyboardZoom from "ol/interaction/KeyboardZoom";
 import Kinetic from "ol/Kinetic";
-import TileState from "ol/TileState";
 import { locations, asLonLat, locationFromSearch, destinationZoom } from "@/lib/atlas";
 import services from "@/data/services.json";
 import {
@@ -40,6 +38,7 @@ import {
   type PlannerDraft,
 } from "@/lib/planner";
 import type { LayerDataset } from "@/lib/layers";
+import { createScientificOverlay, type OverlayState } from "@/lib/scientificOverlay";
 import { scienceTargets } from "@/lib/science";
 import { prepareReveal, revealPrefix } from "@/lib/routePresentation";
 
@@ -65,17 +64,15 @@ function endpointStyle(kind: MarkerKind, label: string) {
 function measureFrame(instance: Map, getInsets: Props["getInsets"]) {
   const [width, height] = instance.getSize() ?? [0, 0];
   if (!width || !height) return null;
-  const [top, right, bottom, left] = getInsets(width, height);
+  const [topEdge, rightEdge, bottomEdge, leftEdge] = getInsets(width, height);
   // Keep an actionable map area when a sheet or browser toolbar fills the viewport.
-  const padding: MapInsets = [
-    Math.min(top, height * 0.37),
-    Math.min(right, width * 0.3),
-    Math.min(bottom, height - Math.min(top, height * 0.37) - Math.min(100, height * 0.3)),
-    Math.min(left, width - Math.min(right, width * 0.3) - Math.min(120, width * 0.38)),
-  ];
+  const top = Math.min(topEdge, height * 0.37), right = Math.min(rightEdge, width * 0.3);
+  const bottom = Math.min(bottomEdge, height - top - Math.min(100, height * 0.3));
+  const left = Math.min(leftEdge, width - right - Math.min(120, width * 0.38));
+  const padding: MapInsets = [top, right, bottom, left];
   return {
     width, height, padding,
-    offset: [(padding[3] - padding[1]) / 2, (padding[2] - padding[0]) / 2] as LonLat,
+    offset: [(left - right) / 2, (bottom - top) / 2] as LonLat,
   };
 }
 
@@ -125,7 +122,8 @@ interface Props {
   onInspect?: (point: LonLat) => void;
   layer?: LayerDataset | null;
   layerOpacity?: number;
-  onLayerState?: (status: string) => void;
+  layerRetry?: number;
+  onLayerState?: (state: OverlayState) => void;
   showScience?: boolean;
   onScienceSelect?: (id: string) => void;
 }
@@ -137,8 +135,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
   const frame = useRef<ReturnType<typeof measureFrame>>(null);
   const bases = useRef<TileLayer<WMTS>[]>([]),
     markers = useRef<VectorLayer<VectorSource>[]>([]);
-  const scalar = useRef<TileLayer<XYZ> | null>(null),
-    scalarSources = useRef(new globalThis.Map<string, XYZ>());
+  const scalar = useRef<ReturnType<typeof createScientificOverlay>>(null);
   const scienceLayer = useRef<VectorLayer<VectorSource> | null>(null);
   const routeSource = useRef(new VectorSource()),
     endpointSource = useRef(new VectorSource()),
@@ -196,7 +193,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
         const v = map.current?.getView();
         const targetFrame = actions.current.readFrame();
         if (!v || !targetFrame) return;
-        v?.cancelAnimations();
+        v.cancelAnimations();
         v.fit(v.getProjection().getExtent(), {
           padding: targetFrame.padding,
           duration: duration() || undefined,
@@ -300,6 +297,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       });
       return new TileLayer({
         source,
+        zIndex: -2,
         visible: i === 0 || i >= 2,
         minZoom: i === 2 ? 8 : i === 3 ? 12 : undefined,
         extent: i >= 2 ? service.bounds : undefined,
@@ -349,27 +347,37 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
         geometry: new Point(asLonLat(l.coordinates)), locationId: l.id, name: l.name,
       }));
     const labelStyles = new globalThis.Map<string, Style>();
-    let labelZoom = 1;
+    const labelMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const labelFont = getComputedStyle(host.current).getPropertyValue("--font-sans").trim() || "sans-serif";
+    let detailedLabels = false, labelAlpha = 0, labelFrame = 0;
     const labelLayer = new VectorLayer({
       source: labelSource,
       declutter: true,
+      updateWhileAnimating: true,
+      updateWhileInteracting: true,
       style: (f) => {
         const id = String(f.get("locationId")), active = id === handlers.current.selected;
-        if (!active && labelZoom < 4 && !featuredLabels.has(id)) return;
+        const alpha = active || featuredLabels.has(id) ? 1 : labelAlpha;
+        if (alpha === 0) return;
         const key = id + active;
         if (!labelStyles.has(key))
           labelStyles.set(key, new Style({
             zIndex: active ? 3 : id === "jezero" ? 2 : 1,
             text: new Text({
               text: String(f.get("name")), offsetY: -18,
-              font: "550 13px " + (getComputedStyle(host.current!).getPropertyValue("--font-sans").trim() || "sans-serif"),
-              fill: new Fill({ color: active ? "#ffe2c2" : "#fff5e7" }),
-              backgroundFill: new Fill({ color: "#211c19f2" }),
-              backgroundStroke: new Stroke({ color: active ? "#f9b37b" : "#735947", width: 1 }),
+              font: "580 13px " + labelFont,
+              fill: new Fill(),
+              backgroundFill: new Fill(),
+              backgroundStroke: new Stroke({ width: 1 }),
               padding: [3, 6, 3, 6],
             }),
           }));
-        return labelStyles.get(key);
+        const style = labelStyles.get(key)!;
+        const text = style.getText()!;
+        text.getFill()?.setColor(active ? "#ffe2c2" : [255, 245, 231, alpha]);
+        text.getBackgroundFill()?.setColor([33, 28, 25, alpha * 0.95]);
+        text.getBackgroundStroke()?.setColor(active ? "#f9b37b" : [115, 89, 71, alpha]);
+        return style;
       },
     });
     markers.current = [markerLayer, labelLayer];
@@ -464,8 +472,15 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       style: (f) => targetStyles.get(f.get("scienceId")),
     });
     scienceLayer.current = targets;
-    const scalarLayer = new TileLayer<XYZ>({ visible: false });
-    scalar.current = scalarLayer;
+    const scalarLayers: [TileLayer<XYZ>, TileLayer<XYZ>] = [
+      new TileLayer<XYZ>({ visible: false }), new TileLayer<XYZ>({ visible: false }),
+    ];
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const overlay = createScientificOverlay(scalarLayers, projection, motion, (state) => {
+      if (host.current) host.current.dataset.overlay = state.active ?? "none";
+      handlers.current.onLayerState?.(state);
+    });
+    scalar.current = overlay;
     const navigation = () => {
       const interactions = defaultInteractions({
         altShiftDragRotate: false,
@@ -487,7 +502,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       target: host.current,
       layers: [
         ...tiles,
-        scalarLayer,
+        ...scalarLayers,
         boundsLayer,
         markerLayer,
         labelLayer,
@@ -546,7 +561,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
         handlers.current.onPlace(target ? asLonLat(target) : point);
       } else if (hit?.location) handlers.current.onSelect(hit.location);
       else if (hit?.science) handlers.current.onScienceSelect?.(hit.science);
-      else if (handlers.current.layer) handlers.current.onInspect?.(point);
+      else if (overlay.getActive()) handlers.current.onInspect?.(point);
     });
     let lastPointer = 0;
     instance.on("pointermove", (e) => {
@@ -572,11 +587,11 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       const v = instance.getView(),
         c = v.getCenter()!,
         z = v.getZoom() ?? 0;
-      labelZoom = z;
+      const viewLon = c[0] + (frame.current?.offset[0] ?? 0) * (v.getResolution() ?? 0);
       for (const label of labelSource.getFeatures()) {
         const geometry = label.getGeometry() as Point;
         const [x, y] = geometry.getCoordinates(), origin = normalizeLon(x);
-        const nearest = origin + 360 * Math.round((c[0] - origin) / 360);
+        const nearest = origin + 360 * Math.round((viewLon - origin) / 360);
         if (Math.abs(nearest - x) > 1e-7) geometry.setCoordinates([nearest, y]);
       }
       labelLayer.changed();
@@ -632,6 +647,23 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     });
     syncMetadata.current = syncView;
     instance.on("moveend", syncView);
+    const updateLabels = () => {
+      const zoom = instance.getView().getZoom() ?? 0;
+      const visible = zoom >= (detailedLabels ? 3.75 : 4.15);
+      if (visible === detailedLabels && !labelMotion.matches) return;
+      detailedLabels = visible;
+      cancelAnimationFrame(labelFrame);
+      const from = labelAlpha, started = performance.now(), target = Number(visible);
+      function step(now: number) {
+        const progress = labelMotion.matches ? 1 : Math.min(1, (now - started) / 165);
+        labelAlpha = from + (target - from) * progress;
+        labelLayer.changed();
+        if (progress < 1) labelFrame = requestAnimationFrame(step);
+      }
+      if (labelMotion.matches) step(started);
+      else labelFrame = requestAnimationFrame(step);
+    };
+    instance.getView().on("change:resolution", updateLabels);
     const resize = () => {
       instance.updateSize();
       const next = actions.current.readFrame();
@@ -660,7 +692,6 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     const observer = new ResizeObserver(resize);
     observer.observe(host.current);
     resize();
-    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const stop = () => {
       instance.getView().cancelAnimations();
       if (motion.matches) reveal.current.finish?.();
@@ -673,8 +704,11 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     motion.addEventListener("change", stop);
     return () => {
       cancelAnimationFrame(revealController.frame);
+      cancelAnimationFrame(labelFrame);
       observer.disconnect();
       motion.removeEventListener("change", stop);
+      overlay.dispose();
+      scalar.current = null;
       instance.setTarget(undefined);
       map.current = null;
       frame.current = null;
@@ -899,56 +933,11 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     if (props.placement) host.current?.focus({ preventScroll: true });
   }, [props.placement]);
   useEffect(() => {
-    const layer = props.layer,
-      target = scalar.current;
-    if (!target || !map.current) return;
-    if (!layer) {
-      target.setVisible(false);
-      return;
-    }
-    let source = scalarSources.current.get(layer.id);
-    if (!source) {
-      const [width, height] = layer.imageSize;
-      source = new XYZ({
-        projection: map.current.getView().getProjection(),
-        tileGrid: new TileGrid({
-          extent: layer.bounds,
-          origin: [-180, 90],
-          resolutions: [360 / width],
-          tileSize: [width, height],
-        }),
-        tileUrlFunction: () => layer.imageUrl,
-        wrapX: true,
-        crossOrigin: "anonymous",
-        transition: duration(),
-      });
-      source.on("tileloadstart", () => {
-        if (handlers.current.layer?.id === layer.id)
-          handlers.current.onLayerState?.("Loading map overlay…");
-      });
-      source.on("tileloadend", () => {
-        if (handlers.current.layer?.id === layer.id)
-          handlers.current.onLayerState?.(
-            layer.presentation === "historical"
-              ? "Overlay ready · click to check image coverage"
-              : "Overlay ready · click the map to inspect",
-          );
-      });
-      source.on("tileloaderror", () => {
-        if (handlers.current.layer?.id === layer.id)
-          handlers.current.onLayerState?.(
-            "Overlay image could not load. Toggle the layer to retry.",
-          );
-      });
-      scalarSources.current.set(layer.id, source);
-    }
-    if (target.getSource() !== source) target.setSource(source);
-    target.setVisible(true);
-    if (source.getTile(0, 0, 0, 1, source.getProjection()!).getState() === TileState.LOADED)
-      handlers.current.onLayerState?.(layer.presentation === "historical"
-        ? "Overlay ready · click to check image coverage" : "Overlay ready · click the map to inspect");
-    target.setOpacity(props.layerOpacity ?? 0.7);
-  }, [props.layer, props.layerOpacity]);
+    scalar.current?.select(props.layer ?? null);
+  }, [props.layer, props.layerRetry]);
+  useEffect(() => {
+    scalar.current?.setOpacity(props.layerOpacity ?? 0.75);
+  }, [props.layerOpacity]);
   return (
     <div
       id="interactive-mars-map"
@@ -964,7 +953,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
           !e.ctrlKey &&
           !e.metaKey &&
           !e.altKey &&
-          (props.placement || props.layer)
+          (props.placement || scalar.current?.getActive())
         ) {
           e.preventDefault();
           const view = map.current?.getView();

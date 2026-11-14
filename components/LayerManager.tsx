@@ -1,6 +1,6 @@
 "use client";
-import { useRef } from "react";
-import { Check, Gauge, Mountain, Radiation, Thermometer, Wind, X } from "lucide-react";
+import { useRef, useState } from "react";
+import { Check, Gauge, Mountain, Radiation, Thermometer, Wind } from "lucide-react";
 import {
   scientificLayers,
   isRadiation,
@@ -9,6 +9,8 @@ import {
   type LayerDataset,
 } from "@/lib/layers";
 import { radiationManifest as rad, radiationProduct } from "@/lib/radiation";
+import type { OverlayState } from "@/lib/scientificOverlay";
+import AtlasDialog, { type DialogHandle } from "./AtlasDialog";
 const icons = {
   topography: Mountain,
   temperature: Thermometer,
@@ -49,20 +51,25 @@ export function LayerLegend({ layer }: { layer: LayerDataset }) {
 }
 export default function LayerManager({
   active,
+  displayed,
   onActive,
   opacity,
   onOpacity,
   status,
+  onRetry,
 }: {
   active: LayerId | null;
+  displayed: LayerDataset | null;
   onActive: (id: LayerId | null) => void;
   opacity: number;
   onOpacity: (value: number) => void;
-  status: string;
+  status: OverlayState;
+  onRetry: () => void;
 }) {
-  const layer = scientificLayers.find((l) => l.id === active);
-  const reference = useRef<HTMLDialogElement>(null);
+  const [radiationMode, setRadiationMode] = useState<LayerId>(radiationProduct);
+  const reference = useRef<DialogHandle>(null);
   const radiationActive = isRadiation(active);
+  const actualRadiation = isRadiation(displayed?.id ?? null);
   return (
     <section aria-labelledby="scientific-layer-title">
       <h2 className="section-heading" id="scientific-layer-title">
@@ -83,7 +90,7 @@ export default function LayerManager({
                 "scientific-layer" + (selected ? " chosen" : "")
               }
               aria-pressed={selected}
-              onClick={() => onActive(selected ? null : l.id)}
+              onClick={() => onActive(selected ? null : radiation ? radiationMode : l.id)}
             >
               <Icon size={20} />
               <span>
@@ -107,18 +114,21 @@ export default function LayerManager({
           );
         })}
       </div>
-      {layer && (
+      {(active || displayed) && (
         <div className="layer-information">
           {radiationActive && (
             <label className="radiation-mode">
               Radiation view
-              <select value={layer.id} onChange={(e) => onActive(e.target.value as LayerId)}>
+              <select value={radiationMode} onChange={(e) => {
+                const id = e.target.value as LayerId;
+                setRadiationMode(id);
+                onActive(id);
+              }}>
                 <option value={radiationProduct}>{radiationProduct === "radiation" ? "Modelled cosmic rays" : "Atmospheric shielding proxy"}</option>
                 <option value="radiation-historical">NASA historical map · 2002</option>
               </select>
             </label>
           )}
-          <LayerLegend layer={layer} />
           <label className="slider-label">
             Layer opacity<span>{Math.round(opacity * 100)}%</span>
             <input
@@ -132,15 +142,58 @@ export default function LayerManager({
             />
           </label>
           <p role="status" className="small-note">
-            {status}
+            {status.message}
+            {status.phase === "error" && displayed && " Showing " + displayed.name + "."}
           </p>
+          {status.phase === "error" && <button className="secondary-button" onClick={onRetry}>Retry overlay</button>}
+          {displayed && <LayerDetails key={displayed.id} layer={displayed} radiation={actualRadiation} />}
+          {radiationActive && <>
+            <button className="secondary-button full-width" onClick={(event) => reference.current?.open(event.currentTarget)}>View NASA original</button>
+            <AtlasDialog ref={reference} id="radiation-reference-title" title="Estimated Radiation Dosage on Mars" closeLabel="Close NASA illustration" wide>
+              {/* The reference must preserve the supplied frame and legend byte for byte. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={rad.historical.originalUrl} alt="NASA’s 2002 illustration of two Mars globes, with a 10 to 20 rem per year dose-equivalent scale." width="3000" height="2400" loading="lazy" />
+              <p>{rad.historical.credit} · PIA03480 · March 2002</p>
+              <a className="text-link" href={rad.historical.source} target="_blank" rel="noreferrer">Original caption and credit ↗</a>
+            </AtlasDialog>
+          </>}
+        </div>
+      )}
+      <details className="quality-details">
+        <summary>Radiation observations & minerals</summary>
+        <p>
+          Curiosity measured radiation along its traverse in Gale Crater.
+          Those local observations cannot supply global radiation values.
+          The reprojected historical map uses NASA’s original PIA03480.
+        </p>
+        <a
+          className="text-link"
+          href="https://science.nasa.gov/resource/radiation-measurements-on-mars/"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Curiosity radiation observations ↗
+        </a>
+        <p>Explore destination sources for orbital evidence of minerals.</p>
+        <a className="text-link" href="/sources/#nili">
+          Mineral evidence at Nili Fossae ↗
+        </a>
+      </details>
+    </section>
+  );
+}
+
+function LayerDetails({ layer, radiation }: { layer: LayerDataset; radiation: boolean }) {
+  return (
+    <div className="layer-details">
+          <LayerLegend layer={layer} />
           <p>{layer.context}</p>
           <dl>
             <dt>Sampling</dt>
             <dd>{layer.sampling}</dd>
             <dt>Native resolution</dt>
             <dd>{layer.nativeResolution}</dd>
-            {radiationActive && <>
+            {radiation && <>
               <dt>Map coverage</dt>
               <dd>{(100 * (layer.presentation === "historical" ? rad.historical.coverage :
                 layer.id === "radiation-column" ? rad.proxyCoverage : rad.modelCoverage)).toFixed(1)}% of Mars by area</dd>
@@ -170,42 +223,6 @@ export default function LayerManager({
           >
             Processing, credits & limitations ↗
           </a>
-          {radiationActive && <>
-            <button className="secondary-button full-width" onClick={() => reference.current?.showModal()}>View NASA original</button>
-            <dialog ref={reference} className="reference-dialog" aria-labelledby="radiation-reference-title">
-              <div className="reference-header">
-                <h2 id="radiation-reference-title">Estimated Radiation Dosage on Mars</h2>
-                <form method="dialog"><button className="icon-button" aria-label="Close NASA illustration"><X size={20} /></button></form>
-              </div>
-              {/* The reference must preserve the supplied frame and legend byte for byte. */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={rad.historical.originalUrl} alt="NASA’s 2002 illustration of two Mars globes, with a 10 to 20 rem per year dose-equivalent scale." width="3000" height="2400" loading="lazy" />
-              <p>{rad.historical.credit} · PIA03480 · March 2002</p>
-              <a className="text-link" href={rad.historical.source} target="_blank" rel="noreferrer">Original caption and credit ↗</a>
-            </dialog>
-          </>}
-        </div>
-      )}
-      <details className="quality-details">
-        <summary>Radiation observations & minerals</summary>
-        <p>
-          Curiosity measured radiation along its traverse in Gale Crater.
-          Those local observations cannot supply global radiation values.
-          The reprojected historical map uses NASA’s original PIA03480.
-        </p>
-        <a
-          className="text-link"
-          href="https://science.nasa.gov/resource/radiation-measurements-on-mars/"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Curiosity radiation observations ↗
-        </a>
-        <p>Explore destination sources for orbital evidence of minerals.</p>
-        <a className="text-link" href="/sources/#nili">
-          Mineral evidence at Nili Fossae ↗
-        </a>
-      </details>
-    </section>
+    </div>
   );
 }
