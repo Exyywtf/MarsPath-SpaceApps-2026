@@ -1,0 +1,230 @@
+{
+  "measurementContext": "Playwright on Windows. NASA network requests were suppressed in the local gallery and route trials. Live tile timing was sampled separately on the Vercel site.",
+  "gallery": {
+    "destination": "Olympus Mons",
+    "initialAtlasImageRequests": 0,
+    "trials": {
+      "chromium": [
+        {
+          "viewport": "1920x1080",
+          "assetRequests": 3,
+          "nearSettledMs": 381,
+          "frameIntervalsOver32Ms": 0
+        },
+        {
+          "viewport": "1440x900",
+          "assetRequests": 3,
+          "nearSettledMs": 398,
+          "frameIntervalsOver32Ms": 0
+        },
+        {
+          "viewport": "1024x768",
+          "assetRequests": 3,
+          "nearSettledMs": 388,
+          "frameIntervalsOver32Ms": 0
+        },
+        {
+          "viewport": "834x1194",
+          "assetRequests": 3,
+          "nearSettledMs": 383,
+          "frameIntervalsOver32Ms": 0
+        },
+        {
+          "viewport": "1194x834",
+          "assetRequests": 3,
+          "nearSettledMs": 387,
+          "frameIntervalsOver32Ms": 0
+        },
+        {
+          "viewport": "390x844",
+          "assetRequests": 3,
+          "nearSettledMs": 396,
+          "frameIntervalsOver32Ms": 0
+        },
+        {
+          "viewport": "375x667",
+          "assetRequests": 3,
+          "nearSettledMs": 398,
+          "frameIntervalsOver32Ms": 0
+        },
+        {
+          "viewport": "844x390",
+          "assetRequests": 3,
+          "nearSettledMs": 398,
+          "frameIntervalsOver32Ms": 0
+        },
+        {
+          "viewport": "320x568",
+          "assetRequests": 3,
+          "nearSettledMs": 398,
+          "frameIntervalsOver32Ms": 0
+        }
+      ],
+      "webkit": [
+        {
+          "viewport": "1920x1080",
+          "assetRequests": 3,
+          "nearSettledMs": 380,
+          "frameIntervalsOver32Ms": 0
+        },
+        {
+          "viewport": "1440x900",
+          "assetRequests": 3,
+          "nearSettledMs": 381,
+          "frameIntervalsOver32Ms": 0
+        },
+        {
+          "viewport": "1024x768",
+          "assetRequests": 3,
+          "nearSettledMs": 385,
+          "frameIntervalsOver32Ms": 0
+        },
+        {
+          "viewport": "834x1194",
+          "assetRequests": 3,
+          "nearSettledMs": 390,
+          "frameIntervalsOver32Ms": 0
+        },
+        {
+          "viewport": "1194x834",
+          "assetRequests": 3,
+          "nearSettledMs": 378,
+          "frameIntervalsOver32Ms": 0
+        },
+        {
+          "viewport": "390x844",
+          "assetRequests": 3,
+          "nearSettledMs": 381,
+          "frameIntervalsOver32Ms": 0
+        },
+        {
+          "viewport": "375x667",
+          "assetRequests": 3,
+          "nearSettledMs": 382,
+          "frameIntervalsOver32Ms": 0
+        },
+        {
+          "viewport": "844x390",
+          "assetRequests": 3,
+          "nearSettledMs": 381,
+          "frameIntervalsOver32Ms": 0
+        },
+        {
+          "viewport": "320x568",
+          "assetRequests": 3,
+          "nearSettledMs": 382,
+          "frameIntervalsOver32Ms": 0
+        }
+      ]
+    }
+  },
+  "routes": {
+    "chromium": [
+      {
+        "scenario": "jezero",
+        "initialResultMs": 342,
+        "evidenceReadyMs": 451,
+        "selectedCandidateWorkerMs": 15.1,
+        "tier": "regional"
+      },
+      {
+        "scenario": "seam",
+        "initialResultMs": 390,
+        "evidenceReadyMs": 436,
+        "selectedCandidateWorkerMs": 1.3,
+        "tier": "coarse"
+      },
+      {
+        "scenario": "geographic",
+        "initialResultMs": 320,
+        "evidenceReadyMs": 369,
+        "selectedCandidateWorkerMs": 1.3,
+        "tier": "geographic"
+      },
+      {
+        "scenario": "terra-sirenum",
+        "initialResultMs": 395,
+        "evidenceReadyMs": 431,
+        "selectedCandidateWorkerMs": 1.1,
+        "tier": "coarse"
+      }
+    ],
+    "webkit": [
+      {
+        "scenario": "jezero",
+        "initialResultMs": 433,
+        "evidenceReadyMs": 529,
+        "selectedCandidateWorkerMs": 14,
+        "tier": "regional"
+      },
+      {
+        "scenario": "seam",
+        "initialResultMs": 436,
+        "evidenceReadyMs": 508,
+        "selectedCandidateWorkerMs": 3,
+        "tier": "coarse"
+      },
+      {
+        "scenario": "geographic",
+        "initialResultMs": 311,
+        "evidenceReadyMs": 375,
+        "selectedCandidateWorkerMs": 2,
+        "tier": "geographic"
+      },
+      {
+        "scenario": "terra-sirenum",
+        "initialResultMs": 395,
+        "evidenceReadyMs": 444,
+        "selectedCandidateWorkerMs": 0,
+        "tier": "coarse"
+      }
+    ]
+  },
+  "production": {
+    "applicationCommit": "558a524",
+    "deployment": "dpl_ERwoDSai8XSaQBtywGN8n2PwcefS",
+    "staticFilesMatched": 59,
+    "scienceProducts": {
+      "geology": 432426,
+      "minerals": 69155,
+      "thermal": 1827442
+    },
+    "overlayTrials": [
+      {
+        "engine": "chromium",
+        "id": "geology",
+        "readyMs": 141
+      },
+      {
+        "engine": "chromium",
+        "id": "minerals",
+        "readyMs": 98
+      },
+      {
+        "engine": "chromium",
+        "id": "thermal-inertia",
+        "readyMs": 192
+      },
+      {
+        "engine": "webkit",
+        "id": "geology",
+        "readyMs": 134
+      },
+      {
+        "engine": "webkit",
+        "id": "minerals",
+        "readyMs": 118
+      },
+      {
+        "engine": "webkit",
+        "id": "thermal-inertia",
+        "readyMs": 167
+      }
+    ],
+    "liveNASA": {
+      "successfulRequests": 69,
+      "medianMs": 792,
+      "p95Ms": 1834
+    }
+  }
+}
