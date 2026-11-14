@@ -21,7 +21,7 @@
     "accessed": "2026-11-14T11:01:53.894847+00:00",
     "sourceStatus": "retrieved; concise claim linked to original source",
     "imageCaption": "Source-page illustration; consult the original caption for image coverage and colour processing.",
-    "imageCredit": "Full image credit and usage terms: original source linked below."
+    "imageCredit": "Credit: NASA/JPL-Caltech. Original caption and usage terms apply."
   },
   {
     "id": "oxia",
@@ -45,7 +45,7 @@
     "accessed": "2026-11-14T11:01:53.894847+00:00",
     "sourceStatus": "retrieved; concise claim linked to original source",
     "imageCaption": "Source-page illustration; consult the original caption for image coverage and colour processing.",
-    "imageCredit": "Full image credit and usage terms: original source linked below."
+    "imageCredit": "Credit: NASA/JPL-Caltech/Univ. of Arizona. Original caption and usage terms apply."
   },
   {
     "id": "valles",
@@ -69,7 +69,7 @@
     "accessed": "2026-11-14T11:01:53.894847+00:00",
     "sourceStatus": "retrieved; concise claim linked to original source",
     "imageCaption": "Source-page illustration; consult the original caption for image coverage and colour processing.",
-    "imageCredit": "Full image credit and usage terms: original source linked below."
+    "imageCredit": "Credit: NASA/JPL-Caltech/Univ. of Arizona. Original caption and usage terms apply."
   },
   {
     "id": "meridiani",
@@ -93,7 +93,7 @@
     "accessed": "2026-11-14T11:01:53.894847+00:00",
     "sourceStatus": "retrieved; concise claim linked to original source",
     "imageCaption": "Source-page illustration; consult the original caption for image coverage and colour processing.",
-    "imageCredit": "Full image credit and usage terms: original source linked below."
+    "imageCredit": "Credit: NASA/JPL-Caltech/Arizona State University. Original caption and usage terms apply."
   },
   {
     "id": "jezero",
@@ -118,7 +118,7 @@
     "accessed": "2026-11-14T11:01:53.894847+00:00",
     "sourceStatus": "retrieved; concise claim linked to original source",
     "imageCaption": "Source-page illustration; consult the original caption for image coverage and colour processing.",
-    "imageCredit": "Full image credit and usage terms: original source linked below."
+    "imageCredit": "NASA source-page illustration. Individual image credit was not extracted; consult the original page for full production credits and terms."
   },
   {
     "id": "gale",
@@ -141,8 +141,8 @@
     "imageSource": "https://assets.science.nasa.gov/content/dam/science/psd/mars/resources/detail_files/2/20328_Guide_To_Gale_Crater.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg",
     "accessed": "2026-11-14T11:01:53.894847+00:00",
     "sourceStatus": "retrieved; concise claim linked to original source",
-    "imageCaption": "Source-page illustration; consult the original caption for image coverage and colour processing.",
-    "imageCredit": "Full image credit and usage terms: original source linked below."
+    "imageCaption": "NASA guide illustration of Gale Crater, including its title overlay.",
+    "imageCredit": "NASA source-page illustration. Individual image credit was not extracted; consult the original page for full production credits and terms."
   },
   {
     "id": "nili",
@@ -165,8 +165,8 @@
     "imageSource": "https://assets.science.nasa.gov/content/dam/science/psd/photojournal/pia/pia11/pia11728/PIA11728.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg",
     "accessed": "2026-11-14T11:01:53.894847+00:00",
     "sourceStatus": "retrieved; concise claim linked to original source",
-    "imageCaption": "Source-page illustration; consult the original caption for image coverage and colour processing.",
-    "imageCredit": "Full image credit and usage terms: original source linked below."
+    "imageCaption": "CRISM mineral-spectra figure; colours represent spectral information, not natural surface colour.",
+    "imageCredit": "Credit: NASA/JPL/JHUAPL/Brown University. Original caption and usage terms apply."
   },
   {
     "id": "eberswalde",
@@ -189,8 +189,8 @@
     "imageSource": "https://assets.science.nasa.gov/content/dam/science/psd/mars/resources/detail_files/2/2/22687_Eberswalde_CTX_Anaglyph-br.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg",
     "accessed": "2026-11-14T11:01:53.894847+00:00",
     "sourceStatus": "retrieved; concise claim linked to original source",
-    "imageCaption": "Source-page illustration; consult the original caption for image coverage and colour processing.",
-    "imageCredit": "Full image credit and usage terms: original source linked below."
+    "imageCaption": "CTX stereo anaglyph of the Eberswalde delta; this is a processed stereo visualization.",
+    "imageCredit": "Credit: NASA/JPL-Caltech/MSSS. Original caption and usage terms apply."
   },
   {
     "id": "holden",
@@ -213,8 +213,8 @@
     "imageSource": "https://assets.science.nasa.gov/content/dam/science/psd/mars/resources/detail_files/7/73_20081119_MSL_final4_MOLAmap-full2.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg",
     "accessed": "2026-11-14T11:01:53.894847+00:00",
     "sourceStatus": "retrieved; concise claim linked to original source",
-    "imageCaption": "Source-page illustration; consult the original caption for image coverage and colour processing.",
-    "imageCredit": "Full image credit and usage terms: original source linked below."
+    "imageCaption": "Context map comparing four former MSL landing-site candidates, including Holden; not a close-up of Holden.",
+    "imageCredit": "Credit: NASA/JPL-Caltech. Original caption and usage terms apply."
   },
   {
     "id": "gusev",
@@ -303,7 +303,7 @@
     "imageSource": "https://assets.science.nasa.gov/content/dam/science/psd/mars/resources/detail_files/6/620_Chlorides_MRO_fig4_na-web.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg",
     "accessed": "2026-11-14T11:01:53.894847+00:00",
     "sourceStatus": "retrieved; concise claim linked to original source",
-    "imageCaption": "Source-page illustration; consult the original caption for image coverage and colour processing.",
-    "imageCredit": "Full image credit and usage terms: original source linked below."
+    "imageCaption": "Processed orbital views of a Terra Sirenum chloride-deposit site; colours are not true colour.",
+    "imageCredit": "Credit: NASA/JPL-Caltech/University of Arizona/Arizona State University/University of Hawaii. Original caption and usage terms apply."
   }
 ]

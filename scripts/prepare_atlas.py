@@ -87,7 +87,8 @@ def prepare(item):
             record['image'] = '/images/' + ident + '.jpg'
             record['imageSource'] = original
             record['imageCaption'] = 'Source-page illustration; consult the original caption for image coverage and colour processing.'
-            record['imageCredit'] = 'Full image credit and usage terms: original source linked below.'
+            credit = re.search(r'Credits?\s*:?\s*(?:</?[^>]+>\s*)+(NASA[^<]+)', text, re.I)
+            record['imageCredit'] = ('Credit: ' + html.unescape(' '.join(credit.group(1).split())) + '. Original caption and usage terms apply.') if credit else 'NASA source-page illustration. Individual image credit was not extracted; consult the original page for full production credits and terms.'
     except Exception as exc:
         record['sourceStatus'] = 'Source access incomplete: ' + str(exc)
     print(ident, record['sourceStatus'], 'image', bool(record['image']), flush=True)
