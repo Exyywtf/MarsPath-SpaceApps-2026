@@ -9,6 +9,7 @@ import { scrollbarGeometry } from "@/lib/scrollbar";
 type Axis = "vertical" | "horizontal";
 type Geometry = ReturnType<typeof scrollbarGeometry>;
 const axes: Axis[] = ["vertical", "horizontal"];
+const idleDelay = 1000;
 
 function useIndicators({
   viewport, content, root = false, active = true,
@@ -34,41 +35,54 @@ function useIndicators({
     if (!node || !container || !active) return;
     const current = controller.current;
     current.node = node;
-    let frame = 0, timer = 0, overTrack = false;
+    let frame = 0, timer = 0, visible = false, deadline = 0, scrolled = false;
     let right = 0, bottom = 0;
-    function visible(show: boolean) {
+    const offsets: Partial<Record<Axis, number>> = {};
+    function setVisible(show: boolean) {
+      if (show === visible) return;
+      visible = show;
       for (const axis of axes) {
         const track = tracks.current[axis];
         if (track) track.dataset.visible = String(show);
       }
     }
-    function hideLater() {
-      window.clearTimeout(timer);
-      timer = window.setTimeout(() => {
-        if (!current.drag && !overTrack) visible(false);
-      }, 900);
+    function checkIdle() {
+      timer = 0;
+      if (current.drag) return;
+      const remaining = deadline - performance.now();
+      if (remaining > 0) timer = window.setTimeout(checkIdle, remaining);
+      else setVisible(false);
     }
     function reveal() {
-      visible(true);
-      hideLater();
+      if (!axes.some((axis) => current.geometries[axis]?.overflow)) return;
+      deadline = performance.now() + idleDelay;
+      setVisible(true);
+      if (!timer) timer = window.setTimeout(checkIdle, idleDelay);
     }
     function measure() {
       frame = 0;
       const rect = root ? { right: innerWidth, bottom: innerHeight } : node!.getBoundingClientRect();
       right = rect.right;
       bottom = rect.bottom;
+      let moved = false;
       for (const axis of axes) {
         const track = tracks.current[axis], thumb = thumbs.current[axis];
         if (!track || !thumb) continue;
         const vertical = axis === "vertical";
+        const offset = vertical ? node!.scrollTop : node!.scrollLeft;
         const geometry = scrollbarGeometry(
           root ? (vertical ? innerHeight : innerWidth) : (vertical ? node!.clientHeight : node!.clientWidth),
           vertical ? node!.scrollHeight : node!.scrollWidth,
-          vertical ? node!.scrollTop : node!.scrollLeft,
+          offset,
           vertical ? track.clientHeight : track.clientWidth,
         );
+        const previous = current.geometries[axis];
+        // Content can clamp or anchor the scroll offset during a resize.
+        moved ||= geometry.overflow && previous?.maximum === geometry.maximum && offsets[axis] !== offset;
+        offsets[axis] = offset;
         current.geometries[axis] = geometry;
-        track.dataset.overflow = String(geometry.overflow);
+        if (geometry.overflow !== previous?.overflow) track.dataset.overflow = String(geometry.overflow);
+        if (!geometry.overflow) continue;
         if (vertical) {
           thumb.style.height = geometry.size + "px";
           thumb.style.transform = "translateY(" + geometry.position + "px)";
@@ -77,11 +91,14 @@ function useIndicators({
           thumb.style.transform = "translateX(" + geometry.position + "px)";
         }
       }
+      if (scrolled && moved) reveal();
+      scrolled = false;
+      if (!axes.some((axis) => current.geometries[axis]?.overflow)) setVisible(false);
     }
     function schedule() {
       if (!frame) frame = requestAnimationFrame(measure);
     }
-    const scroll = () => { schedule(); reveal(); };
+    const scroll = () => { scrolled = true; schedule(); };
     const key = (event: KeyboardEvent) => {
       if (["Tab", " ", "PageUp", "PageDown", "Home", "End", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key))
         reveal();
@@ -92,20 +109,15 @@ function useIndicators({
         reveal();
     };
     const enter = () => { schedule(); reveal(); };
-    const trackEnter = () => { overTrack = true; reveal(); };
-    const trackLeave = () => { overTrack = false; hideLater(); };
     const scrollTarget = root ? window : node;
     const eventTarget = root ? document.documentElement : container;
     scrollTarget.addEventListener("scroll", scroll, { passive: true });
+    scrollTarget.addEventListener("wheel", reveal, { passive: true });
     eventTarget.addEventListener("keydown", key);
     eventTarget.addEventListener("pointerenter", enter);
     eventTarget.addEventListener("pointermove", move, { passive: true });
     const trackElements = axes.map((axis) => tracks.current[axis]).filter((element) => !!element);
-    for (const track of trackElements) {
-      track.addEventListener("pointerenter", trackEnter);
-      track.addEventListener("pointerleave", trackLeave);
-    }
-    const observer = new ResizeObserver(() => { schedule(); reveal(); });
+    const observer = new ResizeObserver(schedule);
     observer.observe(node);
     const inner = root ? document.body : content?.current;
     if (inner) observer.observe(inner);
@@ -119,15 +131,19 @@ function useIndicators({
       observer.disconnect();
       window.removeEventListener("resize", schedule);
       scrollTarget.removeEventListener("scroll", scroll);
+      scrollTarget.removeEventListener("wheel", reveal);
       eventTarget.removeEventListener("keydown", key);
       eventTarget.removeEventListener("pointerenter", enter);
       eventTarget.removeEventListener("pointermove", move);
-      for (const track of trackElements) {
-        track.removeEventListener("pointerenter", trackEnter);
-        track.removeEventListener("pointerleave", trackLeave);
-      }
-      visible(false);
+      const drag = current.drag;
       current.drag = undefined;
+      for (const track of trackElements) {
+        if (drag && track.hasPointerCapture(drag.pointer)) track.releasePointerCapture(drag.pointer);
+      }
+      setVisible(false);
+      current.geometries = {};
+      current.reveal = () => {};
+      current.measure = () => {};
       current.node = undefined;
     };
   }, [viewport, content, root, active]);
@@ -135,7 +151,7 @@ function useIndicators({
   function start(axis: Axis, event: PointerEvent<HTMLDivElement>) {
     const current = controller.current;
     const geometry = current.geometries[axis], node = current.node;
-    if (!geometry?.overflow || !node) return;
+    if (!event.isPrimary || event.button !== 0 || !geometry?.overflow || !node) return;
     event.preventDefault();
     current.reveal();
     const coordinate = axis === "vertical" ? event.clientY : event.clientX;
@@ -166,9 +182,11 @@ function useIndicators({
     current.measure();
   }
   function stop(event: PointerEvent<HTMLDivElement>) {
+    const current = controller.current;
+    if (current.drag?.pointer !== event.pointerId) return;
+    current.drag = undefined;
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
-    controller.current.drag = undefined;
-    controller.current.reveal();
+    current.reveal();
   }
   return function indicator(axis: Axis) {
     return (
@@ -176,8 +194,7 @@ function useIndicators({
         aria-hidden="true"
         ref={(node) => { tracks.current[axis] = node; }}
         onPointerDown={(event) => start(axis, event)}
-        onPointerMove={drag} onPointerUp={stop} onPointerCancel={stop}
-        onLostPointerCapture={() => { controller.current.drag = undefined; }}>
+        onPointerMove={drag} onPointerUp={stop} onPointerCancel={stop} onLostPointerCapture={stop}>
         <div className="scroll-thumb" ref={(node) => { thumbs.current[axis] = node; }} />
       </div>
     );

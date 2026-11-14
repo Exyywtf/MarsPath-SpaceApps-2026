@@ -180,8 +180,9 @@ test("touch Help centres on phones and tablets, and Sources and Methodology stay
 
     await page.getByRole("link", { name: "Scientific sources" }).tap();
     await expect(page.getByRole("heading", { name: "Evidence behind the exploration" })).toBeVisible();
-    const filter = page.getByLabel("Filter source type");
-    await filter.selectOption("Historical illustration");
+    const filter = page.getByRole("button", { name: /Filter source type/ });
+    await filter.tap();
+    await page.getByRole("option", { name: "Historical illustration", exact: true }).tap();
     await expect(page.locator(".source-count")).toHaveText("1 source");
     for (const control of [filter, page.locator(".source-count"), page.locator(".source-search .search")]) {
       const box = (await control.boundingBox())!;

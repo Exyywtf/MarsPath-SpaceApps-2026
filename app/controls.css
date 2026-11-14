@@ -18,12 +18,15 @@ html::-webkit-scrollbar, .scroll-viewport::-webkit-scrollbar { display: none; }
   pointer-events: none;
   user-select: none;
   touch-action: none;
-  transition: opacity 180ms ease;
+  transition: opacity 300ms ease-in-out;
 }
 .scroll-track[data-axis="vertical"] { inset: 2px 0 2px auto; width: 24px; }
 .scroll-track[data-axis="horizontal"] { inset: auto 2px 0 2px; height: 24px; }
-.scroll-track[data-overflow="false"] { display: none; }
-.scroll-track[data-visible="true"] { opacity: 1; pointer-events: auto; }
+.scroll-track[data-visible="true"][data-overflow="true"] {
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity var(--motion-content) var(--ease-out);
+}
 .scroll-thumb { position: absolute; }
 .scroll-track[data-axis="vertical"] .scroll-thumb { width: 24px; top: 0; min-height: 44px; }
 .scroll-track[data-axis="horizontal"] .scroll-thumb { height: 24px; left: 0; min-width: 44px; }
@@ -82,7 +85,6 @@ html::-webkit-scrollbar, .scroll-viewport::-webkit-scrollbar { display: none; }
   background: #172222; color: var(--ink); border: 1px solid #73877a; border-radius: 7px; font-size: 16px;
 }
 .styled-select > svg { position: absolute; width: 16px; height: 16px; right: 13px; top: 50%; translate: 0 -50%; pointer-events: none; color: var(--muted); }
-.source-select .styled-select > select { padding-inline: 38px; text-align: center; text-align-last: center; }
 .evidence-link { display: inline-block; min-height: 44px; padding-block: 10px; color: var(--accent); font-size: 14px; line-height: 1.6; }
 .evidence-tail { display: inline-block; white-space: nowrap; }
 .evidence-tail > svg { display: inline; vertical-align: -.16em; margin-inline-start: 5px; }
@@ -132,6 +134,6 @@ html::-webkit-scrollbar, .scroll-viewport::-webkit-scrollbar { display: none; }
   .scroll-thumb::after { background: CanvasText; box-shadow: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .scroll-track { transition: none; }
+  .scroll-track, .scroll-track[data-visible="true"][data-overflow="true"] { transition: none; }
   .accordion-trigger > svg { transition: none; }
 }

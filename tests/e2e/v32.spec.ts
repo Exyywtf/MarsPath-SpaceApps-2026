@@ -209,10 +209,12 @@ test("native document scrolling, table overflow, links and icon metadata remain 
   await page.keyboard.press('ArrowRight');
   await expect.poll(() => table.evaluate((node) => node.scrollLeft)).toBeGreaterThan(0);
   await page.goto('/sources/');
-  await page.getByLabel('Filter source type').selectOption('Historical illustration');
+  await page.getByRole('button', { name: /Filter source type/ }).click();
+  await page.getByRole('option', { name: 'Historical illustration', exact: true }).click();
+  await expect(page.locator('.source-select-options')).toHaveCount(0);
   await page.locator('#pia03480 .accordion-trigger').click();
   const result = await new AxeBuilder({ page }).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze();
-  expect(result.violations.map((v) => v.id)).toEqual([]);
+  expect(result.violations.map((v) => ({ id: v.id, nodes: v.nodes.map((node) => node.target) }))).toEqual([]);
   expect(await page.locator('.source-select svg').count()).toBe(1);
   await expect(page.locator('.evidence-tail').first()).toHaveCSS('white-space', 'nowrap');
   const icons = await page.locator('link[rel="icon"]').evaluateAll((nodes) => nodes.map((node) => (node as HTMLLinkElement).href));

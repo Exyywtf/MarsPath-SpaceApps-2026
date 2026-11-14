@@ -13,6 +13,7 @@
     "build:worker": "esbuild lib/routing.worker.ts --bundle --format=iife --platform=browser --target=es2020 --outfile=public/route-worker.js"
   },
   "dependencies": {
+    "@headlessui/react": "2.2.10",
     "lucide-react": "1.73.0",
     "next": "16.4.6",
     "ol": "10.11.0",

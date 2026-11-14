@@ -1,10 +1,10 @@
 "use client";
-import StyledSelect from "./StyledSelect";
+import { Field, Label, Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
 import Accordion from "./Accordion";
 
 import { useState, type ReactNode } from "react";
 import EvidenceLink from "./EvidenceLink";
-import { Search } from "lucide-react";
+import { ChevronDown, Search } from "lucide-react";
 import { locations } from "@/lib/atlas";
 import records from "@/data/sources.json";
 import services from "@/data/services.json";
@@ -42,11 +42,21 @@ export default function SourceLibrary() {
           <input value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Search sources"
             placeholder="Search by region, mission or dataset…" />
         </label>
-        <div className="source-select">
-          <StyledSelect aria-label="Filter source type" value={type} onChange={(event) => setType(event.target.value)}>
-            {sourceTypes.map((option) => <option key={option}>{option}</option>)}
-          </StyledSelect>
-        </div>
+        <Field className="source-select">
+          <Label className="sr-only">Filter source type</Label>
+          <Listbox value={type} onChange={setType}>
+            <ListboxButton className="source-select-trigger">
+              <span>{type}</span><ChevronDown size={16} aria-hidden="true" />
+            </ListboxButton>
+            <ListboxOptions anchor={{ to: "bottom", gap: 5, padding: 8 }} modal={false} transition className="source-select-options">
+              {sourceTypes.map((option) => (
+                <ListboxOption key={option} value={option} className="source-select-option">
+                  <span>{option}</span>
+                </ListboxOption>
+              ))}
+            </ListboxOptions>
+          </Listbox>
+        </Field>
         <p className="source-count" role="status">{filtered.length} {filtered.length === 1 ? "source" : "sources"}</p>
       </div>
       {filtered.length === 0 && <p className="empty">No sources match those filters.</p>}
