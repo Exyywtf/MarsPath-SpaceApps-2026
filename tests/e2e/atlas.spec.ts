@@ -1,0 +1,35 @@
+import { test, expect } from '@playwright/test';
+test('global atlas loads NASA tiles, all thirteen places and working search',async({page})=>{
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+  const tile=page.waitForResponse(r=>r.url().includes('trek.nasa.gov/tiles/Mars/')&&r.status()===200);
+  await page.goto('/');await tile;
+  const map=page.getByRole('region',{name:'Interactive Mars map'});
+  const box=(await map.boundingBox())!;
+  await expect.poll(async()=>Number(await map.getAttribute('data-resolution'))*box.width).toBeGreaterThanOrEqual(359.99);
+  await expect(page.locator('.destination')).toHaveCount(13);
+  await page.getByLabel('Search scientific destinations').fill('Oxia');
+  await expect(page.locator('.destination')).toHaveCount(1);
+  await page.locator('.destination').click();
+  await expect(page.locator('.detail-panel h2')).toHaveText('Oxia Planum');
+  await expect(page.locator('.detail-panel .coordinates')).toContainText('17.280°N');
+  await page.getByLabel('Close location details').click();
+  await page.getByLabel('Map layers').click();
+  await page.getByRole('button',{name:'MOLA relief'}).click();
+  await page.getByLabel('Topographic relief',{exact:false}).check();
+  await page.getByLabel('Topography opacity').fill('0.25');
+  await page.getByLabel('Zoom in',{exact:true}).click();
+  await page.getByLabel('Zoom out',{exact:true}).click();
+  await expect(page.getByRole('region',{name:'Interactive Mars map'})).toBeVisible();
+  expect(errors).toEqual([]);
+  await page.screenshot({path:'tmp/atlas-desktop.png'});
+});
+test('source filtering and mobile destination selection work',async({page})=>{
+  await page.goto('/sources/');
+  await page.getByLabel('Search sources').fill('CTX');
+  await expect(page.locator('.source-record').first()).toBeVisible();
+  await page.setViewportSize({width:390,height:844});await page.goto('/');
+  await page.getByLabel('Search scientific destinations').fill('Jezero');
+  await page.locator('.destination').click();
+  await expect(page.locator('.detail-panel h2')).toHaveText('Jezero Crater');
+  await page.screenshot({path:'tmp/atlas-mobile.png'});
+});

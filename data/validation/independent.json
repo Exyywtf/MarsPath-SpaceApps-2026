@@ -1,0 +1,91 @@
+{
+  "terrainSha256": "16a1aa66c3f48c1bca252795827db7b417876217aff0f5e1aff18027fab2327b",
+  "method": "Independent Python Dijkstra (no heuristic), exact spherical edge distances, original GeoTIFF spot checks",
+  "results": [
+    {
+      "case": 1,
+      "route": "shortest",
+      "distanceM": 2804.0103694254694,
+      "ascentM": 20.461669921875,
+      "descentM": 103.79541015625,
+      "maxSlopeDegrees": 19.33070945739746,
+      "typescriptCost": 2804.0103694254694,
+      "independentPythonCost": 2804.0103690221085,
+      "absoluteCostDifference": 4.0336090023629367e-07,
+      "expandedDijkstra": 56249,
+      "seconds": 0.453,
+      "sourceSamplesMatch": true
+    },
+    {
+      "case": 1,
+      "route": "terrain",
+      "distanceM": 2876.3450650147292,
+      "ascentM": 19.308837890625,
+      "descentM": 102.642578125,
+      "maxSlopeDegrees": 13.356027603149414,
+      "typescriptCost": 3436.1715034728823,
+      "independentPythonCost": 3436.1715030148753,
+      "absoluteCostDifference": 4.580069798976183e-07,
+      "expandedDijkstra": 56340,
+      "seconds": 0.344,
+      "sourceSamplesMatch": true
+    },
+    {
+      "case": 2,
+      "route": "shortest",
+      "distanceM": 3339.3482671078596,
+      "ascentM": 30.21435546875,
+      "descentM": 99.75927734375,
+      "maxSlopeDegrees": 8.503798484802246,
+      "typescriptCost": 3339.3482671078596,
+      "independentPythonCost": 3339.3482667938865,
+      "absoluteCostDifference": 3.1397303246194497e-07,
+      "expandedDijkstra": 81892,
+      "seconds": 0.515,
+      "sourceSamplesMatch": true
+    },
+    {
+      "case": 2,
+      "route": "terrain",
+      "distanceM": 3339.4204716402514,
+      "ascentM": 22.703369140625,
+      "descentM": 92.248291015625,
+      "maxSlopeDegrees": 6.007596492767334,
+      "typescriptCost": 3654.4105957248553,
+      "independentPythonCost": 3654.410595384567,
+      "absoluteCostDifference": 3.4028835216304287e-07,
+      "expandedDijkstra": 80712,
+      "seconds": 0.5,
+      "sourceSamplesMatch": true
+    },
+    {
+      "case": 3,
+      "route": "shortest",
+      "distanceM": 3099.9678148479848,
+      "ascentM": 26.7392578125,
+      "descentM": 92.276611328125,
+      "maxSlopeDegrees": 14.604028701782227,
+      "typescriptCost": 3099.9678148479848,
+      "independentPythonCost": 3099.967814422852,
+      "absoluteCostDifference": 4.251328391546849e-07,
+      "expandedDijkstra": 70897,
+      "seconds": 0.454,
+      "sourceSamplesMatch": true
+    },
+    {
+      "case": 3,
+      "route": "terrain",
+      "distanceM": 3100.009602444726,
+      "ascentM": 23.241943359375,
+      "descentM": 88.779296875,
+      "maxSlopeDegrees": 5.91099214553833,
+      "typescriptCost": 3376.4438489163367,
+      "independentPythonCost": 3376.4438484521575,
+      "absoluteCostDifference": 4.6417926569120027e-07,
+      "expandedDijkstra": 66061,
+      "seconds": 0.406,
+      "sourceSamplesMatch": true
+    }
+  ],
+  "limitations": "Numerical consistency validation only; no ground-truth astronaut safety or obstacle validation."
+}

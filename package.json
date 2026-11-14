@@ -4,31 +4,33 @@
   "private": true,
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
-    "build": "next build",
+    "build": "npm run build:worker && next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "build:worker": "esbuild lib/routing.worker.ts --bundle --format=iife --platform=browser --target=es2020 --outfile=public/route-worker.js"
   },
   "dependencies": {
+    "lucide-react": "latest",
     "next": "latest",
+    "ol": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "ol": "latest",
-    "lucide-react": "latest",
     "recharts": "latest"
   },
   "devDependencies": {
-    "typescript": "latest",
+    "@playwright/test": "latest",
+    "@tailwindcss/postcss": "latest",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
-    "tailwindcss": "latest",
-    "@tailwindcss/postcss": "latest",
+    "esbuild": "^0.28.2",
     "eslint": "latest",
     "eslint-config-next": "latest",
-    "vitest": "latest",
-    "@playwright/test": "latest"
+    "tailwindcss": "latest",
+    "typescript": "latest",
+    "vitest": "latest"
   }
 }

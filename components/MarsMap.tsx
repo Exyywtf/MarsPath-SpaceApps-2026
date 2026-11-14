@@ -17,14 +17,14 @@ import { Circle, Fill, Stroke, Style, Text } from 'ol/style';
 import { defaults as defaultControls } from 'ol/control';
 import Translate from 'ol/interaction/Translate';
 import { locations, asLonLat } from '@/lib/atlas';
-import { coordinateLabel, MARS_RADIUS, normalizeLon, type LonLat } from '@/lib/mars';
+import { coordinateLabel, MARS_RADIUS, normalizeLon, marsDistance, type LonLat } from '@/lib/mars';
 
 export interface MapHandle { focus: (point: LonLat, zoom?: number) => void; reset: () => void; zoomBy: (delta: number) => void }
 export interface MapRoute { coordinates: LonLat[]; color: string; selected: boolean }
 interface Props {
   selected: string | null; basemap: string; topography: boolean; opacity: number; showLocations: boolean;
   onSelect: (id: string) => void; onCoordinate: (label: string) => void; onImagery: (label: string) => void;
-  onTileState: (ok: boolean) => void; planner?: boolean; endpoints?: LonLat[];
+  onTileState: (ok: boolean) => void; onScale: (scale: string) => void; planner?: boolean; endpoints?: LonLat[];
   onEndpoints?: (points: LonLat[]) => void; routes?: MapRoute[]; terrainBounds?: number[];
 }
 const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
@@ -72,7 +72,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     const boundsLayer=new VectorLayer({source:boundsSource.current,style:new Style({stroke:new Stroke({color:'#88cbb5',width:1.5,lineDash:[7,5]}),fill:new Fill({color:'#88cbb509'})})});
     const routeLayer=new VectorLayer({source:routeSource.current,style:f=>new Style({stroke:new Stroke({color:String(f.get('color')),width:f.get('selected')?4:2.5,lineDash:f.get('selected')?undefined:[5,6]})})});
     const endpointLayer=new VectorLayer({source:endpointSource.current,style:f=>new Style({image:new Circle({radius:9,fill:new Fill({color:f.get('index')===0?'#99d6be':'#f5b076'}),stroke:new Stroke({color:'#10211d',width:3})}),text:new Text({text:f.get('index')===0?'A':'B',font:'bold 10px sans-serif',fill:new Fill({color:'#142019'})})})});
-    const instance=new Map({target:host.current,layers:[...tiles,boundsLayer,markerLayer,routeLayer,endpointLayer],view:new View({projection,center:[0,0],zoom:1,minZoom:0,maxZoom:17,constrainOnlyCenter:true}),controls:defaultControls({zoom:false,rotate:false,attribution:false})});
+    const instance=new Map({target:host.current,layers:[...tiles,boundsLayer,markerLayer,routeLayer,endpointLayer],view:new View({projection,center:[0,0],zoom:1,minZoom:0,maxZoom:17,constrainOnlyCenter:true,showFullExtent:true}),controls:defaultControls({zoom:false,rotate:false,attribution:false})});
     map.current=instance;
     instance.getView().fit([-180,-90,180,90],{padding:[20,20,20,20]});
     const translate=new Translate({layers:[endpointLayer]});
@@ -91,9 +91,19 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     });
     let lastPointer=0;
     instance.on('pointermove',e=>{if(Date.now()-lastPointer>80){lastPointer=Date.now();handlers.current.onCoordinate(coordinateLabel([e.coordinate[0],e.coordinate[1]]));}});
+    instance.on('postrender',()=>{
+      const start=handlers.current.endpoints?.[0];
+      if(start&&host.current)host.current.dataset.startPixel=JSON.stringify(instance.getPixelFromCoordinate(start));
+      const c=instance.getView().getCenter();
+      if(c&&host.current)host.current.dataset.center=JSON.stringify(c);
+      if(host.current)host.current.dataset.resolution=String(instance.getView().getResolution());
+      if(host.current)host.current.dataset.animating=String(instance.getView().getAnimating());
+    });
     instance.on('moveend',()=>{
       const v=instance.getView(), c=v.getCenter()!;
       const z=v.getZoom()??0;
+      const distance=marsDistance([c[0],c[1]],[c[0]+(v.getResolution()??1)*100,c[1]]);
+      handlers.current.onScale(distance>=1000?`${(distance/1000).toFixed(1)} km`:`${distance.toFixed(0)} m`);
       const hirise=z>=12 && c[0]>=77.2229331 && c[0]<=77.583964 && c[1]>=18.3067994 && c[1]<=18.669315;
       const ctx=z>=8 && c[0]>=77.1604655 && c[0]<=77.6991776 && c[1]>=18.2110274 && c[1]<=18.7211945;
       handlers.current.onImagery(hirise?'HiRISE · 0.25 m imagery':ctx?'CTX · 6 m imagery':handlers.current.basemap==='relief'?'MOLA · 463 m relief':'Viking · 232 m mosaic');
@@ -103,6 +113,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
   }, []);
   useEffect(()=>{
     const b=bases.current;if(!b.length)return;
+    const z=map.current?.getView().getZoom()??0;if(z<8)handlers.current.onImagery(props.basemap==='relief'?'MOLA · 463 m relief':'Viking · 232 m mosaic');
     b[0].setVisible(props.basemap==='optical');b[1].setVisible(props.basemap==='relief'||props.topography);
     b[1].setOpacity(props.basemap==='relief'?1:props.opacity);
     b[2].setVisible(props.basemap==='optical');b[3].setVisible(props.basemap==='optical');
@@ -116,6 +127,12 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     endpointSource.current.clear();
     if(props.planner)(props.endpoints??[]).forEach((p,i)=>endpointSource.current.addFeature(new Feature({geometry:new Point(p),index:i})));
   },[props.endpoints,props.planner]);
+  useEffect(()=>{
+    const instance=map.current;
+    if(!instance)return;
+    instance.getView().padding=props.planner&&window.innerWidth<760?[0,0,(instance.getSize()?.[1]??0)*.58,0]:[0,0,0,0];
+    if(props.planner)instance.getView().animate({center:[77.44,18.46],zoom:11,duration:650});
+  },[props.planner]);
   useEffect(()=>{
     boundsSource.current.clear();
     if(props.planner&&props.terrainBounds){const [w,s,e,n]=props.terrainBounds;boundsSource.current.addFeature(new Feature(new Polygon([[[w,s],[e,s],[e,n],[w,n],[w,s]]])));}
