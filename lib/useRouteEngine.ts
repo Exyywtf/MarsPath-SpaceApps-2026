@@ -6,6 +6,7 @@ import type { ComparisonRequest, ComparisonResult, WorkerReply, WorkerRequest } 
 
 type State = {
   geometryKey: string;
+  requestKey: string;
   generation?: number;
   result?: ComparisonResult;
   error?: string;
@@ -23,23 +24,24 @@ export function useRouteEngine(
   const worker = useRef<Worker | null>(null);
   const requestId = useRef(0);
   const { maxSlope, riskWeight, objectives, geographicOnly } = settings;
-  const geometryKey = JSON.stringify([draft, maxSlope, riskWeight, objectives, geographicOnly, revision]);
+  const geometryKey = JSON.stringify([draft, maxSlope, riskWeight, objectives, geographicOnly]);
+  const requestKey = revision + ":" + geometryKey;
   const comparison = useMemo<ComparisonRequest>(() => ({
     key: JSON.stringify([settings.distanceWeight, settings.terrainWeight, settings.scienceWeight, climate]),
     settings,
     climate,
   }), [settings, climate]);
-  const input = useRef({ geometryKey, comparison });
+  const input = useRef({ geometryKey, requestKey, comparison });
   const requestedKey = useRef("");
-  const [state, setState] = useState<State>({ geometryKey: "" });
-  useLayoutEffect(() => { input.current = { geometryKey, comparison }; }, [geometryKey, comparison]);
+  const [state, setState] = useState<State>({ geometryKey: "", requestKey: "" });
+  useLayoutEffect(() => { input.current = { geometryKey, requestKey, comparison }; }, [geometryKey, requestKey, comparison]);
 
   useEffect(() => {
     const w = new Worker("/route-worker.js");
     worker.current = w;
     w.onmessage = ({ data }: MessageEvent<WorkerReply>) => {
-      const { geometryKey, comparison } = input.current;
-      if (data.id !== requestId.current || geometryKey !== requestedKey.current) return;
+      const { geometryKey, requestKey, comparison } = input.current;
+      if (data.id !== requestId.current || requestKey !== requestedKey.current) return;
       if (data.kind !== "route-error" && data.key !== comparison.key) return;
       if (data.kind === "routes") {
         setState((old) => {
@@ -47,7 +49,7 @@ export function useRouteEngine(
             old.result?.routes.length === data.result.routes.length &&
             old.result.routes.every((route, i) => route.id === data.result.routes[i].id);
           return {
-            geometryKey, generation: data.id,
+            geometryKey, requestKey, generation: data.id,
             comparisonKey: data.key,
             result: sameRoutes ? { ...data.result, routes: old.result!.routes } : data.result,
             analysis: sameRoutes ? old.analysis : undefined,
@@ -61,20 +63,21 @@ export function useRouteEngine(
       } else if (data.kind === "analysis-error") {
         setState((old) => old.generation === data.id ? { ...old, analysisError: data.error } : old);
       } else {
-        setState({ geometryKey, error: data.error });
+        setState({ geometryKey, requestKey, error: data.error });
       }
     };
-    w.onerror = () => setState((old) => ({
-      ...old, geometryKey: input.current.geometryKey,
-      ...(old.result ? { analysisError: "The route worker stopped." } :
-        { error: "The route worker failed. Reload the page to restart it." }),
-    }));
+    w.onerror = () => setState((old) => {
+      const { geometryKey, requestKey } = input.current;
+      return old.requestKey === requestKey && old.result
+        ? { ...old, analysisError: "The route worker stopped." }
+        : { geometryKey, requestKey, error: "The route worker failed. Reload the page to restart it." };
+    });
     return () => { w.terminate(); worker.current = null; };
   }, []);
 
   useEffect(() => {
     const id = ++requestId.current;
-    requestedKey.current = geometryKey;
+    requestedKey.current = requestKey;
     worker.current?.postMessage({ id, kind: "cancel" } satisfies WorkerRequest);
     if (!draft.start || !draft.end) return;
     const timer = setTimeout(() => {
@@ -82,7 +85,7 @@ export function useRouteEngine(
       worker.current?.postMessage({ id, kind: "calculate", draft, settings: comparison.settings, comparison } satisfies WorkerRequest);
     }, 150);
     return () => clearTimeout(timer);
-  }, [draft, geometryKey]);
+  }, [draft, requestKey]);
 
   const compareKey = comparison.key;
   useEffect(() => {
@@ -93,8 +96,11 @@ export function useRouteEngine(
     return () => clearTimeout(timer);
   }, [compareKey]);
 
-  const complete = state.geometryKey === geometryKey;
+  const complete = state.requestKey === requestKey;
+  const previous = !complete && state.geometryKey === geometryKey && state.result ? state : undefined;
   return {
+    geometryKey,
+    previous,
     result: complete ? state.result : undefined,
     generation: complete && state.result ? state.generation : undefined,
     error: complete ? state.error : undefined,

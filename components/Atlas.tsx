@@ -24,6 +24,7 @@ import {
   Crosshair,
   HelpCircle,
   Layers,
+  LoaderCircle,
   Minus,
   Mountain,
   Plus,
@@ -108,11 +109,28 @@ export default function Atlas() {
   const layer = scientificLayers.find((l) => l.id === layerId) ?? null,
     inspection = useLayerData(layer, inspectPoint);
   const engine = useRouteEngine(draft, settings, revision, climatePreferences);
-  const result = engine.result;
+  const result = engine.result ?? engine.previous?.result;
+  const updating = !!engine.previous;
+  const generation = engine.generation ?? engine.previous?.generation;
+  const [calculationSlow, setCalculationSlow] = useState(false);
+  const [dismissedError, setDismissedError] = useState<string>();
+  useEffect(() => {
+    const timer = window.setTimeout(() => setCalculationSlow(engine.pending), engine.pending ? 150 : 0);
+    return () => window.clearTimeout(timer);
+  }, [engine.pending]);
+  const routeFeedback = engine.pending && calculationSlow ? "calculating" :
+    !engine.pending && drawing ? "drawing" :
+      engine.error && dismissedError !== engine.error ? "error" : null;
+  const updateDrawing = useCallback((next: boolean) => {
+    if (!next && document.activeElement?.matches(".route-feedback > button"))
+      document.getElementById("interactive-mars-map")?.focus({ preventScroll: true });
+    setDrawing(next);
+  }, []);
   const setProfilePoint = useCallback((point: LonLat | null) => map.current?.showProfilePoint(point), []);
   const expandResults = useCallback(() => setSheet((old) => old === "peek" ? "half" : old), []);
   const [attachScroll, collapsed, interruptScroll, viewResults, editRoute, openEditors] = useResultsReveal({
     pending: engine.pending, generation: engine.generation,
+    draftKey: engine.geometryKey,
     directions: panel === "directions", placement: !!placement, expand: expandResults,
   });
   const location = locations.find((l) => l.id === selected);
@@ -259,17 +277,22 @@ export default function Atlas() {
   const candidates = result?.routes;
   const scores = result?.scores;
   const recommended = scores ? scores.indexOf(Math.min(...scores)) : -1;
-  const manual = active && active.generation === engine.generation && candidates
+  const manual = active && active.generation === generation && candidates
     ? candidates.findIndex((route) => route.id === active.id) : -1;
   const selectedIndex = manual >= 0 ? manual : Math.max(0, recommended);
   const mapRoutes = useMemo<MapRoute[]>(() =>
-    candidates ? candidates.map((route, index) => ({
+    !updating && candidates ? candidates.map((route, index) => ({
       id: route.id,
       coordinates: route.coordinates,
       ...routeAppearance(index, recommended, route.tier === "geographic"),
       selected: index === selectedIndex,
       connectors: route.connectors,
-    })) : noMapRoutes, [candidates, recommended, selectedIndex]);
+    })) : noMapRoutes, [candidates, recommended, selectedIndex, updating]);
+  const endMapFeedback = () => {
+    if (routeFeedback === "drawing") map.current?.finishReveal();
+    if (routeFeedback === "error") setDismissedError(engine.error);
+    document.getElementById("interactive-mars-map")?.focus({ preventScroll: true });
+  };
   useEffect(() => {
     map.current?.showProfilePoint(null);
   }, [engine.generation, selectedIndex, panel]);
@@ -428,7 +451,7 @@ export default function Atlas() {
           routes={mapRoutes}
           routeGeneration={engine.generation}
           recommendedRoute={mapRoutes[recommended]?.id}
-          onRevealState={setDrawing}
+          onRevealState={updateDrawing}
           terrainBounds={terrainMetadata.bounds}
           getInsets={getMapInsets}
           layer={layer}
@@ -450,14 +473,20 @@ export default function Atlas() {
             });
           }}
         />
-        {drawing && (
-          <button className="secondary-button skip-reveal" onClick={() => {
-            map.current?.finishReveal();
-            document.getElementById("interactive-mars-map")?.focus({ preventScroll: true });
-          }}>
-            Skip reveal
-          </button>
-        )}
+        <div className="route-feedback" data-visible={!!routeFeedback}>
+          {routeFeedback === "calculating" && (
+            <span aria-hidden="true"><LoaderCircle size={17} /> Calculating routes…</span>
+          )}
+          {routeFeedback === "drawing" && (
+            <button onClick={endMapFeedback}>Skip reveal</button>
+          )}
+          {routeFeedback === "error" && (
+            <div className="route-feedback-error">
+              <span>{engine.error}</span>
+              <button className="icon-button" aria-label="Dismiss route error" onClick={endMapFeedback}><X size={16} /></button>
+            </div>
+          )}
+        </div>
         <div className="imagery-label">
           <span className="status-dot" />
           {imagery}
@@ -898,26 +927,29 @@ export default function Atlas() {
                 collapsed={collapsed}
                 onEdit={editRoute}
                 pending={engine.pending}
+                updating={updating}
                 error={engine.error}
                 active={selectedIndex}
                 recommended={recommended}
-                analysis={engine.analysis}
+                analysis={engine.analysis ?? engine.previous?.analysis}
                 analysisError={engine.analysisError}
                 rankingPending={engine.rankingPending}
                 climatePreferences={climatePreferences}
                 onClimatePreferences={setClimatePreferences}
                 onActive={(index) => {
-                  const route = result?.routes[index];
+                  const route = engine.result?.routes[index];
                   if (route) setActive({ generation: engine.generation, id: route.id });
                 }}
-                onRecalculate={() => setRevision((n) => n + 1)}
+                onRecalculate={() => {
+                  setDismissedError(undefined);
+                  setRevision((n) => n + 1);
+                }}
                 onExample={example}
-                onFit={() =>
-                  map.current?.fitRoute(
-                    result?.routes[selectedIndex]
-                      ?.coordinates ?? [],
-                  )
-                }
+                onFit={() => {
+                  setSheet((old) => old === "full" ? "half" : old);
+                  const route = engine.result?.routes[selectedIndex];
+                  if (route) moveCamera((target) => target.fitRoute(route.coordinates));
+                }}
                 onProfile={setProfilePoint}
                 onExploreGoal={(tag) => {
                   setTag(tag);

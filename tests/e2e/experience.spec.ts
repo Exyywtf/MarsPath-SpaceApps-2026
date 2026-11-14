@@ -79,6 +79,39 @@ test("recalculating during a reveal cancels it and reveals the new accepted resu
   await expect(page.locator(".route-option")).toHaveCount(3);
 });
 
+test("recalculation preserves the comparison and Edit route reopens the inputs", async ({ page }) => {
+  await page.addInitScript(() => {
+    const OriginalWorker = window.Worker;
+    window.Worker = class extends OriginalWorker {
+      postMessage(message: { kind: string }) {
+        if (message.kind === "calculate" && document.documentElement.dataset.holdRoute)
+          setTimeout(() => super.postMessage(message), 600);
+        else super.postMessage(message);
+      }
+    };
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Directions", exact: true }).click();
+  await example(page).click();
+  await expect(region(page)).toHaveAttribute("data-reveal", "complete");
+  await expect.poll(() => headingOffset(page)).toBe(20);
+  await page.evaluate(() => { document.documentElement.dataset.holdRoute = "true"; });
+  const exportButton = page.getByRole("button", { name: "Export route & provenance" });
+  await page.getByRole("button", { name: "Recalculate", exact: true })
+    .evaluate((button: HTMLButtonElement) => button.click());
+  await expect(page.locator(".route-feedback")).toContainText("Calculating routes");
+  await expect(page.locator(".route-option")).toHaveCount(3);
+  await expect(exportButton).toBeDisabled();
+  expect(await headingOffset(page)).toBe(20);
+  await expect(region(page)).toHaveAttribute("data-reveal", "drawing");
+  await expect(exportButton).toBeEnabled();
+  expect(await headingOffset(page)).toBe(20);
+  await page.getByRole("button", { name: "Edit route" }).click();
+  await expect(page.locator("#planning-heading")).toBeFocused();
+  await expect.poll(() => page.locator(".panel-scroll").evaluate((node) => node.scrollTop)).toBe(0);
+  expect(await page.evaluate(() => scrollY)).toBe(0);
+});
+
 test("featured Jezero survives filtering and opening Directions preserves the draft", async ({ page }) => {
   await page.goto("/");
   await expect(region(page)).toHaveAttribute("data-animating", "false");

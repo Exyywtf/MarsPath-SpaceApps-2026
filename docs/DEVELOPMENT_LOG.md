@@ -94,3 +94,8 @@ Inspected the supplied 31 files and live NASA service metadata during planning. 
 
 - Started from `393b85e` and retained the prior static export for visual comparison. The atlas now fits Mars inside the initial usable viewport. Camera movement is reserved for navigation, explicit fit actions and actual viewport resizing. A verified `?place=jezero` destination link starts focused, with an empty draft.
 - Seven targeted Chromium journeys passed locally, including globe framing at nine viewports, no restored endpoints, pixel stability across panels, relief and scientific opacity defaults, live NASA tiles, and all 13 destinations. The 24 existing Vitest tests passed.
+
+## 2026-11-14 — V3.1 route interaction
+
+- Pushed the startup checkpoint `6c88805`. Reused endpoint features, eased the distance-based route reveal, and added a delayed calculation status that shares the Skip reveal control's position.
+- A same-input recalculation retains the comparison position and marks the prior values as updating. Current geometry export resumes on worker completion. Verified cancellation, immediate export, scroll interruption, Edit route focus, resizing, endpoint dragging, geographic fallback and the published Jezero outcrop journey in local Chromium.

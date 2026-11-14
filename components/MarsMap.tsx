@@ -47,6 +47,20 @@ const featuredLabels = new Set(["jezero", "gale", "valles", "oxia", "eridania"])
 const revealTiming = { shortest: 740, longest: 1330, alternative: 270, stagger: 120 };
 const marsExtent = [-180, -90, 180, 90];
 export type MapInsets = [top: number, right: number, bottom: number, left: number];
+type MarkerKind = "start" | "end" | number;
+
+function endpointStyle(kind: MarkerKind, label: string) {
+  const fill = new Fill({ color: kind === "start" ? "#ace5d0" : kind === "end" ? "#ffcb99" : "#e2e9e1" });
+  const stroke = new Stroke({ color: "#111d22", width: 2.5 });
+  return new Style({
+    image: kind === "end"
+      ? new RegularShape({ points: 4, radius: 17, angle: Math.PI / 4, fill, stroke })
+      : new Circle({ radius: kind === "start" ? 13 : 11, fill, stroke }),
+    text: new Text({
+      text: label, font: "700 12px sans-serif", fill: new Fill({ color: "#111d22" }),
+    }),
+  });
+}
 
 function measureFrame(instance: Map, getInsets: Props["getInsets"]) {
   const [width, height] = instance.getSize() ?? [0, 0];
@@ -101,7 +115,7 @@ interface Props {
   draft: PlannerDraft;
   placement: Placement;
   onPlace: (point: LonLat) => void;
-  onMovePoint: (kind: "start" | "end" | number, point: LonLat) => void;
+  onMovePoint: (kind: MarkerKind, point: LonLat) => void;
   routes: MapRoute[];
   routeGeneration?: number;
   recommendedRoute?: string;
@@ -131,6 +145,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     boundsSource = useRef(new VectorSource()),
     profileSource = useRef(new VectorSource());
   const profileMarker = useRef<Feature<Point> | null>(null);
+  const endpointMotion = useRef({ frame: 0, arriving: new globalThis.Map<Feature<Point>, number>() });
   const reveal = useRef<{
     generation?: number;
     frame: number;
@@ -402,36 +417,8 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
         return routeStyles.get(key);
       },
     });
-    const endpointStyles = new globalThis.Map<string, Style>();
     const endpointLayer = new VectorLayer({
       source: endpointSource.current,
-      style: (f) => {
-        const label = String(f.get("label"));
-        if (!endpointStyles.has(label))
-          endpointStyles.set(
-            label,
-            new Style({
-              image: new Circle({
-                radius: 13,
-                fill: new Fill({
-                  color:
-                    label === "A"
-                      ? "#a3e0c6"
-                      : label === "B"
-                        ? "#f8c087"
-                        : "#e5e9e6",
-                }),
-                stroke: new Stroke({ color: "#142421", width: 3 }),
-              }),
-              text: new Text({
-                text: label,
-                font: "bold 12px sans-serif",
-                fill: new Fill({ color: "#142421" }),
-              }),
-            }),
-          );
-        return endpointStyles.get(label);
-      },
     });
     const profileLayer = new VectorLayer({
       source: profileSource.current,
@@ -527,7 +514,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       }),
     });
     map.current = instance;
-    const translate = new Translate({ layers: [endpointLayer] });
+    const translate = new Translate({ layers: [endpointLayer], hitTolerance: 11 });
     instance.addInteraction(translate);
     translate.on("translateend", (e) => {
       e.features.forEach((f) => {
@@ -603,8 +590,9 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
         const a = handlers.current.draft.start;
         if (a)
           host.current.dataset.startPixel = JSON.stringify(
-            instance.getPixelFromCoordinate(a),
+            instance.getPixelFromCoordinate([a[0] + 360 * Math.round((c[0] - a[0]) / 360), a[1]]),
           );
+        else delete host.current.dataset.startPixel;
       }
       const distance = marsDistance(
         [c[0], c[1]],
@@ -815,8 +803,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
         const offset = index ? mainTime + (index - 1) * revealTiming.stagger : 0;
         const progress = Math.min(1, (now - start - offset) / (index ? revealTiming.alternative : mainTime));
         if (progress <= 0) continue;
-        // Mostly linear, with short easing at each end; distance stays monotonic.
-        const eased = progress * 0.72 + (progress * progress * (3 - 2 * progress)) * 0.28;
+        const eased = progress * progress * (3 - 2 * progress);
         geometry.setCoordinates(revealPrefix(path, eased));
         if (!index) mark("drawing", eased);
         if (progress === 1) complete.add(id);
@@ -827,23 +814,67 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     controller.frame = requestAnimationFrame(frame);
   }, [routes, routeGeneration, recommendedRoute]);
   useEffect(() => {
-    endpointSource.current.clear();
+    const source = endpointSource.current;
+    const motion = endpointMotion.current;
     const { start, end, waypoints } = props.draft;
-    for (const [p, kind, label] of [
+    const points = [
       [start, "start", "A"],
       [end, "end", "B"],
       ...waypoints.map((p, i) => [p, i, String(i + 1)]),
-    ] as [LonLat | null, "start" | "end" | number, string][]) {
-      if (p)
-        endpointSource.current.addFeature(
-          new Feature({ geometry: new Point(p), kind, label }),
-        );
+    ] as [LonLat | null, MarkerKind, string][];
+    const remaining = new Set(source.getFeatures() as Feature<Point>[]);
+    for (const [point, kind, label] of points) {
+      if (!point) continue;
+      const existing = source.getFeatureById(kind) as Feature<Point> | null;
+      if (existing) {
+        remaining.delete(existing);
+        const geometry = existing.getGeometry()!;
+        const [x, y] = geometry.getCoordinates();
+        if (x !== point[0] || y !== point[1]) geometry.setCoordinates(point);
+        continue;
+      }
+      const feature = new Feature({ geometry: new Point(point), kind });
+      feature.setId(kind);
+      const style = endpointStyle(kind, label);
+      feature.setStyle(style);
+      if (duration()) {
+        style.getImage()?.setScale(0.9);
+        style.getText()?.setScale(0.9);
+        motion.arriving.set(feature, performance.now());
+      }
+      source.addFeature(feature);
     }
+    for (const unused of remaining) {
+      motion.arriving.delete(unused);
+      source.removeFeature(unused);
+    }
+    function settle(now: number) {
+      const reduced = !duration();
+      for (const [feature, from] of motion.arriving) {
+        const progress = reduced ? 1 : Math.min(1, (now - from) / 240);
+        const scale = 1 - 0.1 * (1 - progress) ** 3;
+        const style = feature.getStyle() as Style;
+        style.getImage()?.setScale(scale);
+        style.getText()?.setScale(scale);
+        feature.changed();
+        if (progress >= 1) motion.arriving.delete(feature);
+      }
+      motion.frame = motion.arriving.size ? requestAnimationFrame(settle) : 0;
+    }
+    if (motion.arriving.size && !motion.frame) motion.frame = requestAnimationFrame(settle);
     if (map.current) {
       map.current.once("postrender", syncMetadata.current);
       map.current.render();
     }
   }, [props.draft]);
+  useEffect(() => {
+    const motion = endpointMotion.current;
+    return () => {
+      cancelAnimationFrame(motion.frame);
+      motion.frame = 0;
+      motion.arriving.clear();
+    };
+  }, []);
   useEffect(() => {
     boundsSource.current.clear();
     const [w, s, e, n] = props.terrainBounds;

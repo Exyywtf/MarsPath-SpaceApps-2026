@@ -1,78 +1,90 @@
 "use client";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 
+const editing = "input, textarea, select, [contenteditable=true]";
+
 export function useResultsReveal({
-  pending, generation, directions, placement, expand,
+  pending, generation, draftKey, directions, placement, expand,
 }: {
   pending: boolean;
   generation?: number;
+  draftKey: string;
   directions: boolean;
   placement: boolean;
   expand: () => void;
 }) {
   const scroll = useRef<HTMLDivElement>(null);
   const attachScroll = useCallback((node: HTMLDivElement | null) => { scroll.current = node; }, []);
-  const awaiting = useRef(false);
+  const awaiting = useRef<string | null>(null);
   const interrupted = useRef(false);
-  const handled = useRef<number | undefined>(undefined);
-  const job = useRef(0);
-  const [collapsed, setCollapsed] = useState(false);
+  const handled = useRef<string | null>(null);
+  const frame = useRef(0);
+  const [collapsedFor, setCollapsedFor] = useState<string | null>(null);
+
   const interrupt = useCallback(() => {
-    if (awaiting.current) interrupted.current = true;
-    if (job.current) {
-      cancelAnimationFrame(job.current);
-      job.current = 0;
-    }
-    // Native smooth scrolling is independently interruptible by scroll input.
+    interrupted.current = true;
+    cancelAnimationFrame(frame.current);
   }, []);
-  const scrollTo = useCallback(() => {
-    cancelAnimationFrame(job.current);
-    job.current = requestAnimationFrame(() => {
-      job.current = 0;
-      if (!scroll.current) return;
+  const jump = useCallback((id: "compare-routes" | "planning-heading", focus = false) => {
+    cancelAnimationFrame(frame.current);
+    frame.current = requestAnimationFrame(() => {
       const panel = scroll.current;
-      const heading = panel.querySelector("#compare-routes");
-      if (!heading) return;
-      const top = heading.getBoundingClientRect().top -
-        panel.getBoundingClientRect().top + panel.scrollTop - 20;
-      const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-      panel.scrollTo({ top, behavior: reduced ? "instant" : "smooth" });
+      const heading = panel?.querySelector<HTMLElement>("#" + id);
+      if (!panel || !heading || panel.offsetHeight === 0) return;
+      const start = panel.scrollTop;
+      const target = Math.max(0, heading.getBoundingClientRect().top -
+        panel.getBoundingClientRect().top + start - 20);
+      if (focus) heading.focus({ preventScroll: true });
+      const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+      const from = performance.now();
+      const step = (now: number) => {
+        const t = reduced.matches ? 1 : Math.min(1, (now - from) / 245);
+        panel.scrollTop = start + (target - start) * (1 - (1 - t) ** 3);
+        if (t < 1) frame.current = requestAnimationFrame(step);
+      };
+      if (reduced.matches) panel.scrollTop = target;
+      else frame.current = requestAnimationFrame(step);
     });
   }, []);
+
+  useLayoutEffect(() => {
+    if (!directions || placement) interrupt();
+  }, [directions, placement, interrupt]);
   useLayoutEffect(() => {
     if (pending) {
-      cancelAnimationFrame(job.current);
-      if (!awaiting.current) interrupted.current = false;
-      awaiting.current = true;
+      if (awaiting.current !== draftKey) {
+        cancelAnimationFrame(frame.current);
+        interrupted.current = !directions || placement;
+        awaiting.current = draftKey;
+      }
       return;
     }
-    const mayReveal = awaiting.current && !interrupted.current && directions && !placement;
-    awaiting.current = false;
-    if (!generation || handled.current === generation) return;
-    handled.current = generation;
+    const first = awaiting.current === draftKey && handled.current !== draftKey;
+    awaiting.current = null;
+    if (!generation || !first) return;
+    handled.current = draftKey;
     const active = document.activeElement;
-    if (!mayReveal || active?.matches('input, textarea, select, [contenteditable="true"]')) return;
-    // The collapsed form stays mounted; do not hide the currently focused control.
-    job.current = requestAnimationFrame(() => {
-      if (!active?.closest("#route-planning"))
-        setCollapsed(true);
+    if (interrupted.current || !directions || placement || active?.matches(editing)) return;
+    frame.current = requestAnimationFrame(() => {
+      const current = document.activeElement;
+      if (interrupted.current || current?.matches(editing)) return;
+      // Keep the form available while a control in it owns focus.
+      if (!current?.closest("#route-planning")) setCollapsedFor(draftKey);
       expand();
-      scrollTo();
+      jump("compare-routes");
     });
-    return () => cancelAnimationFrame(job.current);
-  }, [pending, generation, directions, placement, scrollTo, expand]);
+  }, [pending, generation, draftKey, directions, placement, expand, jump]);
+  useLayoutEffect(() => () => cancelAnimationFrame(frame.current), []);
+
   const view = useCallback(() => {
     expand();
-    scrollTo();
-  }, [expand, scrollTo]);
-  const openEditors = useCallback(() => setCollapsed(false), []);
+    jump("compare-routes");
+  }, [expand, jump]);
+  const openEditors = useCallback(() => setCollapsedFor(null), []);
   const edit = useCallback(() => {
     interrupt();
-    setCollapsed(false);
-    requestAnimationFrame(() => {
-      scroll.current?.scrollTo({ top: 0, behavior: "instant" });
-      document.getElementById("planning-heading")?.focus({ preventScroll: true });
-    });
-  }, [interrupt]);
-  return [attachScroll, collapsed && !!generation && !placement, interrupt, view, edit, openEditors] as const;
+    openEditors();
+    jump("planning-heading", true);
+  }, [interrupt, openEditors, jump]);
+  return [attachScroll, collapsedFor === draftKey && !placement, interrupt, view, edit, openEditors] as const;
 }

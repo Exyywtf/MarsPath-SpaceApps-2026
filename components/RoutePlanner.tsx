@@ -47,6 +47,7 @@ interface Props {
   collapsed: boolean;
   onEdit: () => void;
   pending: boolean;
+  updating: boolean;
   error?: string;
   active: number;
   recommended: number;
@@ -230,7 +231,7 @@ export default memo(function RoutePlanner(p: Props) {
     [routes],
   );
   function exportRoute() {
-    if (!current) return;
+    if (!current || p.updating) return;
     const connectors = current.connectors.flatMap((connector, index) => {
       const offset = current.snapping[index];
       if (!offset) return [];
@@ -304,7 +305,7 @@ export default memo(function RoutePlanner(p: Props) {
           <span><strong>A → B</strong><small>{p.draft.waypoints.length ? p.draft.waypoints.length + " waypoints" : "Direct plan"}</small></span>
         </div>
       )}
-      <div id="route-planning" hidden={p.collapsed}>
+      <div id="route-planning" hidden={p.collapsed} className="route-planning">
       <h2 id="planning-heading" tabIndex={-1}>Plan route</h2>
       <p className="panel-intro">
         Choose anywhere on Mars. We’ll show what the available terrain can
@@ -397,23 +398,19 @@ export default memo(function RoutePlanner(p: Props) {
       />
       </div>
       <div className="route-status" role="status" aria-live="polite">
-        {p.pending
-          ? "Calculating route candidates…"
-          : p.error
-            ? "No terrain route calculated"
-            : p.result
-              ? "Routes ready · " + p.result.reason
-              : "Choose A and B to begin."}
-        {p.result && (
-          <small>
-            {p.result.tier === "regional"
-              ? "Regional terrain"
-              : p.result.tier === "coarse"
-                ? "Coarse terrain"
-                : "Geographic planning"}{" "}
-            · Research and education
-          </small>
-        )}
+        {p.result ? (
+          <>
+            <div className={p.updating ? "route-status-reserve" : undefined} aria-hidden={p.updating || undefined}>
+              {"Routes ready · " + p.result.reason}
+              <small>
+                {p.result.tier === "regional" ? "Regional terrain" :
+                  p.result.tier === "coarse" ? "Coarse terrain" : "Geographic planning"} · Research and education
+              </small>
+            </div>
+            {p.updating && <strong>Updating routes… <small>Previous comparison below</small></strong>}
+          </>
+        ) : p.pending ? "Calculating route candidates…" :
+          p.error ? "No terrain route calculated" : "Choose A and B to begin."}
       </div>
       {p.error && (
         <div className="route-error" role="alert">
@@ -439,10 +436,10 @@ export default memo(function RoutePlanner(p: Props) {
             <h2 id="compare-routes">Compare routes</h2>
             <div className="result-actions">
             <button className="text-button" onClick={p.onEdit}>Edit route</button>
-            <button className="icon-button" aria-label="Export route & provenance" title="Export route & provenance" onClick={exportRoute}>
+            <button className="icon-button" aria-label="Export route & provenance" title="Export route & provenance" disabled={p.updating} onClick={exportRoute}>
               <Download size={18} />
             </button>
-            <button className="text-button" onClick={p.onFit}>
+            <button className="text-button" disabled={p.updating} onClick={p.onFit}>
               Fit on map
             </button>
             </div>
@@ -455,6 +452,7 @@ export default memo(function RoutePlanner(p: Props) {
                   "route-option" + (current?.id === r.id ? " selected" : "")
                 }
                 aria-pressed={current?.id === r.id}
+                aria-disabled={p.updating || undefined}
                 onClick={() => p.onActive(i)}
               >
                 <span
@@ -771,8 +769,9 @@ export default memo(function RoutePlanner(p: Props) {
       </details>
       <button
         className="secondary-button full-width"
-        disabled={!p.draft.start || !p.draft.end || p.pending}
-        onClick={p.onRecalculate}
+        disabled={!p.draft.start || !p.draft.end}
+        aria-disabled={p.pending || undefined}
+        onClick={() => { if (!p.pending) p.onRecalculate(); }}
       >
         <RefreshCw size={16} />
         Recalculate
