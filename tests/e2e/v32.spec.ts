@@ -10,7 +10,7 @@ test("full-width destination images and overlay scrollbar drag, fade and native 
   const area = page.locator('.workflow-view[data-active="true"]');
   const dimensions = await view.evaluate((node) => ({ width: node.clientWidth, outer: node.getBoundingClientRect().width }));
   expect(dimensions.width).toBe(dimensions.outer);
-  expect((await page.locator('.location-image').boundingBox())!.width).toBe(dimensions.width);
+  expect((await page.locator('.gallery-stage').boundingBox())!.width).toBe(dimensions.width);
   await view.hover();
   const track = area.locator('.scroll-track[data-axis="vertical"]');
   await expect(track).toHaveAttribute('data-overflow', 'true');
@@ -174,12 +174,11 @@ test("all thirteen cards align categories, tags, headers and full-width source i
       });
       expect(Math.abs(metadata.x)).toBeLessThan(0.5);
       expect(metadata.gap).toBeCloseTo(8, 0);
-      if (location.image) {
-        const image = (await page.locator('.location-image').boundingBox())!;
-        expect(image.height).toBe(205);
-        expect(image.width).toBe(await page.locator('.scroll-viewport[aria-label="Destination details"]').evaluate((node) => node.clientWidth));
-        expect(metadata.y - image.y - image.height).toBeCloseTo(12, 0);
-      }
+      const stage = (await page.locator('.gallery-stage').boundingBox())!;
+      const gallery = (await page.locator('.destination-gallery').boundingBox())!;
+      expect(stage.height).toBe(205);
+      expect(stage.width).toBe(await page.locator('.scroll-viewport[aria-label="Destination details"]').evaluate((node) => node.clientWidth));
+      expect(metadata.y - gallery.y - gallery.height).toBeCloseTo(12, 0);
     }
   }
 });

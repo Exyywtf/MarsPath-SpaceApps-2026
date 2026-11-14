@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@headlessui/react": "2.2.10",
+    "embla-carousel-react": "8.6.0",
     "lucide-react": "1.73.0",
     "next": "16.4.6",
     "ol": "10.11.0",

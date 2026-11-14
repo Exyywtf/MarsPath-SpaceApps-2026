@@ -107,6 +107,34 @@ html::-webkit-scrollbar, .scroll-viewport::-webkit-scrollbar { display: none; }
 .detail-panel .panel-header h1 { text-align: center; overflow-wrap: anywhere; font-size: 24px; }
 .detail-panel .panel-header .icon-button { width: 44px; min-width: 44px; }
 .location-visual { margin: calc(-1 * var(--scroll-padding, 24px)) calc(-1 * var(--scroll-padding, 24px)) 12px; }
+.gallery-stage { position: relative; height: 205px; background: var(--map-background); }
+.gallery-viewport { height: 100%; overflow: hidden; }
+.gallery-track { display: flex; height: 100%; touch-action: pan-y pinch-zoom; }
+.gallery-slide { flex: 0 0 100%; min-width: 0; height: 100%; }
+.gallery-slide .location-image { height: 100%; object-fit: contain; }
+.gallery-stage :is(.gallery-arrow, .gallery-play) {
+  position: absolute;
+  z-index: 1;
+  color: var(--ink);
+  background: rgb(9 14 18 / 86%);
+  border: 1px solid rgb(236 239 228 / 37%);
+}
+.gallery-stage :is(.gallery-arrow, .gallery-play):hover { background: #263531; }
+.gallery-arrow { top: 50%; translate: 0 -50%; }
+.gallery-previous { inset-inline-start: 8px; }
+.gallery-next, .gallery-play { inset-inline-end: 8px; }
+.gallery-play { bottom: 8px; }
+.gallery-count { position: absolute; bottom: 12px; inset-inline-start: 12px; padding: 2px 8px;
+  background: rgb(9 14 18 / 86%); border-radius: 4px; color: var(--ink); font-size: 12px; pointer-events: none; }
+.gallery-caption { display: grid; padding: 12px var(--scroll-padding, 24px) 0; }
+.gallery-caption-item { grid-area: 1 / 1; min-width: 0; }
+.gallery-caption-item[aria-hidden="true"] { visibility: hidden; }
+.gallery-caption-item > p { margin: 0 0 4px; }
+.gallery-title { font-weight: 620; }
+.gallery-caption-item p:not(.gallery-title) { color: var(--muted); font-size: 13px; }
+.gallery-caption-item .gallery-credit { font-size: 12px; }
+.gallery-source + .gallery-source { border-top: 1px solid var(--line); padding-top: 12px; }
+.gallery-source h4 { margin: 4px 0 8px; }
 .location-body { display: flow-root; }
 .location-category { margin-block: 0 8px; color: var(--accent); font-size: var(--type-body); font-weight: 400; line-height: 1.5; }
 .location-body > .coordinates { margin-block: 0 16px; }

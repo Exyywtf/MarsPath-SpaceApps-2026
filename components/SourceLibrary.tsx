@@ -6,6 +6,7 @@ import { useState, type ReactNode } from "react";
 import EvidenceLink from "./EvidenceLink";
 import { ChevronDown, Search } from "lucide-react";
 import { locations } from "@/lib/atlas";
+import { destinationGallery } from "@/lib/gallery";
 import records from "@/data/sources.json";
 import services from "@/data/services.json";
 import DocumentNav from "./DocumentNav";
@@ -106,16 +107,25 @@ export default function SourceLibrary() {
       ))}
       <h2>Image credits and processing</h2>
       <p className="lede">Displayed illustrations are resized derivatives from the linked sources. The original captions describe their locations, false colour and interpretation.</p>
-      {locations.filter((location) => location.image).map((location) => (
+      {locations.filter((location) => destinationGallery(location.id).length).map((location) => (
         <article className="source-record" key={location.id}>
           <div className="source-type"><strong>Image</strong><span className="source-id">{location.id}</span></div>
           <div className="source-description">
             <h3>{location.name}</h3>
-            <p>{location.imageCaption} {location.imageCredit}</p>
-            <div className="source-image-links">
-              {location.imageSource && <OriginalLink href={location.imageSource}>Original image file</OriginalLink>}
-              <OriginalLink href={location.sourceUrl}>Caption, credits &amp; usage</OriginalLink>
-            </div>
+            <Accordion className="dataset-details" title="Individual image credits">
+              {destinationGallery(location.id).map((item) => (
+                <section key={item.id} className="gallery-source" id={item.id}>
+                  <h4>{item.title}</h4>
+                  <p>{item.caption}</p>
+                  <p className="small-note">{item.credit} · {item.instrument} · {item.imageType}{item.acquired ? ` · ${item.acquired}` : ""}</p>
+                  <p className="small-note">{item.relationship} {item.terms}</p>
+                  <div className="source-image-links">
+                    <OriginalLink href={item.originalImage}>Original image file</OriginalLink>
+                    <OriginalLink href={item.sourcePage}>Original caption</OriginalLink>
+                  </div>
+                </section>
+              ))}
+            </Accordion>
           </div>
         </article>
       ))}

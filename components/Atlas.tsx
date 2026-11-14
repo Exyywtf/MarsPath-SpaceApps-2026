@@ -3,7 +3,8 @@ import EvidenceLink from "./EvidenceLink";
 import Accordion from "./Accordion";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import Image from "next/image";
+import DestinationGallery from "./DestinationGallery";
+import { destinationGallery } from "@/lib/gallery";
 import {
   forwardRef,
   memo,
@@ -1039,20 +1040,7 @@ export default function Atlas() {
             {visited.has("location") && location && (
               <ScrollArea className="workflow-view" viewportClassName="panel-scroll" viewportRef={locationScroll}
                 label="Destination details" active={panel === "location"} {...workflowState("location")}>
-                {location.image && (
-                  <div className="location-visual">
-                    <Image
-                      className="location-image"
-                      src={location.image}
-                      width={1100}
-                      height={700}
-                      alt={
-                        location.imageCaption ||
-                        "Source illustration for " + location.name
-                      }
-                    />
-                  </div>
-                )}
+                <DestinationGallery key={location.id} images={destinationGallery(location.id)} title={location.name} active={panel === "location"} />
                 <div className="location-body">
                   <p className="location-category">{location.category}</p>
                   <p className="coordinates">
@@ -1127,11 +1115,6 @@ export default function Atlas() {
                     rel="noreferrer"
                   >
                     Original scientific source</EvidenceLink>
-                  {location.image && (
-                    <p className="image-credit">
-                      {location.imageCaption} {location.imageCredit}
-                    </p>
-                  )}
                   <EvidenceLink className="text-link" href="/sources/">
                     All references & limitations</EvidenceLink>
                 </div>

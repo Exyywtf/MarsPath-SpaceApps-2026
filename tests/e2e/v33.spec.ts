@@ -7,7 +7,7 @@ test("scrollbar fades independently of resize and stays visible during capture",
   await page.goto("/?place=mawrth");
   const view = page.getByRole("region", { name: "Destination details" });
   const track = page.locator('.workflow-view[data-active="true"] .scroll-track');
-  const image = page.locator(".location-image");
+  const image = page.locator(".gallery-stage");
   const width = (await image.boundingBox())!.width;
   await expect(track).toHaveCSS("opacity", "0");
   const trigger = page.getByRole("button", { name: "About this position" });
