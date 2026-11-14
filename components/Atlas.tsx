@@ -1031,6 +1031,9 @@ export default function Atlas() {
                 recommended={recommended}
                 analysis={engine.displayAnalysis}
                 exportAnalysis={engine.analysis}
+                evidence={engine.displayEvidence}
+                exportEvidence={engine.evidence}
+                evidenceError={engine.evidenceError}
                 analysisUpdating={engine.analysisUpdating}
                 analysisError={engine.analysisError}
                 rankingPending={engine.rankingPending}

@@ -1,0 +1,70 @@
+{
+  "jezero": {
+    "tier": "regional",
+    "roles": {
+      "terrain": {
+        "lengthM": 2842.004915554309,
+        "lengthErrorM": 4.081575752934441e-07,
+        "independentStepM": 2,
+        "maximumUnitLengthDifferenceM": 4.081575752934441e-07,
+        "thermalValidLengthDifferenceM": 4.081575752934441e-07,
+        "maximumCatalogueApproachErrorM": 1.1641532182693481e-10
+      }
+    }
+  },
+  "seam": {
+    "tier": "coarse",
+    "roles": {
+      "terrain": {
+        "lengthM": 166598.86747545673,
+        "lengthErrorM": 2.9103830456733704e-11,
+        "independentStepM": 15,
+        "maximumUnitLengthDifferenceM": 1.0550138540565968e-09,
+        "thermalValidLengthDifferenceM": 0.04987258066830691,
+        "maximumCatalogueApproachErrorM": 2.3283064365386963e-10
+      },
+      "connector": {
+        "lengthM": 17281.17413470903,
+        "lengthErrorM": 1.0913936421275139e-11,
+        "independentStepM": 2,
+        "maximumUnitLengthDifferenceM": 5.4569682106375694e-12,
+        "thermalValidLengthDifferenceM": 1.0913936421275139e-11,
+        "maximumCatalogueApproachErrorM": 4.656612873077393e-10
+      }
+    }
+  },
+  "geographic": {
+    "tier": "geographic",
+    "roles": {
+      "geographic": {
+        "lengthM": 1385.8506579779523,
+        "lengthErrorM": 2.625711204018444e-09,
+        "independentStepM": 2,
+        "maximumUnitLengthDifferenceM": 2.625711204018444e-09,
+        "thermalValidLengthDifferenceM": 0.0,
+        "maximumCatalogueApproachErrorM": 1.4410989024327137e-07
+      }
+    }
+  },
+  "terra-sirenum": {
+    "tier": "coarse",
+    "roles": {
+      "terrain": {
+        "lengthM": 67147.2274522054,
+        "lengthErrorM": 5.529727786779404e-10,
+        "independentStepM": 2,
+        "maximumUnitLengthDifferenceM": 5.529727786779404e-10,
+        "thermalValidLengthDifferenceM": 0.7055274845843087,
+        "maximumCatalogueApproachErrorM": 1.6189005691558123e-10
+      },
+      "connector": {
+        "lengthM": 11433.37052043456,
+        "lengthErrorM": 7.8580342233181e-10,
+        "independentStepM": 2,
+        "maximumUnitLengthDifferenceM": 7.839844329282641e-10,
+        "thermalValidLengthDifferenceM": 4.720277502201498e-10,
+        "maximumCatalogueApproachErrorM": 1.0631453051246353e-08
+      }
+    }
+  }
+}

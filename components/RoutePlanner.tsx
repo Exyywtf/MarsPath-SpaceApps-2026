@@ -15,6 +15,8 @@ import metadata from "@/public/processed/jezero.json";
 import validation from "@/data/validation/v2-independent.json";
 import ScienceObjectives from "./ScienceObjectives";
 import { ClimatePreferenceForm, EnvironmentalAnalysis, RouteProfile } from "./EnvironmentalAnalysis";
+import RouteEvidencePanel, { mappedUnitExplanation, routeEvidenceSection } from "./RouteEvidence";
+import { evidenceProvenance, type RouteEvidence } from "@/lib/routeEvidence";
 import type { ClimatePreferences, RouteAnalysis } from "@/lib/routeAnalysis";
 import type { ComparisonResult } from "@/lib/routeProtocol";
 import { localObjectives, scienceTargets } from "@/lib/science";
@@ -46,6 +48,9 @@ interface Props {
   exportAnalysis?: Record<string, RouteAnalysis>;
   analysisUpdating: boolean;
   analysisError?: string;
+  evidence?: Record<string, RouteEvidence>;
+  exportEvidence?: Record<string, RouteEvidence>;
+  evidenceError?: string;
   rankingPending: boolean;
   climatePreferences: ClimatePreferences;
   onClimatePreferences: (preferences: ClimatePreferences) => void;
@@ -244,6 +249,10 @@ export default memo(function RoutePlanner(p: Props) {
     terrain = current?.terrain;
   const analysis = current ? p.analysis?.[current.id] : undefined;
   const exportAnalysis = current ? p.exportAnalysis?.[current.id] : undefined;
+  const evidence = current ? p.evidence?.[current.id] : undefined;
+  const exportEvidence = current ? p.exportEvidence?.[current.id] : undefined;
+  const evidenceSection = current ? routeEvidenceSection(current, exportEvidence) : undefined;
+  const [mappedUnit, setMappedUnit] = useState("");
   const [assumedSpeed, setAssumedSpeed] = useState("");
   const speed = Number(assumedSpeed);
   const travelTime = speed > 0 && current ? current.distance / 1000 / speed : NaN;
@@ -308,6 +317,14 @@ export default memo(function RoutePlanner(p: Props) {
         elevationProfile: terrain?.profile,
         analysis: exportAnalysis,
         analysisStatus: exportAnalysis ? "ready" : p.analysisError ? "unavailable" : "pending",
+        explorationEvidence: {
+          provenance: evidenceProvenance,
+          status: exportEvidence ? evidenceSection?.geology && evidenceSection.minerals && evidenceSection.thermal ? "ready" : "partial"
+            : p.evidenceError ? "unavailable" : "pending",
+          roles: exportEvidence?.roles,
+          elapsedMs: exportEvidence?.elapsedMs,
+          mappedUnitComparison: mappedUnit || undefined,
+        },
         climatePreferences: p.climatePreferences,
         ranking: p.rankingPending ? undefined : ranking,
         rankingStatus: p.rankingPending ? "pending" : "ready",
@@ -677,6 +694,11 @@ export default memo(function RoutePlanner(p: Props) {
                 {ranking && <p>Effective weights · {Object.entries(ranking.weights)
                   .map(([key, weight]) => Math.round(weight * 100) + "% " + key).join(" · ")}.
                   Missing criteria receive no weight. Radiation is context only.</p>}
+                {(() => {
+                  const chosen = routes[recommended];
+                  const explanation = chosen && mappedUnitExplanation(routes, chosen, p.evidence, mappedUnit);
+                  return explanation ? <p>{explanation}</p> : null;
+                })()}
                 {p.settings.objectives.length > 0 && (
                   <p className="science-outcome">
                     Selected objectives reached: {current.reached.length} /{" "}
@@ -791,6 +813,8 @@ export default memo(function RoutePlanner(p: Props) {
           {current && <>
             <EnvironmentalAnalysis route={current} alternatives={routes} analyses={p.analysis} error={p.analysisError}
               updating={p.analysisUpdating} ranking={ranking} />
+            <RouteEvidencePanel route={current} routes={routes} evidence={p.evidence} current={evidence}
+              pending={!exportEvidence && !p.evidenceError} error={p.evidenceError} unit={mappedUnit} onUnit={setMappedUnit} />
             <RouteProfile key={current.id + "-" + current.distance} route={current} analysis={analysis}
               color={routeAppearance(p.active, recommended, current.tier === "geographic").color} onPoint={p.onProfile} />
             <Accordion className="quality-details trip-duration" title={<>Travel time estimate</>}>

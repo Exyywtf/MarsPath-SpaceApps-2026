@@ -3,7 +3,8 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { PlannerDraft, PlannerSettings } from "./planner";
 import type { ClimatePreferences, RouteAnalysis } from "./routeAnalysis";
 import type { ComparisonRequest, ComparisonResult, WorkerReply, WorkerRequest } from "./routeProtocol";
-import { matchingRouteAnalyses } from "./routeSnapshot";
+import { matchingRouteAnalyses, matchingRouteEvidence } from "./routeSnapshot";
+import type { RouteEvidence } from "./routeEvidence";
 
 type State = {
   geometryKey: string;
@@ -14,6 +15,9 @@ type State = {
   analysis?: Record<string, RouteAnalysis>;
   previousAnalysis?: Record<string, RouteAnalysis>;
   analysisError?: string;
+  evidence?: Record<string, RouteEvidence>;
+  previousEvidence?: Record<string, RouteEvidence>;
+  evidenceError?: string;
   comparisonKey?: string;
 };
 
@@ -55,6 +59,9 @@ export function useRouteEngine(
           const retained = old.geometryKey === geometryKey
             ? matchingRouteAnalyses(old.result, data.result, old.analysis ?? old.previousAnalysis)
             : undefined;
+          const retainedEvidence = old.geometryKey === geometryKey
+            ? matchingRouteEvidence(old.result, data.result, old.evidence ?? old.previousEvidence)
+            : undefined;
           // The routes reply carries provisional scores. Keep the previous
           // comparison visible until the matching analysis reply refreshes it.
           const retainRanking = old.comparisonKey === data.key && sameOrder &&
@@ -70,6 +77,8 @@ export function useRouteEngine(
             result,
             analysis: sameRoutes ? old.analysis : undefined,
             previousAnalysis: retained,
+            evidence: sameRoutes ? old.evidence : undefined,
+            previousEvidence: retainedEvidence,
           };
         });
       } else if (data.kind === "analysis") {
@@ -79,6 +88,12 @@ export function useRouteEngine(
         } : old);
       } else if (data.kind === "analysis-error") {
         setState((old) => old.generation === data.id ? { ...old, analysisError: data.error } : old);
+      } else if (data.kind === "evidence") {
+        setState((old) => old.generation === data.id && old.result ? {
+          ...old, evidence: data.evidence, previousEvidence: undefined, evidenceError: undefined,
+        } : old);
+      } else if (data.kind === "evidence-error") {
+        setState((old) => old.generation === data.id ? { ...old, evidenceError: data.error } : old);
       } else {
         setState({ geometryKey, requestKey, error: data.error });
       }
@@ -86,7 +101,7 @@ export function useRouteEngine(
     w.onerror = () => setState((old) => {
       const { geometryKey, requestKey } = input.current;
       return old.requestKey === requestKey && old.result
-        ? { ...old, analysisError: "The route worker stopped." }
+        ? { ...old, analysisError: "The route worker stopped.", evidenceError: "The route worker stopped." }
         : { geometryKey, requestKey, error: "The route worker failed. Reload the page to restart it." };
     });
     return () => { w.terminate(); worker.current = null; };
@@ -126,6 +141,9 @@ export function useRouteEngine(
     displayAnalysis: complete ? state.analysis ?? state.previousAnalysis : previous?.analysis ?? previous?.previousAnalysis,
     analysisUpdating: !!previous || (complete && !!state.result && !state.analysis),
     analysisError: complete ? state.analysisError : undefined,
+    evidence: complete ? state.evidence : undefined,
+    displayEvidence: complete ? state.evidence ?? state.previousEvidence : previous?.evidence ?? previous?.previousEvidence,
+    evidenceError: complete ? state.evidenceError : undefined,
     rankingPending: !!state.result && complete && (state.comparisonKey !== comparison.key ||
       !state.analysis && !state.analysisError),
     pending: hasEndpoints && !complete,

@@ -52,7 +52,8 @@ export type ClimatePreferences = {
 };
 export const defaultClimatePreferences: ClimatePreferences = { enabled: false, weight: 20, bands: {} };
 export type CellBounds = Record<ClimateId, Map<number, [number, number]>>;
-type Vec = [number, number, number];
+export type SphericalVector = [number, number, number];
+type Vec = SphericalVector;
 const degrees = 180 / Math.PI;
 const epsilon = 1e-10;
 const climateLng = 360/63, climateLat = 180/47;
@@ -76,12 +77,12 @@ export function* orderedSpans(route: PlannedRoute): Generator<Span> {
   }
 }
 
-const vector = ([lon, lat]: LonLat): Vec => {
+export const sphericalVector = ([lon, lat]: LonLat): Vec => {
   const a = radians(lon), f = radians(lat);
   return [Math.cos(f)*Math.cos(a), Math.cos(f)*Math.sin(a), Math.sin(f)];
 };
-function arc(a: LonLat, b: LonLat) {
-  const u = vector(a), end = vector(b), theta = marsDistance(a,b)/MARS_RADIUS;
+export function sphericalArc(a: LonLat, b: LonLat) {
+  const u = sphericalVector(a), end = sphericalVector(b), theta = marsDistance(a,b)/MARS_RADIUS;
   if (theta < 1e-12) return null;
   const dot = u[0]*end[0]+u[1]*end[1]+u[2]*end[2];
   let v = end.map((x,i) => x-dot*u[i]) as Vec;
@@ -102,14 +103,14 @@ function arc(a: LonLat, b: LonLat) {
     const [x,y,z] = at(t);
     return [normalizeLon(Math.atan2(y,x)*degrees), Math.atan2(z,Math.hypot(x,y))*degrees];
   };
-  return { u, v, theta, at, lonLat };
+  return { u, v, end, theta, at, lonLat };
 }
 
 // Exact intersections of the spherical arc with meridian planes and latitude
 // circles. Longitude is monotone between poles; split at the pole before
 // enumerating meridians so the longitude discontinuity contributes no length.
-export function sphericalIntervals(a: LonLat, b: LonLat): { point: LonLat; length: number }[] {
-  const g = arc(a,b);
+export function sphericalIntervals(a: LonLat, b: LonLat, cellSize?: number): { point: LonLat; length: number }[] {
+  const g = sphericalArc(a,b);
   if (!g) return [];
   const { u, v, theta, at, lonLat } = g, breaks = [0,theta], poles = [0,theta];
   const add = (t: number) => { if (t > epsilon && t < theta-epsilon) breaks.push(t); };
@@ -131,8 +132,11 @@ export function sphericalIntervals(a: LonLat, b: LonLat): { point: LonLat; lengt
       for (const t of [zPhase+angle,zPhase-angle]) { add(t); add(t+2*Math.PI); add(t-2*Math.PI); }
     }
   }
-  latLines(-90,climateLat);
-  latLines(-89,1);
+  if (cellSize) latLines(-90, cellSize);
+  else {
+    latLines(-90,climateLat);
+    latLines(-89,1);
+  }
   poles.sort((x,y) => x-y);
   for (let p=1; p<poles.length; p++) {
     const start = poles[p-1], end = poles[p];
@@ -151,8 +155,11 @@ export function sphericalIntervals(a: LonLat, b: LonLat): { point: LonLat; lengt
         }
       }
     }
-    meridians(climateLng);
-    meridians(1);
+    if (cellSize) meridians(cellSize);
+    else {
+      meridians(climateLng);
+      meridians(1);
+    }
   }
   const sorted = breaks.sort((x,y) => x-y);
   const result: { point: LonLat; length: number }[] = [];

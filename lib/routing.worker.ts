@@ -6,6 +6,8 @@ import { analyseRoute, climateBounds, type RouteAnalysis } from "./routeAnalysis
 import { loadClimate } from "./layers";
 import { loadRadiationPressure, radiationProduct } from "./radiation";
 import type { ComparisonRequest, WorkerReply, WorkerRequest } from "./routeProtocol";
+import { analyseEvidence, type RouteEvidence } from "./routeEvidence";
+import { loadGeology, loadMineralObservations, loadThermalInertia } from "./explorationScience";
 const legs = new LegCache();
 const cache = new Map<string, { bytes: number; pending: Promise<Terrain> }>();
 const TERRAIN_CACHE_LIMIT = 64 * 1024 * 1024;
@@ -68,6 +70,7 @@ let accepted: {
   base: PlannerResult;
   pool: PlannedRoute[];
   analyses: Map<string, Promise<RouteAnalysis>>;
+  evidence: Map<string, Promise<RouteEvidence>>;
   ranked?: ComparisonRequest;
 } | undefined;
 const post = (message: WorkerReply) => self.postMessage(message);
@@ -105,6 +108,29 @@ async function compare() {
     if (current()) post({ id: job.id, key, kind: "analysis-error",
       error: error instanceof Error ? error.message : "Route profiles could not be calculated." });
   }
+  if (!current()) return;
+  try {
+    const [geology, thermal, minerals] = await Promise.all([
+      loadGeology().catch(() => null), loadThermalInertia().catch(() => null), loadMineralObservations().catch(() => null),
+    ]);
+    if (!current()) return;
+    if (!geology && !thermal && !minerals) throw new Error("The exploration datasets could not load.");
+    const evidence: Record<string, RouteEvidence> = {};
+    for (const route of result.routes) {
+      let pending = job.evidence.get(route.id);
+      if (!pending) {
+        pending = analyseEvidence(route, { geology, thermal, minerals }, () => latest !== job.id);
+        // Partial results may be retried during the next comparison.
+        if (geology && thermal && minerals) job.evidence.set(route.id, pending);
+      }
+      evidence[route.id] = await pending;
+      if (!current()) return;
+    }
+    post({ id: job.id, key, kind: "evidence", evidence });
+  } catch (error) {
+    if (current()) post({ id: job.id, key, kind: "evidence-error",
+      error: error instanceof Error ? error.message : "Scientific route evidence could not be calculated." });
+  }
 }
 
 self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
@@ -129,7 +155,7 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
     const { pool, ...base } = await calculateMission(input, load, cancelled, legs);
     base.elapsedMs = performance.now() - started;
     if (!cancelled()) {
-      accepted = { id: input.id, base, pool: pool ?? base.routes, analyses: new Map(), ranked: desired };
+      accepted = { id: input.id, base, pool: pool ?? base.routes, analyses: new Map(), evidence: new Map(), ranked: desired };
       await compare();
     }
   } catch (error) {
