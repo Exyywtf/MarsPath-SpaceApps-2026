@@ -1,4 +1,6 @@
 "use client";
+import EvidenceLink from "./EvidenceLink";
+import Accordion from "./Accordion";
 import { memo, useMemo, useState } from "react";
 import {
   ArrowDownUp,
@@ -9,7 +11,6 @@ import {
   RefreshCw,
   Trash2,
 } from "lucide-react";
-import Link from "next/link";
 import metadata from "@/public/processed/jezero.json";
 import validation from "@/data/validation/v2-independent.json";
 import ScienceObjectives from "./ScienceObjectives";
@@ -59,6 +60,9 @@ interface Props {
   onFit: () => void;
   onProfile: (point: LonLat | null) => void;
   onExploreGoal: (tag: string) => void;
+  scienceSections: { objectives: boolean; outcrops: boolean };
+  onScienceSections: (sections: { objectives: boolean; outcrops: boolean }) => void;
+  scienceFocus: { id: string; revision: number } | null;
 }
 function compareTerrainCandidates(
   shortest?: PlannedRoute,
@@ -128,17 +132,14 @@ function PointEditor({
               : "Choose a destination"}
         </strong>
       </div>
-      <div className="point-actions">
-        <button
+      <Accordion className="point-actions" title="Coordinates" leadingAction={<button
           className="secondary-button"
           disabled={!mapReady}
           onClick={onPick}
         >
           <Crosshair size={16} />
           Set {label} on map
-        </button>
-        <details>
-          <summary>Coordinates</summary>
+        </button>}>
           <form
             noValidate
             onSubmit={(e) => {
@@ -208,8 +209,7 @@ function PointEditor({
               </p>
             )}
           </form>
-        </details>
-      </div>
+      </Accordion>
     </div>
   );
 }
@@ -286,6 +286,7 @@ export default memo(function RoutePlanner(p: Props) {
         analysisStatus: exportAnalysis ? "ready" : p.analysisError ? "unavailable" : "pending",
         climatePreferences: p.climatePreferences,
         ranking: p.rankingPending ? undefined : ranking,
+        rankingStatus: p.rankingPending ? "pending" : "ready",
         score: p.rankingPending ? undefined : p.result?.scores?.[p.active],
         assumedSpeedKmh: duration === undefined ? undefined : speed,
         hypotheticalDurationHours: duration,
@@ -392,13 +393,94 @@ export default memo(function RoutePlanner(p: Props) {
       >
         {p.draft.start || p.draft.end ? "Replace draft with Jezero example" : "Try Jezero terrain example"}
       </button>
+      <div className="planning-settings">
       <ScienceObjectives
         draft={p.draft}
         settings={p.settings}
         onSettings={p.onSettings}
         onDraft={p.onDraft}
         onExploreGoal={p.onExploreGoal}
+        sections={p.scienceSections} onSections={p.onScienceSections} focus={p.scienceFocus}
       />
+      <ClimatePreferenceForm value={p.climatePreferences} onChange={p.onClimatePreferences}
+        ranking={p.rankingPending ? undefined : ranking} pending={p.rankingPending} />
+      <Accordion className="advanced-settings" title={<>Advanced settings</>}>
+        <label className="slider-label">
+          Maximum modelled slope <span>{p.settings.maxSlope}°</span>
+          <input
+            aria-label="Maximum modelled slope"
+            type="range"
+            min="5"
+            max="30"
+            step="1"
+            value={p.settings.maxSlope}
+            onChange={(e) =>
+              p.onSettings({ ...p.settings, maxSlope: +e.target.value })
+            }
+          />
+        </label>
+        <label className="slider-label">
+          Terrain penalty strength <span>λ = {p.settings.riskWeight}</span>
+          <input
+            aria-label="Terrain penalty strength"
+            type="range"
+            min="1"
+            max="10"
+            step="1"
+            value={p.settings.riskWeight}
+            onChange={(e) =>
+              p.onSettings({ ...p.settings, riskWeight: +e.target.value })
+            }
+          />
+        </label>
+        {(["distanceWeight", "terrainWeight", "scienceWeight"] as const).map(
+          (key, i) => (
+            <label className="slider-label" key={key}>
+              {
+                [
+                  "Distance preference",
+                  "Terrain preference",
+                  "Science preference",
+                ][i]
+              }
+              <span>{p.settings[key]}</span>
+              <input
+                aria-label={
+                  [
+                    "Distance preference",
+                    "Terrain preference",
+                    "Science preference",
+                  ][i]
+                }
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value={p.settings[key]}
+                onChange={(e) =>
+                  p.onSettings({ ...p.settings, [key]: +e.target.value })
+                }
+              />
+            </label>
+          ),
+        )}
+        <label className="layer-toggle">
+          <span>Geographic connection only</span>
+          <input
+            type="checkbox"
+            checked={p.settings.geographicOnly}
+            onChange={(e) =>
+              p.onSettings({ ...p.settings, geographicOnly: e.target.checked })
+            }
+          />
+        </label>
+        <p className="small-note">
+          Slope limits are application assumptions, not NASA standards.
+          Recommendation weights are normalized; unavailable criteria are
+          removed.
+        </p>
+      </Accordion>
+      </div>
       </div>
       <div className="route-status" role="status" aria-live="polite">
         {p.result ? (
@@ -415,6 +497,15 @@ export default memo(function RoutePlanner(p: Props) {
         ) : p.pending ? "Calculating route candidates…" :
           p.error ? "No terrain route calculated" : "Choose A and B to begin."}
       </div>
+      <button
+        className="secondary-button full-width"
+        disabled={!p.draft.start || !p.draft.end}
+        aria-disabled={p.pending || undefined}
+        onClick={() => { if (!p.pending) p.onRecalculate(); }}
+      >
+        <RefreshCw size={16} />
+        Recalculate
+      </button>
       {p.error && (
         <div className="route-error" role="alert">
           <p>{p.error}</p>
@@ -551,8 +642,7 @@ export default memo(function RoutePlanner(p: Props) {
                   </p>
                 </div>
               )}
-              <details className="route-explanation" open>
-                <summary>Why this route?</summary>
+              <Accordion className="route-explanation" defaultOpen title={<>Why this route?</>}>
                 {terrainComparison && <p>{terrainComparison}</p>}
                 <p>{routes.length === 1 ? "Only one distinct path was found." :
                   (p.result?.scores?.filter((score) => Math.abs(score-p.result!.scores![recommended]) < 1e-8).length ?? 0) > 1
@@ -602,9 +692,8 @@ export default memo(function RoutePlanner(p: Props) {
                   Dotted connectors are unassessed and excluded from ascent and
                   slope statistics.
                 </p>
-              </details>
-              <details className="quality-details">
-                <summary>Data quality & coverage</summary>
+              </Accordion>
+              <Accordion className="quality-details" title={<>Data quality & coverage</>}>
                 <dl>
                   <dt>Assessed route length</dt>
                   <dd>
@@ -661,18 +750,16 @@ export default memo(function RoutePlanner(p: Props) {
                 <p className="small-note">
                   Terrain scores use elevation and slope. Local rocks and obstacles fall below the DEM’s sampling.
                 </p>
-                <a
+                <EvidenceLink
                   className="text-link"
                   href={p.result?.meta?.sourcePage}
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Original terrain product ↗
-                </a>
-                <Link className="text-link" href="/methodology/#validation-v2">
-                  Independent calculation report ↗
-                </Link>
-              </details>
+                  Original terrain product</EvidenceLink>
+                <EvidenceLink className="text-link" href="/methodology/#validation-v2">
+                  Independent calculation report</EvidenceLink>
+              </Accordion>
             </>
           )}
           {current && <>
@@ -680,109 +767,19 @@ export default memo(function RoutePlanner(p: Props) {
               updating={p.analysisUpdating} ranking={ranking} />
             <RouteProfile key={current.id + "-" + current.distance} route={current} analysis={analysis}
               color={routeAppearance(p.active, recommended, current.tier === "geographic").color} onPoint={p.onProfile} />
-            <details className="quality-details trip-duration">
-              <summary>Travel time estimate</summary>
+            <Accordion className="quality-details trip-duration" title={<>Travel time estimate</>}>
               <label>Assumed constant speed (km/h)
                 <input type="number" min="0" step="any" value={assumedSpeed} onChange={(e) => setAssumedSpeed(e.target.value)} />
               </label>
               <p className="small-note">{duration === undefined
                 ? "Enter a positive speed to estimate time from total distance."
                 : duration.toLocaleString(undefined, { maximumSignificantDigits: 3 }) + " hours at this constant speed. Stops and terrain conditions are excluded."}</p>
-            </details>
+            </Accordion>
           </>}
         </>
       )}
-      <ClimatePreferenceForm value={p.climatePreferences} onChange={p.onClimatePreferences}
-        ranking={p.rankingPending ? undefined : ranking} pending={p.rankingPending} />
-      <details className="advanced-settings">
-        <summary>Advanced settings</summary>
-        <label className="slider-label">
-          Maximum modelled slope <span>{p.settings.maxSlope}°</span>
-          <input
-            aria-label="Maximum modelled slope"
-            type="range"
-            min="5"
-            max="30"
-            step="1"
-            value={p.settings.maxSlope}
-            onChange={(e) =>
-              p.onSettings({ ...p.settings, maxSlope: +e.target.value })
-            }
-          />
-        </label>
-        <label className="slider-label">
-          Terrain penalty strength <span>λ = {p.settings.riskWeight}</span>
-          <input
-            aria-label="Terrain penalty strength"
-            type="range"
-            min="1"
-            max="10"
-            step="1"
-            value={p.settings.riskWeight}
-            onChange={(e) =>
-              p.onSettings({ ...p.settings, riskWeight: +e.target.value })
-            }
-          />
-        </label>
-        {(["distanceWeight", "terrainWeight", "scienceWeight"] as const).map(
-          (key, i) => (
-            <label className="slider-label" key={key}>
-              {
-                [
-                  "Distance preference",
-                  "Terrain preference",
-                  "Science preference",
-                ][i]
-              }
-              <span>{p.settings[key]}</span>
-              <input
-                aria-label={
-                  [
-                    "Distance preference",
-                    "Terrain preference",
-                    "Science preference",
-                  ][i]
-                }
-                type="range"
-                min="0"
-                max="100"
-                step="5"
-                value={p.settings[key]}
-                onChange={(e) =>
-                  p.onSettings({ ...p.settings, [key]: +e.target.value })
-                }
-              />
-            </label>
-          ),
-        )}
-        <label className="layer-toggle">
-          <span>Geographic connection only</span>
-          <input
-            type="checkbox"
-            checked={p.settings.geographicOnly}
-            onChange={(e) =>
-              p.onSettings({ ...p.settings, geographicOnly: e.target.checked })
-            }
-          />
-        </label>
-        <p className="small-note">
-          Slope limits are application assumptions, not NASA standards.
-          Recommendation weights are normalized; unavailable criteria are
-          removed.
-        </p>
-      </details>
-      <button
-        className="secondary-button full-width"
-        disabled={!p.draft.start || !p.draft.end}
-        aria-disabled={p.pending || undefined}
-        onClick={() => { if (!p.pending) p.onRecalculate(); }}
-      >
-        <RefreshCw size={16} />
-        Recalculate
-      </button>
-      <Link className="text-link" href="/methodology/">
-        Methods, calculations & limitations ↗
-      </Link>
+      <EvidenceLink className="text-link" href="/methodology/">
+        Methods, calculations & limitations</EvidenceLink>
     </div>
   );
 });

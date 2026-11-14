@@ -131,7 +131,7 @@ test("workflow controls and scroll position survive tab switches and closing", a
   await page.goto("/");
   await page.getByRole("button", { name: "Directions", exact: true }).click();
   const editor = page.locator(".point-editor").first();
-  await editor.locator("summary").click();
+  await editor.locator(".accordion-trigger").click();
   await page.getByLabel("A latitude", { exact: true }).fill("18.425");
   const scroll = page.locator('[data-active="true"] .panel-scroll');
   await scroll.evaluate((node) => node.scrollTop = 70);
@@ -187,7 +187,7 @@ test("touch Help centres on phones and tablets, and Sources and Methodology stay
       const box = (await control.boundingBox())!;
       expect(Math.abs(box.x + box.width / 2 - 195)).toBeLessThan(1);
     }
-    await page.locator("#pia03480 summary").tap();
+    await page.locator("#pia03480 .accordion-trigger").tap();
     await expect(page.locator("#pia03480 .provenance-row").last()).toBeVisible();
     await page.getByRole("link", { name: "Methodology", exact: true }).tap();
     await expect(page.getByRole("heading", { name: "MarsPath methodology" })).toBeVisible();

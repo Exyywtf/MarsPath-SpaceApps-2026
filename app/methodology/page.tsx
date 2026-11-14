@@ -1,9 +1,11 @@
-import Link from "next/link";
+import EvidenceLink from "@/components/EvidenceLink";
+import ScrollArea from "@/components/ScrollArea";
+import PageTransition from "@/components/PageTransition";
 import validation from "@/data/validation/v2-independent.json";
 import DocumentNav from "@/components/DocumentNav";
 export default function Methodology() {
   return (
-    <main className="document-page methodology-page page-arrival">
+    <PageTransition page="methodology"><main className="document-page methodology-page page-view">
       <DocumentNav current="methodology" />
       <p className="eyebrow orange">Methods &amp; limitations</p>
       <h1>MarsPath methodology</h1>
@@ -108,14 +110,13 @@ export default function Methodology() {
         pool, whose size and attempts are reported. This is not a global science
         optimum or a probability of finding life. Identical paths are disclosed.
       </p>
-      <a
+      <EvidenceLink
         className="text-link"
         href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7116714/#Tab2"
         target="_blank"
         rel="noreferrer"
       >
-        Published Jezero type locations & interpretations ↗
-      </a>
+        Published Jezero type locations & interpretations</EvidenceLink>
       <h2 id="validation-v2">Independent numerical validation</h2>
       <p className="lede">
         {validation.checks.length} V2 route calculations were checked with an
@@ -127,7 +128,7 @@ export default function Methodology() {
         consistency, not physical positional accuracy or astronaut
         traversability.
       </p>
-      <div className="table-scroll">
+      <ScrollArea className="table-scroll-area" axis="horizontal" label="Independent route validation results">
         <table className="validation-table">
           <thead>
             <tr>
@@ -150,7 +151,7 @@ export default function Methodology() {
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollArea>
       <h2>What quality percentages mean</h2>
       <p className="lede">
         Assessed route percentage is terrain-edge distance divided by total
@@ -217,9 +218,9 @@ export default function Methodology() {
         Map inspection reports only whether the image covers that point.
       </p>
       <p className="lede">
-        <Link href="/sources/#atris-radiation">Zhang and Guo dataset and provenance ↗</Link>
+        <EvidenceLink href="/sources/#atris-radiation">Zhang and Guo dataset and provenance</EvidenceLink>
         {" · "}
-        <Link href="/sources/#pia03480">NASA illustration and registration ↗</Link>
+        <EvidenceLink href="/sources/#pia03480">NASA illustration and registration</EvidenceLink>
       </p>
       <h2>AI assistance and licensing</h2>
       <p className="lede">
@@ -236,9 +237,7 @@ export default function Methodology() {
         Research and education, not operational navigation. Unknown hazards
         remain unknown.
       </div>
-      <Link className="text-link" href="/sources/">
-        Inspect original evidence, processing & usage terms →
-      </Link>
-    </main>
+      <EvidenceLink href="/sources/">Inspect original evidence, processing &amp; usage terms</EvidenceLink>
+    </main></PageTransition>
   );
 }

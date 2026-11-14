@@ -1,4 +1,6 @@
 "use client";
+import EvidenceLink from "./EvidenceLink";
+import Accordion from "./Accordion";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
@@ -43,6 +45,7 @@ import {
   type Placement,
 } from "@/lib/planner";
 import { useRouteEngine } from "@/lib/useRouteEngine";
+import { useMapLayout } from "@/lib/useMapLayout";
 import { useResultsReveal } from "@/lib/useResultsReveal";
 import { defaultClimatePreferences } from "@/lib/routeAnalysis";
 import type { MapHandle, MapInsets, MapRoute } from "./MarsMap";
@@ -74,6 +77,8 @@ const CoordinateReadout = memo(
   }),
 );
 export default function Atlas() {
+  const [scienceSections, setScienceSections] = useState({ objectives: false, outcrops: false });
+  const [scienceFocus, setScienceFocus] = useState<{ id: string; revision: number } | null>(null);
   const map = useRef<MapHandle>(null),
     pendingFocus = useRef<((target: MapHandle) => void) | null>(null),
     focusFrame = useRef(0),
@@ -324,17 +329,10 @@ export default function Atlas() {
   useEffect(() => {
     map.current?.showProfilePoint(null);
   }, [engine.generation, selectedIndex, panel]);
-  const getMapInsets = useCallback((width: number, height: number): MapInsets => {
-    const header = headerRef.current, footer = footerRef.current;
-    const panel = panelRef.current, controls = controlsRef.current;
-    const top = header ? header.offsetTop + header.offsetHeight : 0;
-    const right = controls ? width - controls.offsetLeft : 0;
-    const panelOpen = panel?.dataset.open === "true";
-    const sidebar = panelOpen && getComputedStyle(panel).getPropertyValue("--side-panel").trim() === "1";
-    const bottom = panelOpen && !sidebar ? height - panel.offsetTop : footer?.offsetHeight ?? 0;
-    const left = sidebar ? panel.offsetLeft + panel.offsetWidth : header?.offsetLeft ?? 0;
-    return [top + 10, right + 8, bottom + 10, left + 10];
-  }, []);
+  const { root: atlasRef, read: getLayout, measure: measureLayout } = useMapLayout(
+    [panel, sheet, layer?.id, inspectPoint?.join(","), routeFeedback, placement].join("|"),
+    () => map.current?.refreshLayout());
+  const getMapInsets = useCallback((): MapInsets => measureLayout().insets, [measureLayout]);
   useLayoutEffect(() => {
     map.current?.rememberInsets();
   }, [panel, sheet]);
@@ -432,7 +430,7 @@ export default function Atlas() {
           ? "Directions"
           : (location?.name ?? "Destination");
   return (
-    <main className="atlas page-arrival">
+    <main className="atlas page-view" ref={atlasRef}>
       <a className="skip-link" href="#workflow-panel">
         Skip to controls
       </a>
@@ -519,6 +517,7 @@ export default function Atlas() {
           onRevealState={updateDrawing}
           terrainBounds={terrainMetadata.bounds}
           getInsets={getMapInsets}
+          getLayout={getLayout}
           layer={requestedLayer}
           layerOpacity={layerOpacity}
           layerRetry={layerRetry}
@@ -528,21 +527,8 @@ export default function Atlas() {
           onScienceSelect={(id) => {
             openDirections();
             openEditors();
-            requestAnimationFrame(() => {
-              const target = document.getElementById(id);
-              const disclosures: HTMLDetailsElement[] = [];
-              let details = target?.closest("details") ?? null;
-              while (details) {
-                disclosures.push(details);
-                details.dataset.openForFocus = "true";
-                details.open = true;
-                details = details.parentElement?.closest("details") ?? null;
-              }
-              requestAnimationFrame(() => {
-                target?.focus();
-                for (const disclosure of disclosures) delete disclosure.dataset.openForFocus;
-              });
-            });
+            setScienceSections({ objectives: true, outcrops: true });
+            setScienceFocus((old) => ({ id, revision: (old?.revision ?? 0) + 1 }));
           }}
         />
         <div className="route-feedback" data-visible={!!routeFeedback}>
@@ -661,9 +647,8 @@ export default function Atlas() {
                     : layer.id === "radiation-column" ? "Vertical atmospheric column mass, not a dose estimate"
                       : "Interpolated modelled climatology"}
             </small>
-            <a href={layer.sourcePage} target="_blank" rel="noreferrer">
-              Source & context ↗
-            </a>
+            <EvidenceLink href={layer.sourcePage} target="_blank" rel="noreferrer">
+              Source & context</EvidenceLink>
           </aside>
         )}
         <footer className="map-footer" ref={footerRef}>
@@ -672,13 +657,14 @@ export default function Atlas() {
             <i />
             {scale} / 100 px
           </span>
-          <a
+          <EvidenceLink
             href="https://trek.nasa.gov/mars/"
+            compactLabel="NASA / USGS"
+            aria-label="NASA / JPL / USGS · Mars Trek"
             target="_blank"
             rel="noreferrer"
           >
-            NASA / JPL / USGS · Mars Trek ↗
-          </a>
+            NASA / JPL / USGS · Mars Trek</EvidenceLink>
         </footer>
       </section>
         <aside
@@ -699,11 +685,14 @@ export default function Atlas() {
           <div
             className="sheet-grip"
             onPointerDown={(e) => {
+              if ((e.target as Element).closest("button")) return;
               interruptScroll();
               dragStart.current = e.clientY;
               e.currentTarget.setPointerCapture(e.pointerId);
             }}
             onPointerUp={(e) => {
+              if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
+              e.currentTarget.releasePointerCapture(e.pointerId);
               const delta = e.clientY - dragStart.current;
               if (Math.abs(delta) > 30)
                 setSheet(
@@ -718,6 +707,20 @@ export default function Atlas() {
             }}
           >
             <span />
+            <button className="text-button show-map" onClick={() => {
+              interruptScroll(); setSheet("half");
+              requestAnimationFrame(() => document.getElementById("interactive-mars-map")?.focus({ preventScroll: true }));
+            }}>Show map</button>
+            <div className="sheet-buttons">
+              <button className="icon-button" aria-label={sheet === "peek" ? "Expand panel" : "Collapse panel"}
+                onClick={() => { interruptScroll(); setSheet(sheet === "peek" ? "half" : "peek"); }}>
+                {sheet === "peek" ? <ChevronUp size={19} /> : <ChevronDown size={19} />}
+              </button>
+              <button className="icon-button" aria-label={sheet === "full" ? "Reduce panel" : "Expand panel fully"}
+                onClick={() => { interruptScroll(); setSheet(sheet === "full" ? "half" : "full"); }}>
+                <ChevronUp size={19} />
+              </button>
+            </div>
           </div>
           <div className="panel-header">
             {visiblePanel === "location" && (
@@ -735,36 +738,7 @@ export default function Atlas() {
             {visiblePanel === "directions" && result?.routes.length ? (
               <button className="text-button result-jump" onClick={viewResults}>View results</button>
             ) : null}
-            <div className="sheet-buttons">
-              <button
-                className="icon-button"
-                aria-label={
-                  sheet === "peek" ? "Expand panel" : "Collapse panel"
-                }
-                onClick={() => {
-                  interruptScroll();
-                  setSheet(sheet === "peek" ? "half" : "peek");
-                }}
-              >
-                {sheet === "peek" ? (
-                  <ChevronUp size={19} />
-                ) : (
-                  <ChevronDown size={19} />
-                )}
-              </button>
-              <button
-                className="icon-button"
-                aria-label={
-                  sheet === "full" ? "Reduce panel" : "Expand panel fully"
-                }
-                onClick={() => {
-                  interruptScroll();
-                  setSheet(sheet === "full" ? "half" : "full");
-                }}
-              >
-                <ChevronUp size={19} />
-              </button>
-            </div>
+
             <button
               className="icon-button"
               aria-label="Close panel"
@@ -835,14 +809,13 @@ export default function Atlas() {
                       <div><dt>6 m</dt><dd>CTX imagery</dd></div>
                       <div><dt>0.25 m</dt><dd>Selected HiRISE</dd></div>
                     </dl>
-                    <a className="text-link feature-source" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7116714/#Tab2" target="_blank" rel="noreferrer">Published delta outcrops <ArrowUpRight size={14} /></a>
+                    <EvidenceLink className="text-link feature-source" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7116714/#Tab2" target="_blank" rel="noreferrer">Published delta outcrops</EvidenceLink>
                   </section>
                 )}
-                <details className="place-filters">
-                  <summary>
+                <Accordion className="place-filters" title={<>
                     Science themes{" "}
                     <span>{tag === "All" ? "All destinations" : tag}</span>
-                  </summary>
+                  </>}>
                   <div
                     className="filters"
                     aria-label="Filter scientific destinations"
@@ -866,7 +839,7 @@ export default function Atlas() {
                       </button>
                     ))}
                   </div>
-                </details>
+                </Accordion>
                 <div className="section-title">
                   <span>Scientific destinations</span>
                   <span>{filtered.length}</span>
@@ -972,9 +945,8 @@ export default function Atlas() {
                     resolution.
                   </p>
                 </div>
-                <Link className="text-link" href="/sources/">
-                  Dataset sources & limitations ↗
-                </Link>
+                <EvidenceLink className="text-link" href="/sources/">
+                  Dataset sources & limitations</EvidenceLink>
               </ScrollArea>
             )}
             {visited.has("directions") && (
@@ -1035,6 +1007,7 @@ export default function Atlas() {
                   setQuery("");
                   open("places");
                 }}
+                scienceSections={scienceSections} onScienceSections={setScienceSections} scienceFocus={scienceFocus}
               />
               </ScrollArea>
             )}
@@ -1112,34 +1085,30 @@ export default function Atlas() {
                   <p>
                     {regions.find((r) => r.id === location.id)?.availability}
                   </p>
-                  <details className="quality-details">
-                    <summary>About this position</summary>
+                  <Accordion className="quality-details" title={<>About this position</>}>
                     <p>{location.coordinateNote}</p>
-                    <a
+                    <EvidenceLink
                       className="text-link"
                       href={location.coordinateSource}
                       target="_blank"
                       rel="noreferrer"
                     >
-                      Coordinate evidence ↗
-                    </a>
-                  </details>
-                  <a
+                      Coordinate evidence</EvidenceLink>
+                  </Accordion>
+                  <EvidenceLink
                     className="source-link"
                     href={location.sourceUrl}
                     target="_blank"
                     rel="noreferrer"
                   >
-                    Original scientific source <ArrowUpRight size={16} />
-                  </a>
+                    Original scientific source</EvidenceLink>
                   {location.image && (
                     <p className="image-credit">
                       {location.imageCaption} {location.imageCredit}
                     </p>
                   )}
-                  <Link className="text-link" href="/sources/">
-                    All references & limitations ↗
-                  </Link>
+                  <EvidenceLink className="text-link" href="/sources/">
+                    All references & limitations</EvidenceLink>
                 </div>
               </ScrollArea>
             )}

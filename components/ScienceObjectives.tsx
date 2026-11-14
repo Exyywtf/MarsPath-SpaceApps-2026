@@ -1,4 +1,7 @@
 "use client";
+import EvidenceLink from "./EvidenceLink";
+import Accordion from "./Accordion";
+import { useEffect } from "react";
 import { Plus } from "lucide-react";
 import { localObjectives, scienceTargets } from "@/lib/science";
 import type { PlannerDraft, PlannerSettings } from "@/lib/planner";
@@ -8,23 +11,33 @@ export default function ScienceObjectives({
   onSettings,
   onDraft,
   onExploreGoal,
+  sections, onSections, focus,
 }: {
   draft: PlannerDraft;
   settings: PlannerSettings;
   onSettings: (s: PlannerSettings) => void;
   onDraft: (d: PlannerDraft) => void;
   onExploreGoal: (tag: string) => void;
+  sections: { objectives: boolean; outcrops: boolean };
+  onSections: (sections: { objectives: boolean; outcrops: boolean }) => void;
+  focus: { id: string; revision: number } | null;
 }) {
+  useEffect(() => {
+    if (!focus) return;
+    const timer = window.setTimeout(() => document.getElementById(focus.id)?.focus(),
+      matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 220);
+    return () => clearTimeout(timer);
+  }, [focus]);
   return (
-    <details className="science-objectives">
-      <summary>
+    <Accordion className="science-objectives" open={sections.objectives}
+      onOpenChange={(objectives) => onSections({ ...sections, objectives })} title={<>
         Science objectives{" "}
         <span>
           {settings.objectives.length
             ? settings.objectives.length + " selected"
             : "Optional"}
         </span>
-      </summary>
+      </>}>
       <section aria-labelledby="science-title">
         <h3 id="science-title">What would you investigate?</h3>
         <p className="small-note">
@@ -50,8 +63,8 @@ export default function ScienceObjectives({
             </label>
           ))}
         </div>
-        <details className="quality-details">
-          <summary>Verified Jezero type outcrops</summary>
+        <Accordion className="quality-details" open={sections.outcrops}
+          onOpenChange={(outcrops) => onSections({ ...sections, outcrops })} title={<>Verified Jezero type outcrops</>}>
           <p className="small-note">
             Published representative locations, rounded to 0.001°. They are not
             precise sample sites. A route reaches the cell containing the
@@ -69,14 +82,13 @@ export default function ScienceObjectives({
               </strong>
               <p>{t.interpretation}.</p>
               <div className="button-row">
-                <a
+                <EvidenceLink
                   className="text-link"
                   href={t.sourceUrl}
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Published evidence ↗
-                </a>
+                  Published evidence</EvidenceLink>
                 <button
                   className="text-button"
                   disabled={draft.waypoints.length >= 3}
@@ -93,9 +105,8 @@ export default function ScienceObjectives({
               </div>
             </article>
           ))}
-        </details>
-        <details className="quality-details">
-          <summary>Explore other science themes</summary>
+        </Accordion>
+        <Accordion className="quality-details" title={<>Explore other science themes</>}>
           <p className="small-note">
             These filters identify supported regions, not invented local
             targets.
@@ -114,8 +125,8 @@ export default function ScienceObjectives({
               </button>
             ))}
           </div>
-        </details>
+        </Accordion>
       </section>
-    </details>
+    </Accordion>
   );
 }

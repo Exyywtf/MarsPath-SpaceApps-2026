@@ -37,7 +37,7 @@ test('mobile resize preserves one panel and visible draggable endpoints',async({
 });
 test('coordinate entry, swap, clear and geographic fallback work',async({page})=>{
   await page.goto('/');await page.getByRole('button',{name:'Directions',exact:true}).click();
-  for(const [label,lat,lon] of [['A','0','179'],['B','0','179.01']]){const editor=page.locator('.point-editor').nth(label==='A'?0:1);await editor.locator('summary').click();await page.getByLabel(label+' latitude',{exact:true}).fill(lat);await page.getByLabel(label+' longitude',{exact:true}).fill(lon);await page.getByRole('button',{name:'Apply '+label,exact:true}).click();}
+  for(const [label,lat,lon] of [['A','0','179'],['B','0','179.01']]){const editor=page.locator('.point-editor').nth(label==='A'?0:1);await editor.locator('.accordion-trigger').click();await page.getByLabel(label+' latitude',{exact:true}).fill(lat);await page.getByLabel(label+' longitude',{exact:true}).fill(lon);await page.getByRole('button',{name:'Apply '+label,exact:true}).click();}
   await expect(page.locator('.route-option')).toContainText('Geographic connection',{timeout:15000});await expect(page.locator('.route-metrics')).toHaveCount(0);
   await page.getByRole('button',{name:'Edit route',exact:true}).click();
   await page.getByRole('button',{name:'Swap A and B'}).click();await expect(page.locator('.point-label strong').first()).toContainText('179.010°E');
@@ -49,7 +49,7 @@ test('coordinate entry, swap, clear and geographic fallback work',async({page})=
 });
 test('invalid coordinates preserve the draft and three ordered waypoints can be edited',async({page})=>{
   await page.goto('/');await page.getByRole('button',{name:'Directions',exact:true}).click();await page.getByRole('button',{name:'Try Jezero terrain example'}).click();
-  const original=await page.locator('.point-label strong').allTextContents();await page.locator('.point-editor').first().locator('summary').click();await page.getByLabel('A latitude',{exact:true}).fill('91');await page.getByRole('button',{name:'Apply A',exact:true}).click();
+  const original=await page.locator('.point-label strong').allTextContents();await page.locator('.point-editor').first().locator('.accordion-trigger').click();await page.getByLabel('A latitude',{exact:true}).fill('91');await page.getByRole('button',{name:'Apply A',exact:true}).click();
   await expect(page.locator('.field-error')).toContainText('Latitude');await expect(page.locator('.point-label strong')).toHaveText(original);
   for(let i=0;i<3;i++){await page.getByRole('button',{name:'Add waypoint',exact:true}).click();const map=page.getByRole('region',{name:'Interactive Mars map'});await expect(map).toBeFocused();if(i)await page.keyboard.press('ArrowRight');await page.keyboard.press('Enter');await expect(page.locator('.waypoint-row')).toHaveCount(i+1);}
   await expect(page.getByRole('button',{name:'Add waypoint',exact:true})).toBeDisabled();

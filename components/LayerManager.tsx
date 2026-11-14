@@ -1,4 +1,7 @@
 "use client";
+import EvidenceLink from "./EvidenceLink";
+import StyledSelect from "./StyledSelect";
+import Accordion from "./Accordion";
 import { useRef, useState } from "react";
 import { Check, Gauge, Mountain, Radiation, Thermometer, Wind } from "lucide-react";
 import {
@@ -119,14 +122,14 @@ export default function LayerManager({
           {radiationActive && (
             <label className="radiation-mode">
               Radiation view
-              <select value={radiationMode} onChange={(e) => {
+              <StyledSelect value={radiationMode} onChange={(e) => {
                 const id = e.target.value as LayerId;
                 setRadiationMode(id);
                 onActive(id);
               }}>
                 <option value={radiationProduct}>{radiationProduct === "radiation" ? "Modelled cosmic rays" : "Atmospheric shielding proxy"}</option>
                 <option value="radiation-historical">NASA historical map · 2002</option>
-              </select>
+              </StyledSelect>
             </label>
           )}
           <label className="slider-label">
@@ -154,31 +157,28 @@ export default function LayerManager({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={rad.historical.originalUrl} alt="NASA’s 2002 illustration of two Mars globes, with a 10 to 20 rem per year dose-equivalent scale." width="3000" height="2400" loading="lazy" />
               <p>{rad.historical.credit} · PIA03480 · March 2002</p>
-              <a className="text-link" href={rad.historical.source} target="_blank" rel="noreferrer">Original caption and credit ↗</a>
+              <EvidenceLink className="text-link" href={rad.historical.source} target="_blank" rel="noreferrer">Original caption and credit</EvidenceLink>
             </AtlasDialog>
           </>}
         </div>
       )}
-      <details className="quality-details">
-        <summary>Radiation observations & minerals</summary>
+      <Accordion className="quality-details" title={<>Radiation observations & minerals</>}>
         <p>
           Curiosity measured radiation along its traverse in Gale Crater.
           Those local observations cannot supply global radiation values.
           The reprojected historical map uses NASA’s original PIA03480.
         </p>
-        <a
+        <EvidenceLink
           className="text-link"
           href="https://science.nasa.gov/resource/radiation-measurements-on-mars/"
           target="_blank"
           rel="noreferrer"
         >
-          Curiosity radiation observations ↗
-        </a>
+          Curiosity radiation observations</EvidenceLink>
         <p>Explore destination sources for orbital evidence of minerals.</p>
-        <a className="text-link" href="/sources/#nili">
-          Mineral evidence at Nili Fossae ↗
-        </a>
-      </details>
+        <EvidenceLink className="text-link" href="/sources/#nili">
+          Mineral evidence at Nili Fossae</EvidenceLink>
+      </Accordion>
     </section>
   );
 }
@@ -209,20 +209,18 @@ function LayerDetails({ layer, radiation }: { layer: LayerDataset; radiation: bo
                   : layer.id === "radiation-column" ? "This shows how much atmosphere sits above a point."
                     : "Model means, not current weather or extreme conditions. Export sampling is not the native climate-model resolution."}
           </p>
-          <a
+          <EvidenceLink
             className="text-link"
             href={layer.sourcePage}
             target="_blank"
             rel="noreferrer"
           >
-            Dataset source ↗
-          </a>
-          <a
+            Dataset source</EvidenceLink>
+          <EvidenceLink
             className="text-link"
             href={"/sources/#" + sourceAnchor(layer.id)}
           >
-            Processing, credits & limitations ↗
-          </a>
+            Processing, credits & limitations</EvidenceLink>
     </div>
   );
 }

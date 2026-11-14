@@ -1,5 +1,5 @@
 import { test,expect } from '@playwright/test';
-async function coordinates(page:import('@playwright/test').Page,label:string,lat:string,lon:string){const editor=page.locator('.point-editor').nth(label==='A'?0:1);await editor.locator('summary').click();await page.getByLabel(label+' latitude',{exact:true}).fill(lat);await page.getByLabel(label+' longitude',{exact:true}).fill(lon);await page.getByRole('button',{name:'Apply '+label,exact:true}).click();}
+async function coordinates(page:import('@playwright/test').Page,label:string,lat:string,lon:string){const editor=page.locator('.point-editor').nth(label==='A'?0:1);await editor.locator('.accordion-trigger').click();await page.getByLabel(label+' latitude',{exact:true}).fill(lat);await page.getByLabel(label+' longitude',{exact:true}).fill(lon);await page.getByRole('button',{name:'Apply '+label,exact:true}).click();}
 test('coarse global routing crosses the date line with truthful resolution',async({page})=>{
   await page.goto('/');await page.getByRole('button',{name:'Directions',exact:true}).click();
   await coordinates(page,'A','0','179');await coordinates(page,'B','0','-179');
@@ -18,7 +18,7 @@ test('coarse global routing crosses the date line with truthful resolution',asyn
 });
 test('science preferences select a real published outcrop and profile is keyboard inspectable',async({page})=>{
   await page.goto('/');await page.getByRole('button',{name:'Directions',exact:true}).click();await page.getByRole('button',{name:'Try Jezero terrain example'}).click();
-  await page.locator('.science-objectives>summary').click();await page.getByLabel('Ancient water',{exact:true}).check();await page.getByText('Advanced settings',{exact:true}).click();
+  await page.locator('.science-objectives > .accordion-actions .accordion-trigger').click();await page.getByLabel('Ancient water',{exact:true}).check();await page.getByText('Advanced settings',{exact:true}).click();
   await page.getByLabel('Distance preference',{exact:true}).fill('0');await page.getByLabel('Terrain preference',{exact:true}).fill('0');await page.getByLabel('Science preference',{exact:true}).fill('100');
   await page.locator('.route-option').filter({hasText:'Science-aware route'}).click({timeout:15000});
   await expect(page.locator('.science-outcome')).toContainText('1 / 1');await expect(page.locator('.science-outcome')).toContainText('outcrop');

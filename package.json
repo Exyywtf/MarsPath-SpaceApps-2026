@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "npm run build:worker && next dev --hostname 0.0.0.0",
-    "build": "npm run build:worker && next build",
+    "build": "npm run build:worker && next build && node scripts/prepare-static.mjs",
     "start": "node scripts/serve.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",

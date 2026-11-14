@@ -73,7 +73,7 @@ test("editing during a calculation keeps coordinate errors and the planner visib
   await page.getByRole("button", { name: "Directions", exact: true }).click();
   await example(page).click();
   await expect(page.locator(".route-status")).toContainText("Calculating");
-  await page.locator(".point-editor").first().locator("summary").click();
+  await page.locator(".point-editor").first().locator(".accordion-trigger").click();
   await page.getByLabel("A latitude", { exact: true }).fill("91");
   await page.getByRole("button", { name: "Apply A", exact: true }).click();
   await expect(page.locator(".field-error")).toContainText("Latitude");
@@ -138,12 +138,12 @@ test("featured Jezero survives filtering and opening Directions preserves the dr
   await page.goto("/");
   await expect(region(page)).toHaveAttribute("data-animating", "false");
   await page.getByRole("button", { name: "Directions", exact: true }).click();
-  await page.locator(".point-editor").first().locator("summary").click();
+  await page.locator(".point-editor").first().locator(".accordion-trigger").click();
   await page.getByLabel("A latitude", { exact: true }).fill("18.466");
   await page.getByLabel("A longitude", { exact: true }).fill("77.419");
   await page.getByRole("button", { name: "Apply A", exact: true }).click();
   await page.getByRole("button", { name: "Explore", exact: true }).click();
-  await page.locator(".place-filters summary").click();
+  await page.locator(".place-filters .accordion-trigger").click();
   await page.getByRole("button", { name: "Clays", exact: true }).click();
   const card = page.getByRole("region", { name: "Jezero Crater" });
   await expect(card).toBeVisible();

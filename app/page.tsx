@@ -1,2 +1,3 @@
 import Atlas from '@/components/Atlas';
-export default function Home(){return <Atlas/>;}
+import PageTransition from '@/components/PageTransition';
+export default function Home(){return <PageTransition page="atlas"><Atlas/></PageTransition>;}

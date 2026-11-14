@@ -41,11 +41,13 @@ import type { LayerDataset } from "@/lib/layers";
 import { createScientificOverlay, type OverlayState } from "@/lib/scientificOverlay";
 import { scienceTargets } from "@/lib/science";
 import { prepareReveal, revealPrefix } from "@/lib/routePresentation";
+import { labelRect, selectMapLabels, type LabelInput, type LabelPlacement } from "@/lib/mapLabels";
+import type { MapInsets, MapLayout } from "@/lib/mapLayout";
+export type { MapInsets } from "@/lib/mapLayout";
 
 const featuredLabels = new Set(["jezero", "gale", "valles", "oxia", "eridania"]);
 const revealTiming = { shortest: 740, longest: 1330, alternative: 270, stagger: 120 };
 const marsExtent = [-180, -90, 180, 90];
-export type MapInsets = [top: number, right: number, bottom: number, left: number];
 type MarkerKind = "start" | "end" | number;
 
 function endpointStyle(kind: MarkerKind, label: string) {
@@ -88,6 +90,7 @@ export interface MapHandle {
   fitRoute: (points: LonLat[]) => void;
   finishReveal: () => void;
   showProfilePoint: (point: LonLat | null) => void;
+  refreshLayout: () => void;
 }
 export interface MapRoute {
   id: string;
@@ -119,6 +122,7 @@ interface Props {
   onRevealState: (drawing: boolean) => void;
   terrainBounds: number[];
   getInsets: (width: number, height: number) => MapInsets;
+  getLayout: () => MapLayout;
   onInspect?: (point: LonLat) => void;
   layer?: LayerDataset | null;
   layerOpacity?: number;
@@ -131,7 +135,8 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
   const host = useRef<HTMLDivElement>(null),
     map = useRef<Map | null>(null),
     handlers = useRef(props),
-    syncMetadata = useRef<() => void>(() => {});
+    syncMetadata = useRef<() => void>(() => {}),
+    refreshLabels = useRef<() => void>(() => {});
   const frame = useRef<ReturnType<typeof measureFrame>>(null);
   const bases = useRef<TileLayer<WMTS>[]>([]),
     markers = useRef<VectorLayer<VectorSource>[]>([]);
@@ -185,6 +190,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
   useImperativeHandle(
     ref,
     () => ({
+      refreshLayout: () => refreshLabels.current(),
       focus: (point, zoom = 6) => {
         actions.current.focus(point, zoom, duration());
         syncMetadata.current();
@@ -346,40 +352,39 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       labelSource.addFeature(new Feature({
         geometry: new Point(asLonLat(l.coordinates)), locationId: l.id, name: l.name,
       }));
-    const labelStyles = new globalThis.Map<string, Style>();
     const labelMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const labelFont = getComputedStyle(host.current).getPropertyValue("--font-sans").trim() || "sans-serif";
-    let detailedLabels = false, labelAlpha = 0, labelFrame = 0;
-    const labelLayer = new VectorLayer({
-      source: labelSource,
-      declutter: true,
-      updateWhileAnimating: true,
-      updateWhileInteracting: true,
-      style: (f) => {
-        const id = String(f.get("locationId")), active = id === handlers.current.selected;
-        const alpha = active || featuredLabels.has(id) ? 1 : labelAlpha;
-        if (alpha === 0) return;
-        const key = id + active;
-        if (!labelStyles.has(key))
-          labelStyles.set(key, new Style({
-            zIndex: active ? 3 : id === "jezero" ? 2 : 1,
-            text: new Text({
-              text: String(f.get("name")), offsetY: -18,
-              font: "580 13px " + labelFont,
-              fill: new Fill(),
-              backgroundFill: new Fill(),
-              backgroundStroke: new Stroke({ width: 1 }),
-              padding: [3, 6, 3, 6],
-            }),
-          }));
-        const style = labelStyles.get(key)!;
-        const text = style.getText()!;
-        text.getFill()?.setColor(active ? "#ffe2c2" : [255, 245, 231, alpha]);
-        text.getBackgroundFill()?.setColor([33, 28, 25, alpha * 0.95]);
-        text.getBackgroundStroke()?.setColor(active ? "#f9b37b" : [115, 89, 71, alpha]);
-        return style;
+    const context = document.createElement("canvas").getContext("2d")!;
+    context.font = "580 13px " + labelFont;
+    const measurements = new globalThis.Map<string, { text: string; width: number; height: number }>();
+    const labelStates = new globalThis.Map<string, {
+      style: Style; alpha: number; from: number; target: number; started: number; placement?: LabelPlacement;
+    }>();
+    function measureLabel(name: string) {
+      const lines: string[] = [];
+      for (const word of name.split(" ")) {
+        const last = lines.at(-1);
+        if (last && context.measureText(last + " " + word).width <= 150) lines[lines.length-1] += " " + word;
+        else lines.push(word);
+      }
+      return { text: lines.join("\n"), width: Math.ceil(Math.max(...lines.map((line) => context.measureText(line).width))) + 14,
+        height: lines.length * 16 + 8 };
+    }
+    for (const feature of labelSource.getFeatures()) {
+      const id = String(feature.get("locationId")), size = measureLabel(String(feature.get("name")));
+      measurements.set(id, size);
+      labelStates.set(id, { alpha: 0, from: 0, target: 0, started: 0, style: new Style({
+        text: new Text({ text: size.text, font: "580 13px " + labelFont, textAlign: "center", textBaseline: "middle",
+          fill: new Fill(), backgroundFill: new Fill(), backgroundStroke: new Stroke({ width: 1 }), padding: [4, 7, 4, 7] }),
+      }) });
+    }
+    const labelLayer = new VectorLayer({ source: labelSource, declutter: false, updateWhileAnimating: true,
+      updateWhileInteracting: true, style: (feature) => {
+        const state = labelStates.get(String(feature.get("locationId")))!;
+        return state.alpha > 0 && state.placement ? state.style : undefined;
       },
     });
+    let labelFrame = 0, labelsDirty = true;
     markers.current = [markerLayer, labelLayer];
     const boundsLayer = new VectorLayer({
       source: boundsSource.current,
@@ -587,14 +592,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       const v = instance.getView(),
         c = v.getCenter()!,
         z = v.getZoom() ?? 0;
-      const viewLon = c[0] + (frame.current?.offset[0] ?? 0) * (v.getResolution() ?? 0);
-      for (const label of labelSource.getFeatures()) {
-        const geometry = label.getGeometry() as Point;
-        const [x, y] = geometry.getCoordinates(), origin = normalizeLon(x);
-        const nearest = origin + 360 * Math.round((viewLon - origin) / 360);
-        if (Math.abs(nearest - x) > 1e-7) geometry.setCoordinates([nearest, y]);
-      }
-      labelLayer.changed();
+      requestLabels();
       // View metadata changes only on completed moves; no JSON work each frame.
       if (host.current) {
         host.current.dataset.center = JSON.stringify(c);
@@ -647,23 +645,95 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     });
     syncMetadata.current = syncView;
     instance.on("moveend", syncView);
-    const updateLabels = () => {
-      const zoom = instance.getView().getZoom() ?? 0;
-      const visible = zoom >= (detailedLabels ? 3.75 : 4.15);
-      if (visible === detailedLabels && !labelMotion.matches) return;
-      detailedLabels = visible;
-      cancelAnimationFrame(labelFrame);
-      const from = labelAlpha, started = performance.now(), target = Number(visible);
-      function step(now: number) {
-        const progress = labelMotion.matches ? 1 : Math.min(1, (now - started) / 165);
-        labelAlpha = from + (target - from) * progress;
-        labelLayer.changed();
-        if (progress < 1) labelFrame = requestAnimationFrame(step);
+    function requestLabels() {
+      labelsDirty = true;
+      if (!labelFrame) labelFrame = requestAnimationFrame(paintLabels);
+    }
+    function paintLabels(now: number) {
+      labelFrame = 0;
+      if (labelsDirty) {
+        labelsDirty = false;
+        const center = instance.getView().getCenter() ?? [0, 0];
+        const inputs: LabelInput[] = [];
+        for (const feature of labelSource.getFeatures()) {
+          const id = String(feature.get("locationId")), geometry = feature.getGeometry() as Point;
+          const [x, y] = geometry.getCoordinates(), origin = normalizeLon(x);
+          const nearest = origin + 360 * Math.round((center[0] - origin) / 360);
+          if (Math.abs(nearest - x) > 1e-7) geometry.setCoordinates([nearest, y]);
+          const pixel = instance.getPixelFromCoordinate([nearest, y]);
+          if (!pixel) continue;
+          const size = measurements.get(id)!;
+          inputs.push({ id, x: pixel[0], y: pixel[1], width: size.width, height: size.height,
+            priority: id === handlers.current.selected ? 0 : id === "jezero" ? 1 : featuredLabels.has(id) ? 2 : 3 });
+        }
+        const previous = new globalThis.Map<string, LabelPlacement>();
+        const exiting = [];
+        for (const input of inputs) {
+          const state = labelStates.get(input.id)!;
+          if (!state.placement) continue;
+          state.placement = { ...state.placement, rect: labelRect(input, state.placement.position) };
+          if (state.target) previous.set(input.id, state.placement);
+          else if (state.alpha > 0) exiting.push(state.placement.rect);
+        }
+        const layout = handlers.current.getLayout();
+        const [width, height] = instance.getSize() ?? [0, 0];
+        const available = layout.viewport.width ? layout : {
+          viewport: { x: 0, y: 0, width, height }, overlays: [],
+        };
+        let selected = selectMapLabels(inputs, available, previous, exiting);
+        const leaving = new globalThis.Set<string>();
+        // An evicted label reserves its old space until its fade completes.
+        for (let pass = 0; pass < previous.size; pass++) {
+          const newlyLeaving = [...previous].filter(([id]) => !selected.has(id) && !leaving.has(id));
+          if (!newlyLeaving.length) break;
+          for (const [id] of newlyLeaving) leaving.add(id);
+          selected = selectMapLabels(inputs, available, previous,
+            [...exiting, ...[...leaving].map((id) => previous.get(id)!.rect)]);
+        }
+        for (const input of inputs) {
+          const state = labelStates.get(input.id)!, next = selected.get(input.id);
+          if (next) state.placement = next;
+          const target = Number(!!next && handlers.current.showLocations);
+          if (target !== state.target) { state.from = state.alpha; state.target = target; state.started = now; }
+          const position = state.placement?.rect;
+          if (position) {
+            const styleText = state.style.getText()!;
+            styleText.setOffsetX(position.x + position.width / 2 - input.x);
+            styleText.setOffsetY(position.y + position.height / 2 - input.y);
+          }
+        }
       }
-      if (labelMotion.matches) step(started);
-      else labelFrame = requestAnimationFrame(step);
-    };
-    instance.getView().on("change:resolution", updateLabels);
+      let moving = false, finishedExit = false;
+      for (const [id, state] of labelStates) {
+        const t = labelMotion.matches ? 1 : Math.min(1, (now - state.started) / 180);
+        const old = state.alpha;
+        state.alpha = state.from + (state.target - state.from) * t;
+        if (t < 1 && state.from !== state.target) moving = true;
+        if (old > 0 && state.alpha === 0) finishedExit = true;
+        const active = id === handlers.current.selected, text = state.style.getText()!, alpha = state.alpha;
+        text.getFill()?.setColor(active ? [255, 226, 194, alpha] : [255, 245, 231, alpha]);
+        text.getBackgroundFill()?.setColor([33, 28, 25, alpha * .95]);
+        text.getBackgroundStroke()?.setColor(active ? [249, 179, 123, alpha] : [115, 89, 71, alpha]);
+        state.style.setZIndex(active ? 3 : id === "jezero" ? 2 : 1);
+      }
+      labelLayer.changed();
+      if (finishedExit) labelsDirty = true;
+      if (moving || labelsDirty) labelFrame = requestAnimationFrame(paintLabels);
+    }
+    refreshLabels.current = requestLabels;
+    instance.getView().on(["change:center", "change:resolution"], requestLabels);
+    labelMotion.addEventListener("change", requestLabels);
+    let labelsDisposed = false;
+    document.fonts.ready.then(() => {
+      if (labelsDisposed) return;
+      context.font = "580 13px " + labelFont;
+      for (const feature of labelSource.getFeatures()) {
+        const id = String(feature.get("locationId")), size = measureLabel(String(feature.get("name")));
+        measurements.set(id, size);
+        labelStates.get(id)!.style.getText()!.setText(size.text);
+      }
+      requestLabels();
+    });
     const resize = () => {
       instance.updateSize();
       const next = actions.current.readFrame();
@@ -705,6 +775,9 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     return () => {
       cancelAnimationFrame(revealController.frame);
       cancelAnimationFrame(labelFrame);
+      labelsDisposed = true;
+      labelMotion.removeEventListener("change", requestLabels);
+      refreshLabels.current = () => {};
       observer.disconnect();
       motion.removeEventListener("change", stop);
       overlay.dispose();

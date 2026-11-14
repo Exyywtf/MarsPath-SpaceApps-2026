@@ -1,4 +1,7 @@
 "use client";
+import EvidenceLink from "./EvidenceLink";
+import StyledSelect from "./StyledSelect";
+import Accordion from "./Accordion";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import type { LonLat } from "@/lib/mars";
 import { formatDistance, type PlannedRoute } from "@/lib/planner";
@@ -56,11 +59,10 @@ export const EnvironmentalAnalysis = memo(function EnvironmentalAnalysis({
           {(Object.keys(factorInfo) as FactorId[]).map((id) => {
             const factor = analysis.factors[id], info = factorInfo[id];
             return (
-              <details key={id} className="factor-detail">
-                <summary>
+              <Accordion key={id} className="factor-detail" title={<>
                   <span>{info.name}</span>
                   <strong>{factor.mean === null ? "Unavailable" : number(factor.mean,info.precision) + " " + info.unit}</strong>
-                </summary>
+                </>}>
                 {factor.min !== null && factor.max !== null ? (
                   <p>Distance-weighted mean shown above. Sampled range {number(factor.min,info.precision)}–{number(factor.max,info.precision)} {info.unit} · {coverage(factor.coverage)} of route length.</p>
                 ) : <p>{factor.reason}</p>}
@@ -71,22 +73,21 @@ export const EnvironmentalAnalysis = memo(function EnvironmentalAnalysis({
                   : ranking?.climate[id]?.reason || "Scenario context. Excluded from the route score."}</p>
                 <p>{factor.credit}</p>
                 <p className="factor-links">
-                  <a href={factor.source} target="_blank" rel="noreferrer">Source ↗</a>
-                  {factor.sourceData && <a href={factor.sourceData} target="_blank" rel="noreferrer">Data ↗</a>}
-                  <a href={factor.terms} target="_blank" rel="noreferrer">Terms ↗</a>
+                  <EvidenceLink href={factor.source} target="_blank" rel="noreferrer">Source</EvidenceLink>
+                  {factor.sourceData && <EvidenceLink href={factor.sourceData} target="_blank" rel="noreferrer">Data</EvidenceLink>}
+                  <EvidenceLink href={factor.terms} target="_blank" rel="noreferrer">Terms</EvidenceLink>
                 </p>
-              </details>
+              </Accordion>
             );
           })}
         </div>
       )}
       {alternatives.length > 1 && (
-        <details className="quality-details">
-          <summary>Compare a metric</summary>
+        <Accordion className="quality-details" title={<>Compare a metric</>}>
           <label className="analysis-select">Comparison metric
-            <select value={metric} onChange={(e) => setMetric(e.target.value as Metric)}>
+            <StyledSelect value={metric} onChange={(e) => setMetric(e.target.value as Metric)}>
               {choices.filter((id) => id !== "elevation").map((id) => <option key={id} value={id}>{labels[id]}{id in factorInfo ? " · mean" : ""}</option>)}
-            </select>
+            </StyledSelect>
           </label>
           <ul className="metric-comparison">
             {measurements.map(({route: other,value}) => (
@@ -97,7 +98,7 @@ export const EnvironmentalAnalysis = memo(function EnvironmentalAnalysis({
               </li>
             ))}
           </ul>
-        </details>
+        </Accordion>
       )}
     </section>
   );
@@ -239,10 +240,10 @@ export const RouteProfile = memo(function RouteProfile({
   return (
     <div className="profile-chart">
       <label className="analysis-select">Route profile
-        <select value={requestedTrack} onChange={(event) => changeTrack(event.target.value as Track)}>
+        <StyledSelect value={requestedTrack} onChange={(event) => changeTrack(event.target.value as Track)}>
           {route.terrain && <option value="elevation">Elevation</option>}
           {(Object.keys(factorInfo) as FactorId[]).map((id) => <option key={id} value={id}>{labels[id]}</option>)}
-        </select>
+        </StyledSelect>
       </label>
       <div className="profile-frame" ref={chart} aria-busy={requestedTrack !== track}>
       {plot ? <div className="profile-plot" key={track}>
@@ -295,8 +296,7 @@ export function ClimatePreferenceForm({
 }) {
   const [message,setMessage] = useState("");
   return (
-    <details className="quality-details climate-preferences">
-      <summary>Climate preferences</summary>
+    <Accordion className="quality-details climate-preferences" title={<>Climate preferences</>}>
       <label className="layer-toggle">
         <span>Use climate preferences</span>
         <input type="checkbox" checked={value.enabled} onChange={(e) => onChange({ ...value, enabled: e.target.checked })} />
@@ -342,6 +342,6 @@ export function ClimatePreferenceForm({
           ))}
         </form>
       )}
-    </details>
+    </Accordion>
   );
 }

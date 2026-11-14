@@ -1,8 +1,10 @@
 "use client";
+import StyledSelect from "./StyledSelect";
+import Accordion from "./Accordion";
 
 import { useState, type ReactNode } from "react";
-import Link from "next/link";
-import { ArrowUpRight, ChevronDown, Search } from "lucide-react";
+import EvidenceLink from "./EvidenceLink";
+import { Search } from "lucide-react";
 import { locations } from "@/lib/atlas";
 import records from "@/data/sources.json";
 import services from "@/data/services.json";
@@ -12,9 +14,9 @@ const sourceTypes = ["All", ...new Set(records.map((record) => record.type))];
 
 function OriginalLink({ href, children }: { href: string; children: ReactNode }) {
   return (
-    <a className="original-link" href={href} target="_blank" rel="noreferrer">
-      {children}<ArrowUpRight size={15} aria-hidden="true" />
-    </a>
+    <EvidenceLink className="original-link" href={href} target="_blank" rel="noreferrer">
+      {children}
+    </EvidenceLink>
   );
 }
 
@@ -27,7 +29,7 @@ export default function SourceLibrary() {
     [record.id, record.title, record.institution, record.type, record.description].join(" ").toLowerCase().includes(term)
   );
   return (
-    <main className="document-page sources-page page-arrival">
+    <main className="document-page sources-page page-view">
       <DocumentNav current="sources" />
       <header className="document-heading">
         <p className="eyebrow orange">Scientific sources</p>
@@ -41,10 +43,9 @@ export default function SourceLibrary() {
             placeholder="Search by region, mission or dataset…" />
         </label>
         <div className="source-select">
-          <select aria-label="Filter source type" value={type} onChange={(event) => setType(event.target.value)}>
+          <StyledSelect aria-label="Filter source type" value={type} onChange={(event) => setType(event.target.value)}>
             {sourceTypes.map((option) => <option key={option}>{option}</option>)}
-          </select>
-          <ChevronDown size={16} aria-hidden="true" />
+          </StyledSelect>
         </div>
         <p className="source-count" role="status">{filtered.length} {filtered.length === 1 ? "source" : "sources"}</p>
       </div>
@@ -60,8 +61,7 @@ export default function SourceLibrary() {
             <p className="source-institution">{record.institution}</p>
             <p>{record.description}</p>
             <OriginalLink href={record.url}>Original source</OriginalLink>
-            <details className="dataset-details">
-              <summary>Provenance, units &amp; limitations</summary>
+            <Accordion className="dataset-details" title={<>Provenance, units &amp; limitations</>}>
               <dl>
                 {[
                   ["Source ID", record.id],
@@ -85,7 +85,7 @@ export default function SourceLibrary() {
                   <OriginalLink href={service.capabilities}>{service.title} · {service.matrixIds.length} tile levels</OriginalLink>
                 </p>
               ))}
-            </details>
+            </Accordion>
             {record.coordinateSource && <>
               <p>{record.coordinateNote}</p>
               <OriginalLink href={record.coordinateSource}>Coordinate evidence</OriginalLink>
@@ -112,7 +112,7 @@ export default function SourceLibrary() {
       <h2>Reference layers and missing data</h2>
       <p className="lede">The atmospheric overlays use a numerical MCD 6.2 export with reconstructed coordinates and source checksums. The NASA historical radiation layer shows registered illustration colours and image coverage. Its original model grid is unknown. Missing measurements remain unavailable.</p>
       <div className="notice">MarsPath supports research and education. Dataset resolution, coverage and uncertainty limit each interpretation. NASA provides source imagery and has not endorsed MarsPath.</div>
-      <Link className="text-link" href="/methodology/">Read methods, limitations &amp; AI disclosure <ArrowUpRight size={14} aria-hidden="true" /></Link>
+      <EvidenceLink href="/methodology/">Read methods, limitations &amp; AI disclosure</EvidenceLink>
     </main>
   );
 }

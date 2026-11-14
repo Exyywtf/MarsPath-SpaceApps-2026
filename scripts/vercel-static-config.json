@@ -1,0 +1,8 @@
+{
+  "version": 3,
+  "routes": [
+    { "src": "/(.*\\.txt)", "headers": { "Content-Type": "text/x-component; charset=utf-8" }, "continue": true },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "status": 404, "dest": "/404.html" }
+  ]
+}

@@ -9,7 +9,7 @@ test("both Radiation modes render, preserve the view and expose the appropriate 
   await page.getByRole("button", { name: "Layers", exact: true }).click();
   const model = page.waitForResponse((r) => r.url().endsWith("radiation-atris-v1.png") && r.ok());
   const modelGrid = page.waitForResponse((r) => r.url().endsWith("radiation-atris-v1-pressure.f32") && r.ok());
-  await page.getByRole("button", { name: /^Radiation / }).click();
+  await page.getByRole('button', { name: /^Radiation Model/ }).click();
   await Promise.all([model,modelGrid]);
   await expect(page.locator(".map-legend")).toContainText("Modelled cosmic rays");
   await expect(page.locator(".map-legend")).toContainText("mSv/year");
@@ -63,7 +63,9 @@ test("Jezero samples export with connectors and climate preferences reuse the ro
   await scrubber.focus();
   await page.keyboard.press("ArrowRight");
   await expect(scrubber).toHaveAttribute("aria-valuetext", /temperature.*K/);
-  await page.getByText("Climate preferences", { exact: true }).click();
+  const climateSettings = page.getByRole('button', { name: 'Climate preferences', exact: true });
+  if (!await climateSettings.isVisible()) await edit.click();
+  await climateSettings.click();
   const before = await page.locator(".route-option").allTextContents();
   const requests = await page.locator("html").getAttribute("data-calculations");
   expect(requests).toBe("2");
