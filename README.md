@@ -1,6 +1,6 @@
 # MarsPath
 
-A planet-wide Mars atlas with 13 scientific destinations, inspectable terrain and climate layers, and numerical route comparisons.
+A planet-wide Mars atlas with 14 scientific destinations, 42 credited mission images, inspectable science layers and numerical route comparisons.
 
 **Live app:** https://marspath-spaceapps-2026.vercel.app/
 
@@ -10,10 +10,10 @@ Built for NASA Space Apps 2026. Research and education only; no NASA endorsement
 
 ## Try the application
 
-1. Search or filter the 13 destinations in **Explore**. Every destination can be used as A or B and links to its scientific and coordinate sources.
-2. Open **Layers** and select MOLA elevation or an MCD temperature, pressure or wind-speed field. Click the map, or press Enter on the focused map, to inspect a value and its units.
+1. Search or filter the destinations in **Explore**. Browse each captioned image gallery and use any destination as A or B.
+2. Open **Layers** and choose an overlay. Click the map to inspect numerical fields or a mapped unit. Click a mineral marker for its catalogue record.
 3. Open **Directions**. Set A and B on the map, enter coordinates, or use **Try Jezero terrain example**. Drag endpoints and add up to three ordered stops.
-4. Compare route metrics, select a science objective in Jezero, and inspect the elevation profile using the pointer or keyboard. Export the selected route and its provenance as Mars coordinates in a GeoJSON-shaped file.
+4. Compare route metrics, select a science objective in Jezero, or compare coverage of a mapped geologic unit. Export the selected route and its evidence as Mars coordinates in a GeoJSON-shaped file.
 
 ## Run locally
 
@@ -39,9 +39,10 @@ Open http://127.0.0.1:3000. `npm start` serves exported files; it does not use N
 npm run typecheck
 npm run lint
 npm test
-npx playwright install chromium
+npx playwright install chromium webkit
 # Start the static export with npm start, then:
-npm run test:e2e
+npm run test:e2e -- --browser chromium
+npm run test:e2e -- --browser webkit
 ```
 
 Set `BASE_URL` to the deployed site to run browser tests against production. The NASA tile checks need network access. Vitest exercises both controlled grids and real Jezero and MOLA terrain. Normal tests leave validation records untouched. To regenerate the records, first make the original rasters available, then run:
@@ -61,14 +62,17 @@ Remove-Item Env:UPDATE_VALIDATION
 
 The GIS scripts preserve the originals. `scripts/gis/process_v2_layers.py` uses the supplied MOLA raster and the retained numerical MCD ASCII export to regenerate the 0.25° terrain derivative, climate arrays, and overlay PNGs. The build uses the tracked derivatives directly. Keep the large original rasters out of Git.
 
+For V4, download the original assets under the names listed in [the science manifest](data/exploration-science.json) into an ignored snapshot directory. Run `scripts/gis/process_v4_science.py <snapshot>` to rebuild the derivatives and `scripts/validation/verify_v4_datasets.py <snapshot>` to check them independently. The validation script accepts `--write` to regenerate its record.
+
 ## Architecture
 
-Next.js static export serves React and OpenLayers with a custom 3,396,190 m Mars sphere. NASA WMTS imagery loads directly from Mars Trek. A persistent worker caches terrain, computed legs, and environmental profiles for the current route candidates. The application reveals result geometry independently of the worker's measurements. Both radiation views, climate arrays, terrain derivatives and 13 destination records ship as static assets.
+Next.js static export serves React and OpenLayers with a custom 3,396,190 m Mars sphere. NASA WMTS imagery loads directly from Mars Trek. A persistent worker caches terrain, computed legs, environmental profiles and exploration summaries for the current route candidates. The application reveals result geometry before the profiles and science summaries finish. Images and scientific data derivatives load when needed.
 
 ## Limits and release scope
 
 - Fine terrain routing uses the 20 m Jezero DEM. The global MOLA tier uses 0.25° cells with approximately 14.8 km north–south spacing. Unresolved connections can use distance-only geographic planning.
 - Local science comparisons use three published representative Jezero delta type locations. Global science themes link to regions and original evidence.
+- Geology, mineral catalogue proximity and apparent thermal inertia add route context with zero ranking weight. SWIM ice consistency and the TES dust-cover index remain references while their release checks are unresolved.
 - MCD overlays show one climatology snapshot. Climate preferences can rank existing paths when the grid resolves a difference. Radiation provides one numerical cosmic-ray scenario and an approximately registered historical illustration. Its absolute dose accuracy is unknown and it carries zero route weight.
 - Terrain coverage and numerical validation measure inputs and calculations. Safety, rock-scale obstacles and physical alignment accuracy remain outside the model.
 - GitHub is private. The public Vercel deployment is managed through the CLI.

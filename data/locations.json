@@ -254,11 +254,11 @@
       "Sediments"
     ],
     "mission": "MRO · CRISM",
-    "sourceUrl": "https://www.jpl.nasa.gov/images/pia25358-a-complex-geologic-history-of-aram-chaos/",
+    "sourceUrl": "https://science.nasa.gov/photojournal/a-complex-geologic-history-of-aram-chaos/",
     "image": null,
     "imageSource": null,
     "accessed": "2026-11-14T11:01:53.894847+00:00",
-    "sourceStatus": "Source access incomplete: HTTP Error 403: Forbidden"
+    "sourceStatus": "Verified NASA Photojournal caption for PIA25358"
   },
   {
     "id": "eridania",
@@ -305,5 +305,22 @@
     "sourceStatus": "retrieved; concise claim linked to original source",
     "imageCaption": "Processed orbital views of a Terra Sirenum chloride-deposit site; colours are not true colour.",
     "imageCredit": "Credit: NASA/JPL-Caltech/University of Arizona/Arizona State University/University of Hawaii. Original caption and usage terms apply."
+  },
+  {
+    "id": "olympus",
+    "name": "Olympus Mons",
+    "coordinates": [-134, 18.4],
+    "coordinateSource": "https://planetarynames.wr.usgs.gov/Feature/4453",
+    "coordinateNote": "USGS/IAU representative centre, 18.40°N and 226.00°E. It represents the volcano as a whole.",
+    "gazetteerExtent": "13.55–23.55°N · 220.70–231.00°E",
+    "category": "Volcanic geology",
+    "summary": "A shield volcano with stacked lava flows, a steep bounding scarp and a summit caldera formed by overlapping collapses.",
+    "tags": ["Volcanic geology", "Lava flows"],
+    "mission": "Viking Orbiter 1 · MRO HiRISE",
+    "sourceUrl": "https://pubs.usgs.gov/publication/sim3470",
+    "image": null,
+    "imageSource": null,
+    "accessed": "2026-11-15",
+    "sourceStatus": "Verified Gazetteer position and USGS caldera mapping"
   }
 ]

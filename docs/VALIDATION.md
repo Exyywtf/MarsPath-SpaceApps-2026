@@ -1,5 +1,13 @@
 # Validation record
 
+## MarsPath V4
+
+- [Dataset checks](../data/validation/v4-datasets.json) independently matched 608 USGS polygon cell centres, all 777 mineral catalogue records and 605 TES cells, including 317 masked cells. The verifier checks output hashes and the relationship between raster colours and their source-derived lookup.
+- [Route evidence checks](../data/validation/v4-route-evidence.json) cover four exported routes, including a regional Jezero path, a coarse date-line crossing, a Terra Sirenum route and a geographic connection. Independent Mars-sphere sampling agreed on mapped units, valid thermal lengths and closest catalogue approaches. The largest thermal coverage-length difference was 0.706 m. Ground alignment accuracy remains unknown.
+- The local static build passed 56 Playwright journeys each in Chromium and WebKit, together with 35 numerical and unit tests, TypeScript and ESLint. Gallery captures cover nine viewport sizes in both engines. Chromium used touch swipe emulation, and WebKit used touch taps and keyboard scrolling. Physical devices and hardware screen readers remain untested.
+
+Run `scripts/validation/verify_v4_datasets.py <snapshot>` with the original files named in the science manifest. Pass downloaded route GeoJSON files to `scripts/validation/verify_v4_route_evidence.py`. Both scripts read the committed derivatives and write validation records only with `--write`.
+
 ## MarsPath V3.2
 
 - Application commit `5c683f9` passed 39 Chromium and 39 WebKit journeys on the public Vercel site. The runs took 1.7 and 2.1 minutes. Type checking, lint, the 29 numerical and unit tests, the independent Python checks and the static export also passed.

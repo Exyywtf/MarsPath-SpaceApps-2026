@@ -6,7 +6,7 @@ import './documents.css';
 import './controls.css';
 import 'ol/ol.css';
 import { DocumentScrollbars } from '@/components/ScrollArea';
-export const metadata: Metadata={title:'MarsPath — Planetary atlas & mission planning',description:'Explore 13 Mars science destinations, plan terrain routes and compare numerical climate and modelled radiation profiles.'};
+export const metadata: Metadata={title:'MarsPath — Planetary atlas & mission planning',description:'Explore sourced imagery of Mars, plan terrain routes and compare geologic, climate and radiation evidence.'};
 export const viewport: Viewport = { viewportFit: "cover", themeColor: "#090e12" };
 const sans=localFont({src:'./fonts/geist-sans.woff2',variable:'--font-sans',display:'swap',weight:'100 900'});
 const mono=localFont({src:'./fonts/geist-mono.woff2',variable:'--font-mono',display:'swap',weight:'100 900'});

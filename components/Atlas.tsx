@@ -974,7 +974,7 @@ export default function Atlas() {
                 <label className="layer-toggle">
                   <span>
                     Scientific destinations
-                    <small>13 source-linked regions</small>
+                    <small>{locations.length} source-linked regions</small>
                   </span>
                   <input
                     type="checkbox"
@@ -1126,6 +1126,7 @@ export default function Atlas() {
                   </p>
                   <Accordion className="quality-details" title={<>About this position</>}>
                     <p>{location.coordinateNote}</p>
+                    {location.gazetteerExtent && <p>Gazetteer extent · {location.gazetteerExtent}</p>}
                     <EvidenceLink
                       className="text-link"
                       href={location.coordinateSource}

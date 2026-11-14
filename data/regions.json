@@ -298,5 +298,16 @@
       "sirenum"
     ],
     "availability": "Global imagery and 0.25° MOLA coarse terrain routing. No fine regional DEM or verified local science-stop registry is enabled. Geographic fallback for unresolved connections."
+  },
+  {
+    "id": "olympus",
+    "name": "Olympus Mons",
+    "representativeCoordinates": [-134, 18.4],
+    "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
+    "level": "B",
+    "routingManifest": "/processed/mola-quarter.json",
+    "routingBounds": [-180, -90, 180, 90],
+    "sourceIds": ["trek", "gazetteer", "olympus", "geology"],
+    "availability": "Global imagery and 0.25° MOLA coarse terrain routing. SIM 3292 gives regional volcanic-unit context. Fine terrain routing and local science stops are unavailable. Geographic fallback supports unresolved connections."
   }
 ]

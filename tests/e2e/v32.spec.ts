@@ -144,7 +144,7 @@ test("HUD docking and Show map preserve the camera across nine sizes and workflo
   }
 });
 
-test("all thirteen cards align categories, tags, headers and full-width source images", async ({ page }) => {
+test("all cards align categories, tags, headers and full-width source images", async ({ page }) => {
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
@@ -175,6 +175,8 @@ test("all thirteen cards align categories, tags, headers and full-width source i
       expect(Math.abs(metadata.x)).toBeLessThan(0.5);
       expect(metadata.gap).toBeCloseTo(8, 0);
       const stage = (await page.locator('.gallery-stage').boundingBox())!;
+      await expect.poll(() => page.locator(".gallery-slide img").evaluateAll((nodes) =>
+        nodes.filter((node) => (node as HTMLImageElement).naturalWidth > 0).length)).toBe(3);
       const gallery = (await page.locator('.destination-gallery').boundingBox())!;
       expect(stage.height).toBe(205);
       expect(stage.width).toBe(await page.locator('.scroll-viewport[aria-label="Destination details"]').evaluate((node) => node.clientWidth));

@@ -21,3 +21,11 @@ Dependency copyright and license files remain in installed packages. Next.js, Re
 
 - Jian Zhang and Jingnan Guo, 2022. Figure 2 surface pressures and Figure 11 effective dose data were transposed, masked, and interpolated by MarsPath. The study archive is licensed under CC BY 4.0. [Data deposit](https://doi.org/10.5281/zenodo.5953666) · [License](https://creativecommons.org/licenses/by/4.0/).
 - PIA03480, NASA/Jet Propulsion Laboratory/JSC, March 2002. MarsPath preserves the original JPEG and reprojects both globes into an approximate historical overlay. [Original caption](https://www.jpl.nasa.gov/images/pia03480-estimated-radiation-dosage-on-mars/) · [JPL Image Use Policy](https://www.jpl.nasa.gov/jpl-image-use-policy/).
+
+## V4 galleries and science derivatives
+
+- Each gallery image retains its source caption, mission credit and usage conditions. The atlas packages resized WebP derivatives for credited educational use under the original image guidance. [Image registry](data/gallery.json) · [JPL Image Use Policy](https://www.jpl.nasa.gov/jpl-image-use-policy/).
+- Geology uses the public-domain USGS SIM 3292 unit polygons and style. Credit Tanaka et al. (2014) and USGS. [SIM 3292](https://pubs.usgs.gov/publication/sim3292).
+- Mineral markers retain source IDs and interpretations from two CC0 1.0 deposits. Credit the authors and the MRO CRISM and Mars Odyssey THEMIS teams. [Terra Sirenum CRISM catalogue](https://data.caltech.edu/records/yhd9q-q8g95) · [Chloride catalogue](https://data.caltech.edu/records/kasms-vp209).
+- Apparent thermal inertia uses the archived nightside MGS TES data and its interpolation mask. Credit Putzig, Mellon, Heet and Ward (2009), NASA PDS product MGS-M-TES-5-TIMAP-V1.0. [Original PDS archive](https://pds-geosciences.wustl.edu/missions/mgs/tes-timap.html).
+- Embla Carousel 8.6 uses the MIT license. The pinned dependency packages include their license files. [Embla license](https://github.com/davidjerleke/embla-carousel/blob/v8.6.0/LICENSE).

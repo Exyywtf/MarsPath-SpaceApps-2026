@@ -35,6 +35,16 @@ test("autoplay pauses on hover and focus and follows reduced motion", async ({ p
   const gallery = page.getByRole("region", { name: "Mawrth Vallis imagery" });
   await expect(gallery).toHaveAttribute("data-rotating", "true");
   await expect.poll(() => gallery.locator("img").evaluateAll((nodes) => nodes.filter((node) => (node as HTMLImageElement).naturalWidth > 0).length)).toBe(3);
+  const details = page.getByRole("region", { name: "Destination details" });
+  const scrollable = await details.evaluate((node) => node.scrollHeight - node.clientHeight >= 150);
+  if (scrollable) {
+    await details.evaluate((node) => { node.scrollTop = node.scrollHeight; });
+    await expect(gallery).toHaveAttribute("data-rotating", "false");
+    await page.clock.fastForward(6200);
+    await expect(gallery).toHaveAttribute("data-slide", "1");
+    await details.evaluate((node) => { node.scrollTop = 0; });
+    await expect(gallery).toHaveAttribute("data-rotating", "true");
+  }
   await gallery.locator(".gallery-stage").hover();
   await page.clock.fastForward(6200);
   await expect(gallery).toHaveAttribute("data-slide", "1");
@@ -50,6 +60,34 @@ test("autoplay pauses on hover and focus and follows reduced motion", async ({ p
   await expect(gallery.getByRole("button", { name: "Play image rotation" })).toBeDisabled();
   await gallery.getByRole("button", { name: "Next image" }).press("Enter");
   await expect(gallery).toHaveAttribute("data-slide", "3");
+});
+
+test("Olympus Mons links its volcano context and routes only at the supported resolution", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/?place=olympus");
+  const details = page.getByRole("region", { name: "Destination details" });
+  await expect(page.getByRole("heading", { name: "Olympus Mons", exact: true })).toBeVisible();
+  await expect(details.locator(".coordinates")).toContainText("18.400°N");
+  await expect(details.locator(".coordinates")).toContainText("134.000°W");
+  await expect(details).toContainText("0.25° MOLA coarse terrain routing");
+  await details.getByRole("button", { name: "About this position" }).click();
+  await expect(details).toContainText("13.55–23.55°N");
+  const gallery = page.getByRole("region", { name: "Olympus Mons imagery" });
+  const slides = images.filter((item) => item.destinationId === "olympus");
+  for (const slide of slides) {
+    await expect(gallery.getByRole("link", { name: "Original image source" })).toHaveAttribute("href", slide.sourcePage);
+    await gallery.getByRole("button", { name: "Next image" }).click();
+  }
+  await details.getByRole("button", { name: "Use as A", exact: true }).click();
+  await page.getByRole("button", { name: "Directions", exact: true }).click();
+  await expect(page.locator(".point-label strong").first()).toContainText("134.000°W");
+  const editor = page.locator(".point-editor").nth(1);
+  await editor.locator(".accordion-trigger").click();
+  await page.getByLabel("B latitude", { exact: true }).fill("18.4");
+  await page.getByLabel("B longitude", { exact: true }).fill("226.75");
+  await page.getByRole("button", { name: "Apply B", exact: true }).click();
+  await expect(page.locator(".route-status")).toContainText("0.25°");
+  await expect(page.getByRole("button", { name: "Export route & provenance" })).toBeEnabled();
 });
 
 test("a touch swipe changes the image while vertical scrolling stays native", async ({ browser, browserName, baseURL }) => {
