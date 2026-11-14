@@ -53,6 +53,7 @@ import type { OverlayState } from "@/lib/scientificOverlay";
 import { useLayerData } from "@/lib/useLayerData";
 import LayerManager, { LayerLegend } from "./LayerManager";
 import AtlasHelp from "./AtlasHelp";
+import ScrollArea from "./ScrollArea";
 import type { DialogHandle } from "./AtlasDialog";
 const MarsMap = dynamic(() => import("./MarsMap"), {
   ssr: false,
@@ -81,30 +82,22 @@ export default function Atlas() {
     headerRef = useRef<HTMLElement>(null),
     footerRef = useRef<HTMLElement>(null),
     controlsRef = useRef<HTMLDivElement>(null),
-    scrollRef = useRef<HTMLDivElement>(null),
-    scrollPositions = useRef<Partial<Record<Workflow, number>>>({}),
+    locationScroll = useRef<HTMLDivElement>(null),
     searchRef = useRef<HTMLInputElement>(null),
     help = useRef<DialogHandle>(null),
     helpButton = useRef<HTMLButtonElement>(null);
   const [{ panel, lastPanel, visited, leaving }, setWorkflow] = useState<{
     panel: Panel; lastPanel: Workflow; visited: ReadonlySet<Workflow>;
-    leaving: { id: Workflow; top: number; side: number } | null;
+    leaving: { id: Workflow } | null;
   }>(() => ({ panel: "places", lastPanel: "places", visited: new Set(["places"]), leaving: null }));
   const visiblePanel = panel ?? lastPanel;
   const switchPanel = useCallback((next: Panel) => {
-    const scroll = scrollRef.current;
-    if (panel && scroll) scrollPositions.current[panel] = scroll.scrollTop;
-    const style = scroll ? getComputedStyle(scroll) : null;
     const animate = next && panel && next !== panel && !matchMedia("(prefers-reduced-motion: reduce)").matches;
     setWorkflow((current) => current.panel === next ? current : {
       panel: next,
       lastPanel: next ?? current.lastPanel,
       visited: next && !current.visited.has(next) ? new Set([...current.visited, next]) : current.visited,
-      leaving: animate ? {
-        id: panel,
-        top: (scrollPositions.current[next] ?? 0) - (scroll?.scrollTop ?? 0) + parseFloat(style?.paddingTop ?? "0"),
-        side: parseFloat(style?.paddingLeft ?? "0"),
-      } : null,
+      leaving: animate ? { id: panel } : null,
     });
   }, [panel]);
   useEffect(() => {
@@ -118,7 +111,7 @@ export default function Atlas() {
     [settings, setSettings] = useState(defaultSettings),
     [placement, setPlacement] = useState<Placement>(null),
     [revision, setRevision] = useState(0),
-    [active, setActive] = useState<{ generation?: number; id: string } | null>(null),
+    [active, setActive] = useState<{ geometryKey: string; id: string } | null>(null),
     [drawing, setDrawing] = useState(false),
     [hideFeatured, setHideFeatured] = useState(false);
   const [climatePreferences, setClimatePreferences] = useState(defaultClimatePreferences);
@@ -147,7 +140,6 @@ export default function Atlas() {
   const engine = useRouteEngine(draft, settings, revision, climatePreferences);
   const result = engine.result ?? engine.previous?.result;
   const updating = !!engine.previous;
-  const generation = engine.generation ?? engine.previous?.generation;
   const [calculationSlow, setCalculationSlow] = useState(false);
   const [dismissedError, setDismissedError] = useState<string>();
   useEffect(() => {
@@ -280,15 +272,13 @@ export default function Atlas() {
         return;
       }
       switchPanel("location");
-      scrollPositions.current.location = 0;
-      if (panel === "location" && scrollRef.current) scrollRef.current.scrollTop = 0;
       setSelected(id);
       setSheet("half");
       const point = asLonLat(l.coordinates);
       const zoom = destinationZoom(id);
       moveCamera((target) => target.focus(point, zoom));
     },
-    [moveCamera, panel, placement, place, switchPanel],
+    [moveCamera, placement, place, switchPanel],
   );
   const setCoordinate = useCallback(
     (label: string) => readout.current?.set(label),
@@ -315,7 +305,7 @@ export default function Atlas() {
   const candidates = result?.routes;
   const scores = result?.scores;
   const recommended = scores ? scores.indexOf(Math.min(...scores)) : -1;
-  const manual = active && active.generation === generation && candidates
+  const manual = active && active.geometryKey === engine.geometryKey && candidates
     ? candidates.findIndex((route) => route.id === active.id) : -1;
   const selectedIndex = manual >= 0 ? manual : Math.max(0, recommended);
   const mapRoutes = useMemo<MapRoute[]>(() =>
@@ -405,13 +395,9 @@ export default function Atlas() {
     if (panel && !placement && document.activeElement !== document.body)
       document.getElementById("workflow-title")?.focus({ preventScroll: true });
   }, [panel, placement]);
-  const attachPanelScroll = useCallback((node: HTMLDivElement | null) => {
-    scrollRef.current = node;
-    attachScroll(node);
-  }, [attachScroll]);
   useLayoutEffect(() => {
-    if (panel && scrollRef.current) scrollRef.current.scrollTop = scrollPositions.current[panel] ?? 0;
-  }, [panel]);
+    if (locationScroll.current) locationScroll.current.scrollTop = 0;
+  }, [selected]);
   useLayoutEffect(() => {
     const nav = headerRef.current?.querySelector("nav");
     if (!nav) return;
@@ -430,11 +416,10 @@ export default function Atlas() {
   function workflowState(id: Workflow) {
     const exiting = leaving?.id === id;
     return {
-      hidden: visiblePanel !== id && !exiting,
+      "data-active": visiblePanel === id,
       inert: visiblePanel !== id,
       "aria-hidden": visiblePanel !== id || undefined,
       "data-leaving": exiting,
-      style: exiting ? { top: leaving.top, left: leaving.side, right: leaving.side } : undefined,
     };
   }
   const dragStart = useRef(0);
@@ -792,20 +777,9 @@ export default function Atlas() {
               <X size={20} />
             </button>
           </div>
-          <div className="panel-scroll" ref={attachPanelScroll}
-            inert={sheet === "peek" && placement !== null}
-            onWheel={interruptScroll}
-            onTouchMove={interruptScroll}
-            onKeyDown={(e) => {
-              if (["PageDown", "PageUp", "Home", "End", "ArrowDown", "ArrowUp", "Tab"].includes(e.key))
-                interruptScroll();
-            }}
-            onPointerDown={(e) => {
-              const target = e.target as Element;
-              if (target === e.currentTarget || target.closest("#route-planning")) interruptScroll();
-            }}
-          >
-            <div className="workflow-view" {...workflowState("places")}>
+          <div className="workflow-stack" inert={sheet === "peek" && placement !== null}>
+            <ScrollArea className="workflow-view" viewportClassName="panel-scroll" label="Explore destinations"
+              active={panel === "places"} {...workflowState("places")}>
                 <label className="search">
                   <Search size={18} />
                   <input
@@ -920,9 +894,10 @@ export default function Atlas() {
                 <p className="small-note panel-footnote">
                   Source-linked research and education. No NASA endorsement.
                 </p>
-            </div>
+            </ScrollArea>
             {visited.has("layers") && (
-              <div className="layer-content workflow-view" {...workflowState("layers")}>
+              <ScrollArea className="layer-content workflow-view" viewportClassName="panel-scroll" label="Scientific layers"
+                active={panel === "layers"} {...workflowState("layers")}>
                 <p className="panel-intro">
                   See the surface through different evidence.
                 </p>
@@ -1000,10 +975,23 @@ export default function Atlas() {
                 <Link className="text-link" href="/sources/">
                   Dataset sources & limitations ↗
                 </Link>
-              </div>
+              </ScrollArea>
             )}
             {visited.has("directions") && (
-              <div className="workflow-view" {...workflowState("directions")}>
+              <ScrollArea className="workflow-view" viewportClassName="panel-scroll" viewportRef={attachScroll}
+                label="Directions planner" active={panel === "directions"} {...workflowState("directions")}
+                viewportProps={{
+                  onWheel: interruptScroll,
+                  onTouchMove: interruptScroll,
+                  onKeyDown: (event) => {
+                    if (["PageDown", "PageUp", "Home", "End", "ArrowDown", "ArrowUp", "Tab"].includes(event.key))
+                      interruptScroll();
+                  },
+                  onPointerDown: (event) => {
+                    const target = event.target as Element;
+                    if (target === event.currentTarget || target.closest("#route-planning")) interruptScroll();
+                  },
+                }}>
               <RoutePlanner
                 draft={draft}
                 mapReady={mapReady}
@@ -1020,14 +1008,16 @@ export default function Atlas() {
                 error={engine.error}
                 active={selectedIndex}
                 recommended={recommended}
-                analysis={engine.analysis ?? engine.previous?.analysis}
+                analysis={engine.displayAnalysis}
+                exportAnalysis={engine.analysis}
+                analysisUpdating={engine.analysisUpdating}
                 analysisError={engine.analysisError}
                 rankingPending={engine.rankingPending}
                 climatePreferences={climatePreferences}
                 onClimatePreferences={setClimatePreferences}
                 onActive={(index) => {
                   const route = engine.result?.routes[index];
-                  if (route) setActive({ generation: engine.generation, id: route.id });
+                  if (route) setActive({ geometryKey: engine.geometryKey, id: route.id });
                 }}
                 onRecalculate={() => {
                   setDismissedError(undefined);
@@ -1046,10 +1036,11 @@ export default function Atlas() {
                   open("places");
                 }}
               />
-              </div>
+              </ScrollArea>
             )}
             {visited.has("location") && location && (
-              <div className="workflow-view" key={location.id} {...workflowState("location")}>
+              <ScrollArea className="workflow-view" viewportClassName="panel-scroll" viewportRef={locationScroll}
+                label="Destination details" active={panel === "location"} {...workflowState("location")}>
                 <div className="location-visual">
                   {location.image && (
                     <Image
@@ -1150,7 +1141,7 @@ export default function Atlas() {
                     All references & limitations ↗
                   </Link>
                 </div>
-              </div>
+              </ScrollArea>
             )}
           </div>
         </aside>

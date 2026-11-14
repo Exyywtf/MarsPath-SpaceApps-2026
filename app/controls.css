@@ -1,0 +1,52 @@
+html { scrollbar-width: none; }
+html::-webkit-scrollbar, .scroll-viewport::-webkit-scrollbar { display: none; }
+.scroll-area { position: relative; min-width: 0; min-height: 0; isolation: isolate; }
+.scroll-viewport {
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  scrollbar-gutter: auto;
+}
+.scroll-content { display: flow-root; min-width: 0; padding: var(--scroll-padding, 0); }
+.scroll-track {
+  position: absolute;
+  z-index: 3;
+  opacity: 0;
+  pointer-events: none;
+  user-select: none;
+  touch-action: none;
+  transition: opacity 180ms ease;
+}
+.scroll-track[data-axis="vertical"] { inset: 2px 0 2px auto; width: 24px; }
+.scroll-track[data-axis="horizontal"] { inset: auto 2px 0 2px; height: 24px; }
+.scroll-track[data-overflow="false"] { display: none; }
+.scroll-track[data-visible="true"] { opacity: 1; pointer-events: auto; }
+.scroll-thumb { position: absolute; }
+.scroll-track[data-axis="vertical"] .scroll-thumb { width: 24px; top: 0; min-height: 44px; }
+.scroll-track[data-axis="horizontal"] .scroll-thumb { height: 24px; left: 0; min-width: 44px; }
+.scroll-thumb::after {
+  position: absolute;
+  content: "";
+  border-radius: 4px;
+  background: #adc0b8b3;
+  box-shadow: 0 0 0 1px #0f171b88;
+}
+.scroll-track[data-axis="vertical"] .scroll-thumb::after { inset: 0 3px 0 auto; width: 4px; }
+.scroll-track[data-axis="horizontal"] .scroll-thumb::after { inset: auto 0 3px; height: 4px; }
+.scroll-track:hover .scroll-thumb::after { background: #d0e0d5; }
+.document-scrollbars { position: fixed; inset: 0; pointer-events: none; z-index: 15; }
+.dialog-scroll { --scroll-padding: 16px 24px; min-height: 0; }
+.table-scroll-area { margin: 20px 0; }
+.table-scroll-area .scroll-content { padding-bottom: 24px; }
+.environment-header { display: grid; grid-template-columns: minmax(0, 1fr) 68px; align-items: start; gap: 8px; margin-bottom: 10px; }
+.environment-header h2 { margin: 0; }
+.analysis-update-note { color: var(--accent); font-size: 12px; line-height: 16px; text-align: right; padding-top: 2px; }
+@media (forced-colors: active) {
+  .scroll-thumb::after { background: CanvasText; box-shadow: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-track { transition: none; }
+}

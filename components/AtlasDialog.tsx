@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useImperativeHandle, useRef, type ReactNode, type Ref } from "react";
 import { X } from "lucide-react";
+import ScrollArea from "./ScrollArea";
 
 export type DialogHandle = { open: (returnFocus?: HTMLElement | null) => void };
 
@@ -86,7 +87,9 @@ export default function AtlasDialog({
             <X size={20} aria-hidden="true" />
           </button>
         </header>
-        <div className="dialog-content">{children}</div>
+        <ScrollArea className="dialog-scroll" viewportClassName="dialog-content" label={title + " content"}>
+          {children}
+        </ScrollArea>
       </div>
     </dialog>
   );

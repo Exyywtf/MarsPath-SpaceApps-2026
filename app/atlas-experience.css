@@ -119,8 +119,8 @@
   gap: 8px;
 }
 .dialog-title h2 { margin: 0; font-size: clamp(20px, 3vw, 25px); }
-.dialog-content { padding: 16px 20px; overflow: auto; overscroll-behavior: contain; }
-.help-dialog .dialog-content { scrollbar-gutter: stable; }
+.dialog-content { padding: 0; }
+
 .help-topics { display: grid; margin: 0; padding: 0; list-style: none; }
 .help-topics li { display: grid; grid-template-columns: 20px 1fr; gap: 12px; padding: 12px 0; }
 .help-topics li + li { border-top: 1px solid var(--line); }
@@ -225,7 +225,10 @@
 .placement-instruction { top: calc(var(--header-bottom) + 12px); }
 .panel-header h1 { font-size: var(--type-panel); }
 .panel-header .icon-button, .sheet-buttons .icon-button { min-width: 44px; }
-.panel-scroll { position: relative; flex: 1; scrollbar-gutter: stable; }
+.panel-scroll { position: relative; height: 100%; padding: 0; }
+.workflow-stack { position: relative; flex: 1; min-height: 0; }
+.workflow-stack > .workflow-view { --scroll-padding: 24px; position: absolute; inset: 0; visibility: hidden; background: var(--panel); }
+.workflow-view[data-active="true"], .workflow-view[data-leaving="true"] { visibility: visible; }
 .panel-header { gap: 4px; }
 .panel-header > h1 { overflow-wrap: anywhere; }
 .workflow-panel {
@@ -244,14 +247,13 @@
   pointer-events: none;
 }
 .workflow-panel[data-open="true"] { visibility: visible; transition-delay: 0s; }
-.workflow-view:not([hidden]), .layer-details, .map-legend {
+.workflow-view[data-active="true"], .layer-details, .map-legend {
   animation: workflow-content-in var(--motion-content) var(--ease-out) both;
 }
 .layer-information, .map-legend { transition: opacity var(--motion-content) ease; }
 :is(.layer-information, .map-legend)[data-hiding="true"] { opacity: 0; }
 .map-legend[data-hiding="true"] { animation: none; }
 .workflow-view[data-leaving="true"] {
-  position: absolute;
   pointer-events: none;
   animation: workflow-content-out 160ms ease both;
 }
@@ -316,8 +318,8 @@
   .workflow-panel.sheet-peek { height: 82px; }
   .workflow-panel.sheet-full { height: calc(100dvh - var(--header-bottom) - var(--panel-bottom) - 24px); }
   .panel-header { min-height: 62px; padding: 6px 8px 8px 16px; }
-  .panel-scroll { padding: var(--space-4); }
-  .location-visual { margin: -16px -16px 16px; }
+  .panel-scroll { padding: 0; }
+
 }
 @media (max-width: 1099px) and (min-height: 526px) and (min-width: 651px) {
   .map-controls { top: calc(var(--header-bottom) + 54px); }

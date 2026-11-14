@@ -27,7 +27,7 @@ test("draws a monotonic prefix and makes full export available before it settles
   await expect(map).toHaveAttribute("data-reveal", "complete");
   await expect.poll(async () => Math.abs(await headingOffset(page) - 20)).toBeLessThanOrEqual(1);
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
-  const panel = page.locator(".panel-scroll");
+  const panel = page.locator('[data-active="true"] .panel-scroll');
   await panel.evaluate((element) => element.scrollTop += 56);
   const previous = await panel.evaluate((element) => element.scrollTop);
   await page.locator(".route-option").nth(1).evaluate((button: HTMLButtonElement) => button.click());
@@ -55,7 +55,7 @@ test("a wheel gesture during a delayed calculation keeps the panel under user co
   await page.getByRole("button", { name: "Directions", exact: true }).click();
   await example(page).click();
   await expect(page.locator(".route-status")).toContainText("Calculating");
-  const panel = page.locator(".panel-scroll");
+  const panel = page.locator('[data-active="true"] .panel-scroll');
   await panel.dispatchEvent("wheel", { deltaY: 90 });
   const previous = await panel.evaluate((element) => element.scrollTop);
   releaseTerrain();
@@ -130,7 +130,7 @@ test("recalculation preserves the comparison and Edit route reopens the inputs",
   expect(await headingOffset(page)).toBe(comparisonOffset);
   await page.getByRole("button", { name: "Edit route" }).click();
   await expect(page.locator("#planning-heading")).toBeFocused();
-  await expect.poll(() => page.locator(".panel-scroll").evaluate((node) => node.scrollTop)).toBe(0);
+  await expect.poll(() => page.locator('[data-active="true"] .panel-scroll').evaluate((node) => node.scrollTop)).toBe(0);
   expect(await page.evaluate(() => scrollY)).toBe(0);
 });
 

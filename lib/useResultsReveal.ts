@@ -32,7 +32,7 @@ export function useResultsReveal({
       const heading = panel?.querySelector<HTMLElement>("#" + id);
       if (!panel || !heading || panel.offsetHeight === 0) return;
       const start = panel.scrollTop;
-      const target = Math.max(0, heading.getBoundingClientRect().top -
+      const target = id === "planning-heading" ? 0 : Math.max(0, heading.getBoundingClientRect().top -
         panel.getBoundingClientRect().top + start - 20);
       if (focus) heading.focus({ preventScroll: true });
       const reduced = matchMedia("(prefers-reduced-motion: reduce)");

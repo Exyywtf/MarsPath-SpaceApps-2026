@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { PlannerDraft, PlannerSettings } from "./planner";
 import type { ClimatePreferences, RouteAnalysis } from "./routeAnalysis";
 import type { ComparisonRequest, ComparisonResult, WorkerReply, WorkerRequest } from "./routeProtocol";
+import { matchingRouteAnalyses } from "./routeSnapshot";
 
 type State = {
   geometryKey: string;
@@ -11,6 +12,7 @@ type State = {
   result?: ComparisonResult;
   error?: string;
   analysis?: Record<string, RouteAnalysis>;
+  previousAnalysis?: Record<string, RouteAnalysis>;
   analysisError?: string;
   comparisonKey?: string;
 };
@@ -53,12 +55,15 @@ export function useRouteEngine(
             comparisonKey: data.key,
             result: sameRoutes ? { ...data.result, routes: old.result!.routes } : data.result,
             analysis: sameRoutes ? old.analysis : undefined,
+            previousAnalysis: old.geometryKey === geometryKey
+              ? matchingRouteAnalyses(old.result, data.result, old.analysis ?? old.previousAnalysis)
+              : undefined,
           };
         });
       } else if (data.kind === "analysis") {
         setState((old) => old.generation === data.id && old.result ? {
           ...old, result: { ...old.result, scores: data.scores, ranking: data.ranking },
-          analysis: data.analysis, analysisError: undefined,
+          analysis: data.analysis, previousAnalysis: undefined, analysisError: undefined,
         } : old);
       } else if (data.kind === "analysis-error") {
         setState((old) => old.generation === data.id ? { ...old, analysisError: data.error } : old);
@@ -105,6 +110,8 @@ export function useRouteEngine(
     generation: complete && state.result ? state.generation : undefined,
     error: complete ? state.error : undefined,
     analysis: complete ? state.analysis : undefined,
+    displayAnalysis: complete ? state.analysis ?? state.previousAnalysis : previous?.analysis ?? previous?.previousAnalysis,
+    analysisUpdating: complete && !!state.result && !state.analysis,
     analysisError: complete ? state.analysisError : undefined,
     rankingPending: !!state.result && complete && (state.comparisonKey !== comparison.key ||
       !state.analysis && !state.analysisError),

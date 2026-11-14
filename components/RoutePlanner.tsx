@@ -40,6 +40,8 @@ interface Props {
   onPlacement: (p: Placement) => void;
   result?: ComparisonResult;
   analysis?: Record<string, RouteAnalysis>;
+  exportAnalysis?: Record<string, RouteAnalysis>;
+  analysisUpdating: boolean;
   analysisError?: string;
   rankingPending: boolean;
   climatePreferences: ClimatePreferences;
@@ -217,6 +219,7 @@ export default memo(function RoutePlanner(p: Props) {
   const current = routes[p.active] ?? routes[0],
     terrain = current?.terrain;
   const analysis = current ? p.analysis?.[current.id] : undefined;
+  const exportAnalysis = current ? p.exportAnalysis?.[current.id] : undefined;
   const [assumedSpeed, setAssumedSpeed] = useState("");
   const speed = Number(assumedSpeed);
   const travelTime = speed > 0 && current ? current.distance / 1000 / speed : NaN;
@@ -279,8 +282,8 @@ export default memo(function RoutePlanner(p: Props) {
         stops: current.stops,
         quality: current.quality,
         elevationProfile: terrain?.profile,
-        analysis,
-        analysisStatus: analysis ? "ready" : p.analysisError ? "unavailable" : "pending",
+        analysis: exportAnalysis,
+        analysisStatus: exportAnalysis ? "ready" : p.analysisError ? "unavailable" : "pending",
         climatePreferences: p.climatePreferences,
         ranking: p.rankingPending ? undefined : ranking,
         score: p.rankingPending ? undefined : p.result?.scores?.[p.active],
@@ -673,7 +676,8 @@ export default memo(function RoutePlanner(p: Props) {
             </>
           )}
           {current && <>
-            <EnvironmentalAnalysis route={current} alternatives={routes} analyses={p.analysis} error={p.analysisError} ranking={ranking} />
+            <EnvironmentalAnalysis route={current} alternatives={routes} analyses={p.analysis} error={p.analysisError}
+              updating={p.analysisUpdating} ranking={ranking} />
             <RouteProfile key={current.id + "-" + current.distance} route={current} analysis={analysis}
               color={routeAppearance(p.active, recommended, current.tier === "geographic").color} onPoint={p.onProfile} />
             <details className="quality-details trip-duration">

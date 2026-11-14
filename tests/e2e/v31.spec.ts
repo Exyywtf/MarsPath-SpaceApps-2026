@@ -133,7 +133,7 @@ test("workflow controls and scroll position survive tab switches and closing", a
   const editor = page.locator(".point-editor").first();
   await editor.locator("summary").click();
   await page.getByLabel("A latitude", { exact: true }).fill("18.425");
-  const scroll = page.locator(".panel-scroll");
+  const scroll = page.locator('[data-active="true"] .panel-scroll');
   await scroll.evaluate((node) => node.scrollTop = 70);
   await page.getByRole("button", { name: "Layers", exact: true }).click();
   await expect(page.getByLabel("A latitude", { exact: true })).toBeHidden();

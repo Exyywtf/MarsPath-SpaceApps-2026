@@ -16,12 +16,13 @@ const number = (value: number, precision = 0) =>
 const coverage = (value: number | null) => value === null ? "No route length" : number(value * 100, 1) + "%";
 
 export const EnvironmentalAnalysis = memo(function EnvironmentalAnalysis({
-  route, alternatives, analyses, error, ranking,
+  route, alternatives, analyses, error, ranking, updating,
 }: {
   route: PlannedRoute;
   alternatives: PlannedRoute[];
   analyses?: Record<string, RouteAnalysis>;
   error?: string;
+  updating: boolean;
   ranking?: Ranking;
 }) {
   const [metric, setMetric] = useState<Metric>("distance");
@@ -40,7 +41,14 @@ export const EnvironmentalAnalysis = memo(function EnvironmentalAnalysis({
   const maximum = Math.max(1, ...measurements.map(({value}) => value?.[0] ?? 0));
   return (
     <section className="environment-analysis" aria-labelledby="environment-title">
-      <h2 id="environment-title">Environmental &amp; Terrain Analysis</h2>
+      <div className="environment-header">
+        <h2 id="environment-title">Environmental &amp; Terrain Analysis</h2>
+        <span className="analysis-update-note" role="status"
+          title={updating && analysis ? "Previous matching samples shown until the current analysis finishes." : undefined}>
+          {updating && analysis ? error ? "Refresh error" : "Updating" : ""}
+        </span>
+      </div>
+      {error && analysis && <p className="small-note">Sampling could not refresh. Previous matching samples shown.</p>}
       {!analysis ? (
         <p className="small-note" role="status">{error || "Sampling numerical datasets along the route…"}</p>
       ) : (
