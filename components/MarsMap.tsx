@@ -99,8 +99,8 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       const z=v.getZoom()??0;
       const distance=marsDistance([c[0],c[1]],[c[0]+(v.getResolution()??1)*100,c[1]]);
       handlers.current.onScale(distance>=1000?`${(distance/1000).toFixed(1)} km`:`${distance.toFixed(0)} m`);
-      const hirise=z>=12 && c[0]>=77.2229331 && c[0]<=77.583964 && c[1]>=18.3067994 && c[1]<=18.669315;
-      const ctx=z>=8 && c[0]>=77.1604655 && c[0]<=77.6991776 && c[1]>=18.2110274 && c[1]<=18.7211945;
+      const hirise=z>12 && c[0]>=77.2229331 && c[0]<=77.583964 && c[1]>=18.3067994 && c[1]<=18.669315;
+      const ctx=z>8 && c[0]>=77.1604655 && c[0]<=77.6991776 && c[1]>=18.2110274 && c[1]<=18.7211945;
       handlers.current.onImagery(hirise?'HiRISE · 0.25 m imagery':ctx?'CTX · 6 m imagery':handlers.current.basemap==='relief'?'MOLA · 463 m relief':'Viking · 232 m mosaic');
     });
     const observer=new ResizeObserver(()=>instance.updateSize());observer.observe(host.current);

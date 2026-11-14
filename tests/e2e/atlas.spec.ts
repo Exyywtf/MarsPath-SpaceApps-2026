@@ -14,7 +14,9 @@ test('global atlas loads NASA tiles, all thirteen places and working search',asy
   await page.locator('.destination').click();
   await expect(page.locator('.detail-panel h2')).toHaveText('Oxia Planum');
   await expect(page.locator('.detail-panel .coordinates')).toContainText('17.280°N');
+  await expect.poll(async()=>JSON.parse((await map.getAttribute('data-center'))!)[1]).toBe(17.28);
   await page.getByLabel('Close location details').click();
+  await expect(map).toHaveAttribute('data-animating','false');
   const center=await map.getAttribute('data-center');
   await page.getByLabel('Map layers').click();
   await page.getByRole('button',{name:'MOLA relief'}).click();

@@ -1,0 +1,242 @@
+[
+  {
+    "id": "mawrth",
+    "name": "Mawrth Vallis",
+    "representativeCoordinates": [
+      -16.970000000000027,
+      22.43
+    ],
+    "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
+    "level": "A",
+    "routingManifest": null,
+    "routingBounds": null,
+    "sourceIds": [
+      "trek",
+      "gazetteer",
+      "mawrth"
+    ],
+    "availability": "Global atlas and source-linked research. No numerical regional routing dataset is enabled."
+  },
+  {
+    "id": "oxia",
+    "name": "Oxia Planum",
+    "representativeCoordinates": [
+      -25.710000000000036,
+      17.28
+    ],
+    "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
+    "level": "A",
+    "routingManifest": null,
+    "routingBounds": null,
+    "sourceIds": [
+      "trek",
+      "gazetteer",
+      "oxia"
+    ],
+    "availability": "Global atlas and source-linked research. No numerical regional routing dataset is enabled."
+  },
+  {
+    "id": "valles",
+    "name": "Valles Marineris",
+    "representativeCoordinates": [
+      -58.589999999999975,
+      -14.01
+    ],
+    "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
+    "level": "A",
+    "routingManifest": null,
+    "routingBounds": null,
+    "sourceIds": [
+      "trek",
+      "gazetteer",
+      "valles"
+    ],
+    "availability": "Global atlas and source-linked research. No numerical regional routing dataset is enabled."
+  },
+  {
+    "id": "meridiani",
+    "name": "Meridiani Planum",
+    "representativeCoordinates": [
+      -3.1399999999999864,
+      -0.04
+    ],
+    "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
+    "level": "A",
+    "routingManifest": null,
+    "routingBounds": null,
+    "sourceIds": [
+      "trek",
+      "gazetteer",
+      "meridiani"
+    ],
+    "availability": "Global atlas and source-linked research. No numerical regional routing dataset is enabled."
+  },
+  {
+    "id": "jezero",
+    "name": "Jezero Crater",
+    "representativeCoordinates": [
+      77.69,
+      18.41
+    ],
+    "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
+    "level": "C",
+    "routingManifest": "/processed/jezero.json",
+    "routingBounds": [
+      77.16046545922367,
+      18.2110273909634,
+      77.69897516629472,
+      18.721194481872804
+    ],
+    "sourceIds": [
+      "trek",
+      "gazetteer",
+      "jezero",
+      "ctx-dtm"
+    ],
+    "availability": "Global atlas; detailed imagery and dynamic routing inside the published CTX DTM footprint only."
+  },
+  {
+    "id": "gale",
+    "name": "Gale Crater",
+    "representativeCoordinates": [
+      137.81,
+      -5.37
+    ],
+    "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
+    "level": "A",
+    "routingManifest": null,
+    "routingBounds": null,
+    "sourceIds": [
+      "trek",
+      "gazetteer",
+      "gale"
+    ],
+    "availability": "Global atlas and source-linked research. No numerical regional routing dataset is enabled."
+  },
+  {
+    "id": "nili",
+    "name": "Nili Fossae",
+    "representativeCoordinates": [
+      76.69,
+      22.02
+    ],
+    "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
+    "level": "A",
+    "routingManifest": null,
+    "routingBounds": null,
+    "sourceIds": [
+      "trek",
+      "gazetteer",
+      "nili"
+    ],
+    "availability": "Global atlas and source-linked research. No numerical regional routing dataset is enabled."
+  },
+  {
+    "id": "eberswalde",
+    "name": "Eberswalde Crater",
+    "representativeCoordinates": [
+      -33.30000000000001,
+      -23.98
+    ],
+    "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
+    "level": "A",
+    "routingManifest": null,
+    "routingBounds": null,
+    "sourceIds": [
+      "trek",
+      "gazetteer",
+      "eberswalde"
+    ],
+    "availability": "Global atlas and source-linked research. No numerical regional routing dataset is enabled."
+  },
+  {
+    "id": "holden",
+    "name": "Holden Crater",
+    "representativeCoordinates": [
+      -34.01999999999998,
+      -26.04
+    ],
+    "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
+    "level": "A",
+    "routingManifest": null,
+    "routingBounds": null,
+    "sourceIds": [
+      "trek",
+      "gazetteer",
+      "holden"
+    ],
+    "availability": "Global atlas and source-linked research. No numerical regional routing dataset is enabled."
+  },
+  {
+    "id": "gusev",
+    "name": "Gusev · Columbia Hills",
+    "representativeCoordinates": [
+      175.51999999999998,
+      -14.53
+    ],
+    "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
+    "level": "A",
+    "routingManifest": null,
+    "routingBounds": null,
+    "sourceIds": [
+      "trek",
+      "gazetteer",
+      "gusev"
+    ],
+    "availability": "Global atlas and source-linked research. No numerical regional routing dataset is enabled."
+  },
+  {
+    "id": "aram",
+    "name": "Aram Chaos",
+    "representativeCoordinates": [
+      -22.389999999999986,
+      2.52
+    ],
+    "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
+    "level": "A",
+    "routingManifest": null,
+    "routingBounds": null,
+    "sourceIds": [
+      "trek",
+      "gazetteer",
+      "aram"
+    ],
+    "availability": "Global atlas and source-linked research. No numerical regional routing dataset is enabled."
+  },
+  {
+    "id": "eridania",
+    "name": "Eridania Basin",
+    "representativeCoordinates": [
+      -179.1,
+      -31.5
+    ],
+    "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
+    "level": "A",
+    "routingManifest": null,
+    "routingBounds": null,
+    "sourceIds": [
+      "trek",
+      "gazetteer",
+      "eridania"
+    ],
+    "availability": "Global atlas and source-linked research. No numerical regional routing dataset is enabled."
+  },
+  {
+    "id": "sirenum",
+    "name": "Terra Sirenum · Chlorides",
+    "representativeCoordinates": [
+      -139,
+      -38.8
+    ],
+    "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
+    "level": "A",
+    "routingManifest": null,
+    "routingBounds": null,
+    "sourceIds": [
+      "trek",
+      "gazetteer",
+      "sirenum"
+    ],
+    "availability": "Global atlas and source-linked research. No numerical regional routing dataset is enabled."
+  }
+]
