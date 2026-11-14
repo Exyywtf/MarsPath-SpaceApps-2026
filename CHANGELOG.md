@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0 — In development
+## 0.1.0 — 2026-11-14
 
 - Initialize MarsPath static-export application, scientific standards, and software licensing.
 - Add a real global NASA Mars map, all 13 scientific destinations, source links, search and scientific-theme filters.

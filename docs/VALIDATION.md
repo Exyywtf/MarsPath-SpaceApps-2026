@@ -8,8 +8,9 @@
 - Independent Python Dijkstra: all six route costs agree within 0.0001 model-cost metres; distances independently agree within 0.0001 m. Original GeoTIFF spot samples match exported elevation cells.
 - Production static build: passed locally and on Vercel.
 - Early deployed atlas: 2 Playwright tests passed against production; NASA tile responses, all 13 destinations, search, source filtering, coordinates, layer controls and mobile selection.
-- Updated local static export: 4 Playwright tests passed, including desktop/mobile endpoint dragging, worker recalculation, comparisons, explanation/export and stale-metric clearing.
-- Final production suite: pending the final release deployment; record the actual result below when run.
+- Updated local static export: 5 Playwright tests passed, including genuine HiRISE loading, valid WMTS requests, preserved map position, desktop/mobile endpoint dragging, worker recalculation, comparisons, explanation/export and stale-metric clearing. The npm start static server was exercised.
+- Final production suite: **5 passed in 14.5 seconds** against https://marspath-spaceapps-2026.vercel.app/ on 2026-11-14 at 11:39 UTC (15:39 Asia/Dubai). Deployed application commit: `d477f43`. Vercel deployment completed before testing; no browser credentials were supplied.
+- Export inspection: 13 unique region IDs with valid coordinate ranges; no original TIFF or TypeScript source in production output.
 
 ## Independent real-terrain results
 

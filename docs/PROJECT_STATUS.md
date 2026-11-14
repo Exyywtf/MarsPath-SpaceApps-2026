@@ -8,7 +8,7 @@
 - Regional CTX/HiRISE imagery, actual 20 m CTX numerical terrain, A*, two route modes, route metrics and elevation profiles.
 - Draggable endpoints, recalculation, explicit snapping, parameter changes, computed explanations, GeoJSON export and no stale metrics after a new endpoint pair.
 - Unit tests, three real-terrain examples, and independent Python Dijkstra/source-raster checks for six routes.
-- Production atlas browser checks and desktop planner checks. Final production/mobile validation is recorded in `docs/VALIDATION.md` when run.
+- Final deployed application: 5 Playwright checks passed, including genuine HiRISE loading and actual desktop/mobile endpoint dragging and recalculation. See `docs/VALIDATION.md` for the release record.
 - Private GitHub repository, coherent pushed milestones, MIT original-software license.
 
 ## Blocked by missing or unverified data
