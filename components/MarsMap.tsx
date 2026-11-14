@@ -17,6 +17,7 @@ import { Circle, Fill, Stroke, Style, Text } from 'ol/style';
 import { defaults as defaultControls } from 'ol/control';
 import Translate from 'ol/interaction/Translate';
 import { locations, asLonLat } from '@/lib/atlas';
+import services from '@/data/services.json';
 import { coordinateLabel, MARS_RADIUS, normalizeLon, marsDistance, type LonLat } from '@/lib/mars';
 
 export interface MapHandle { focus: (point: LonLat, zoom?: number) => void; reset: () => void; zoomBy: (delta: number) => void }
@@ -48,19 +49,13 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       getPointResolution:(resolution,point) => resolution * Math.cos(point[1]*Math.PI/180),
     });
     addProjection(projection);
-    const configs = [
-      ['Mars_Viking_MDIM21_ClrMosaic_global_232m','jpg',8],
-      ['Mars_MGS_MOLA_ClrShade_merge_global_463m','jpg',8],
-      ['JEZ_ctx_B_soc_008_orthoMosaic_6m_Eqc_latTs0_lon0','png',14],
-      ['JEZ_hirise_soc_006_orthoMosaic_25cm_Eqc_latTs0_lon0_first_dd','png',18],
-    ] as const;
-    const tiles = configs.map(([id,ext,levels],i) => {
-      const source = new WMTS({url:`https://trek.nasa.gov/tiles/Mars/EQ/${id}/1.0.0/default/default028mm/{TileMatrix}/{TileRow}/{TileCol}.${ext}`,layer:id,matrixSet:'default028mm',format:`image/${ext==='jpg'?'jpeg':'png'}`,style:'default',requestEncoding:'REST',projection,
-        tileGrid:new WMTSTileGrid({origin:[-180,90],resolutions:Array.from({length:levels},(_,z)=>360/(512*2**z)),matrixIds:Array.from({length:levels},(_,z)=>String(z)),tileSize:256}),wrapX:true,crossOrigin:'anonymous',attributions:'NASA / JPL / USGS • Mars Trek',
+    const tiles = services.map((service,i) => {
+      const source = new WMTS({url:service.url,layer:service.id,matrixSet:service.matrixSet,format:service.format,style:service.style,requestEncoding:'REST',projection,
+        tileGrid:new WMTSTileGrid({extent:[-180,-90,180,90],origin:service.origin,resolutions:service.resolutions,matrixIds:service.matrixIds,sizes:service.sizes,tileSize:service.tileSize}),wrapX:true,crossOrigin:'anonymous',attributions:'NASA / JPL / USGS • Mars Trek',
       });
       source.on('tileloadend',()=>handlers.current.onTileState(true));
       source.on('tileloaderror',()=>handlers.current.onTileState(false));
-      return new TileLayer({source,visible:i===0 || i>=2,minZoom:i===2?8:i===3?12:undefined,extent:i>=2?[i===2?77.1604655:77.2229331,i===2?18.2110274:18.3067994,i===2?77.6991776:77.583964,i===2?18.7211945:18.669315]:undefined});
+      return new TileLayer({source,visible:i===0 || i>=2,minZoom:i===2?8:i===3?12:undefined,extent:i>=2?service.bounds:undefined});
     });
     bases.current = tiles;
     const markerSource = new VectorSource({features:locations.map(l=>new Feature({geometry:new Point(asLonLat(l.coordinates)),locationId:l.id,name:l.name})),wrapX:true});
@@ -90,7 +85,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       } else if(hit) handlers.current.onSelect(hit);
     });
     let lastPointer=0;
-    instance.on('pointermove',e=>{if(Date.now()-lastPointer>80){lastPointer=Date.now();handlers.current.onCoordinate(coordinateLabel([e.coordinate[0],e.coordinate[1]]));}});
+    instance.on('pointermove',e=>{if(Date.now()-lastPointer>80){lastPointer=Date.now();handlers.current.onCoordinate(Math.abs(e.coordinate[1])<=90?coordinateLabel([e.coordinate[0],e.coordinate[1]]):'Outside Mars map extent');}});
     instance.on('postrender',()=>{
       const start=handlers.current.endpoints?.[0];
       if(start&&host.current)host.current.dataset.startPixel=JSON.stringify(instance.getPixelFromCoordinate(start));

@@ -43,7 +43,7 @@ test('mobile planner leaves draggable endpoints above its sheet and clears stale
   await expect(page.locator('.endpoint-row code').first()).not.toHaveText(initial!);
   await expect(page.locator('.route-option')).toHaveCount(2,{timeout:45000});
   // One new map click clears the previous pair and must hide its old metrics.
-  await map.click({position:{x:120,y:100}});
+  await map.click({position:{x:260,y:200}});
   await expect(page.locator('.route-option')).toHaveCount(0);
   await page.screenshot({path:'tmp/planner-mobile.png'});
 });
