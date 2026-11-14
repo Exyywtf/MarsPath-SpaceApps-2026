@@ -67,3 +67,10 @@ Inspected the supplied 31 files and live NASA service metadata during planning. 
 - Archived repeatable cached-imagery desktop measurements. The tested V2 pointer and pan workload used 77 ms of median main-thread JavaScript time versus 187 ms for V1. Three warm recalculations reused the terrain cache and worker. Both builds had a 16.7 ms 95th-percentile frame interval.
 - Added axe checks, keyboard/placement tests, a visit to each of the thirteen destinations, mobile sheet dragging and date-line route framing. A layer test once clicked the same position repeatedly, which could zoom via double-click. The current test inspects distinct positions and asserts that each control and inspection preserves the view.
 - Production initially passed 13 of 14 journeys on `779faa0`. The failed keyboard journey entered Directions while the dynamically imported map was still loading. Map-dependent controls now wait for initialization. The new regression holds the map bundle while Directions loads and verifies that A can be placed as soon as the map is ready.
+
+## 2026-11-14 — V2 production verification
+
+- Deployed `811074a` to [the public MarsPath site](https://marspath-spaceapps-2026.vercel.app/). All 15 production Playwright journeys passed in 31.5 seconds, including NASA WMTS and HiRISE, all 13 destinations, four scientific layers, keyboard placement during delayed map loading, mobile dragging, geographic fallback, a coarse date-line route and a Jezero science route.
+- The homepage, sources, methods, worker and scientific assets are served statically. Verified the public retained MCD ASCII checksum against the processed manifest.
+- The 18-test Vitest suite, type checking, ESLint and the production build passed. The production dependency audit reported zero vulnerabilities. The previously documented seven moderate development-tool findings remain.
+- Saved before-and-after screenshots at four viewport sizes in `tmp/v2-review`. The automated accessibility checks apply to the tested Chromium states. Desktop profiling and independent numerical checks are linked from the validation record.

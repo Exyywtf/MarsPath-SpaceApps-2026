@@ -2,6 +2,8 @@
 
 ## MarsPath 0.2.0
 
+- Deployed application commit `811074a` passed all 15 Playwright journeys in 31.5 seconds against the public Vercel alias on November 14, 2026. The tests used fresh browser contexts without credentials. Local Chromium passed the same 15 journeys in 24.1 seconds. Type checking, ESLint, the 18-test Vitest suite and the local and Vercel static builds passed.
+- Captured the V1 and released V2 layouts at 1920×1080, 1440×900, 1024×768 and 390×844 in the local `tmp/v2-review` directory. The V1 baseline comes from its original Git commit and the V2 screenshots use the public deployment.
 - The original Jezero numerical tests are part of the V2 suite. Representative V2 cases cover coarse MOLA near Gale, a coarse date-line crossing, a longer Gale–Jezero route and a Jezero route through a published delta outcrop.
 - An independent Python Dijkstra solver checked twelve V2 route calculations. The maximum absolute difference in model cost was 0.00000184 m. The script checks the full distances, ascent, descent and maximum slope, verifies that used cells are valid and compares original raster samples.
 - Nine interior numerical climate values were compared with the retained original ASCII file. The unit suite also checks the export axes, date line and bilinear inspection. See `data/validation/v2-independent.json` and `data/validation/v2-routes.json`.
@@ -16,7 +18,7 @@
 | Terrain requests over three warm recalculations | 9 | 0 |
 | Workers created over three warm recalculations | 3 | 0 |
 
-These timings describe the tested desktop workload. The main browser heap measurement excludes the worker and GPU. Run `npx playwright test --config playwright.profile.config.ts` with the baseline and candidate static previews available to reproduce the desktop comparison and screenshots.
+These timings describe the tested desktop workload. The main browser heap measurement excludes the worker and GPU. To reproduce, serve a static build of `9a0936d` on port 4318 and V2 on port 3000, then run `npx playwright test --config playwright.profile.config.ts`. Set `BASE_URL` when running the screenshot test to capture the released site.
 
 ## MarsPath 0.1.0 archive
 

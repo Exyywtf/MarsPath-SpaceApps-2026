@@ -1,6 +1,10 @@
 # Scientific data sources
 
-Core products: [NASA Mars Trek WMTS](https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=mars), [MOLA DEM](https://astrogeology.usgs.gov/search/map/mars_mgs_mola_dem_463m), [CTX DTM](https://astrogeology.usgs.gov/search/map/Mars/Mars2020/JEZ_ctx_B_soc_008_DTM_MOLAtopography_DeltaGeoid_20m_Eqc_latTs0_lon0), [IAU/USGS coordinates](https://planetarynames.wr.usgs.gov/SearchResults?Target=20_Mars), [MCD context](https://www-mars.lmd.jussieu.fr/mars/access).
+Core products include [NASA Mars Trek WMTS](https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=mars), the [global MOLA DEM](https://astrogeology.usgs.gov/search/map/mars_mgs_mola_dem_463m), the [Jezero CTX DTM](https://astrogeology.usgs.gov/search/map/Mars/Mars2020/JEZ_ctx_B_soc_008_DTM_MOLAtopography_DeltaGeoid_20m_Eqc_latTs0_lon0), and [IAU/USGS coordinates](https://planetarynames.wr.usgs.gov/SearchResults?Target=20_Mars).
+
+The atmospheric fields derive from a numerical MCD 6.2 snapshot, archived as `public/processed/mcd-v62-source.txt` with its checksum and sampling context in `public/processed/mcd-v62.json`. See the [MCD access conditions](https://www-mars.lmd.jussieu.fr/mars/access).
+
+The Jezero science stops use published delta type locations. See [Stack et al., Table 2](https://pmc.ncbi.nlm.nih.gov/articles/PMC7116714/#Tab2). The supplied radiation image has no embedded georeferencing or provenance for its stated dose and remains an unverified reference. Curiosity's published observations cover its local traverse. See [NASA's RAD source](https://science.nasa.gov/resource/radiation-measurements-on-mars/).
 
 - **mawrth / Mawrth Vallis**: [MRO · CRISM](https://science.nasa.gov/resource/clay-minerals-in-mawrth-vallis-region-of-mars/); [coordinate evidence](https://planetarynames.wr.usgs.gov/Feature/3763). Accessed 2026-11-14T11:01:53.894847+00:00. Status: retrieved; concise claim linked to original source.
 - **oxia / Oxia Planum**: [MRO · HiRISE](https://science.nasa.gov/photojournal/possible-future-mars-landing-site-in-oxia-planum/); [coordinate evidence](https://planetarynames.wr.usgs.gov/Feature/15821). Accessed 2026-11-14T11:01:53.894847+00:00. Status: retrieved; concise claim linked to original source.
