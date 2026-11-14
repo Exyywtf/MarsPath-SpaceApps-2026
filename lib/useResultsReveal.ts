@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import type { Placement } from "./planner";
 
 const editing = "input, textarea, select, [contenteditable=true]";
 
@@ -10,13 +11,14 @@ export function useResultsReveal({
   generation?: number;
   draftKey: string;
   directions: boolean;
-  placement: boolean;
+  placement: Placement;
   expand: () => void;
 }) {
   const scroll = useRef<HTMLDivElement>(null);
   const attachScroll = useCallback((node: HTMLDivElement | null) => { scroll.current = node; }, []);
   const awaiting = useRef<string | null>(null);
   const interrupted = useRef(false);
+  const previousPlacement = useRef<Placement>(null);
   const handled = useRef<string | null>(null);
   const frame = useRef(0);
   const [collapsedFor, setCollapsedFor] = useState<string | null>(null);
@@ -51,10 +53,12 @@ export function useResultsReveal({
     if (!directions || placement) interrupt();
   }, [directions, placement, interrupt]);
   useLayoutEffect(() => {
+    const placedWaypoint = previousPlacement.current === "waypoint" && placement === null;
+    previousPlacement.current = placement;
     if (pending) {
       if (awaiting.current !== draftKey) {
         cancelAnimationFrame(frame.current);
-        interrupted.current = !directions || placement;
+        interrupted.current = !directions || !!placement || placedWaypoint;
         awaiting.current = draftKey;
       }
       return;

@@ -1,10 +1,12 @@
-# MarsPath V3.1 status
+# MarsPath V3.2 status
 
 ## Delivered
 
 - A static export with public NASA imagery, all 13 scientific destinations and links to original coordinate, image and geology sources.
 - A responsive map and directions workflow with explicit A/B placement, coordinate forms, dragging, three ordered waypoints, keyboard operation and a reduced-motion option.
 - Full-Mars startup framing, empty fresh route drafts, destination links, stable camera positions across workflows, and shared typography and motion. The open atlas retains workflow controls and scroll positions.
+- Overlay scrollbars with native keyboard and touch scrolling, stable coordinate controls, grouped planner settings, and full-width imagery on all destination cards. Recalculation keeps matching charts visible while the worker refreshes them. Exports identify pending analysis.
+- Map controls dock around the active panel. Show map reduces an obstructing sheet and keeps the current camera. Destination labels use available screen space and retain their positions where clearance permits.
 - Reused route markers, eased route drawing, progress feedback, internal results scrolling, scientific-layer crossfades with retry, responsive Sources controls and centred touch and keyboard Help.
 - Numerical MOLA elevation and an MCD 6.2 climatology snapshot for temperature, pressure and horizontal wind speed. Each layer exposes units, sampling, opacity, a legend and numerical inspection.
 - Fine Jezero terrain routing on the 20 m CTX grid, coarse global routing on the 0.25° MOLA grid and geographic distance estimates when terrain cannot resolve the route.

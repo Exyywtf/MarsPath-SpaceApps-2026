@@ -170,6 +170,34 @@ test("all thirteen cards keep equal header columns and full-width 205 px source 
   }
 });
 
+test("floating scientific details clear a tablet sheet when the zoom controls already fit beside it", async ({ page }) => {
+  await page.setViewportSize({ width: 834, height: 1194 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Layers', exact: true }).click();
+  await page.getByRole('button', { name: /^Atmospheric pressure/ }).click();
+
+  const map = page.getByRole('region', { name: 'Interactive Mars map' });
+  const panel = page.locator('.workflow-panel');
+  const legend = page.locator('.map-legend');
+  const inspection = page.locator('.inspection-card');
+  await expect(legend).toBeVisible();
+  const panelTop = (await panel.boundingBox())!.y;
+  await expect.poll(async () => {
+    const box = (await legend.boundingBox())!;
+    return box.y + box.height;
+  }).toBeLessThan(panelTop);
+
+  await map.focus();
+  await page.keyboard.press('Enter');
+  await expect(inspection).toBeVisible();
+  await expect.poll(async () => {
+    const box = (await inspection.boundingBox())!;
+    return box.y + box.height;
+  }).toBeLessThan(panelTop);
+  await expect(page.getByRole('button', { name: 'Zoom in', exact: true })).toBeVisible();
+});
+
 test("native document scrolling, table overflow, links and icon metadata remain accessible", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/methodology/#validation-v2');
@@ -227,9 +255,15 @@ test("same-input recalculation retains analysis, disclosures, profile and strate
     const property = Object.getOwnPropertyDescriptor(Worker.prototype, 'onmessage')!;
     Object.defineProperty(Worker.prototype, 'onmessage', { ...property, set(listener: (event: MessageEvent) => void) {
       property.set!.call(this, (event: MessageEvent) => {
-        if (event.data.kind === 'analysis' && document.documentElement.dataset.delayAnalysis)
-          setTimeout(() => listener.call(this, event), 1400);
-        else listener.call(this, event);
+        if (event.data.kind !== 'analysis') {
+          listener.call(this, event);
+          return;
+        }
+        // Model a finished ranking that differs from the provisional scores.
+        const ranked = new MessageEvent('message', { data: { ...event.data, scores: [0, 1, 1] } });
+        if (document.documentElement.dataset.delayAnalysis)
+          setTimeout(() => listener.call(this, ranked), 1400);
+        else listener.call(this, ranked);
       });
     } });
   });
@@ -238,6 +272,8 @@ test("same-input recalculation retains analysis, disclosures, profile and strate
   await page.getByRole('button', { name: 'Try Jezero terrain example' }).click();
   const analysis = page.locator('.environment-analysis');
   await expect(analysis.locator('.factor-detail')).toHaveCount(4);
+  const firstRoute = page.locator('.route-option').first();
+  await expect(firstRoute).toContainText('Recommended by your preferences');
   await page.locator('.route-option').nth(1).click();
   const selected = await page.locator('.route-option.selected').textContent();
   await analysis.locator('.factor-detail').first().locator('.accordion-trigger').click();
@@ -246,7 +282,10 @@ test("same-input recalculation retains analysis, disclosures, profile and strate
   const before = (await analysis.boundingBox())!.height;
   await page.evaluate(() => { document.documentElement.dataset.delayAnalysis = 'yes'; });
   await page.getByRole('button', { name: 'Recalculate', exact: true }).evaluate((node: HTMLButtonElement) => node.click());
+  const exportRoute = page.getByRole('button', { name: 'Export route & provenance' });
+  await expect(exportRoute).toBeEnabled();
   await expect(analysis.locator('.analysis-update-note')).toHaveText('Updating');
+  await expect(firstRoute).toContainText('Recommended by your preferences');
   expect((await analysis.boundingBox())!.height).toBe(before);
   expect(await page.locator('.route-option.selected').textContent()).toBe(selected);
   await expect(analysis.locator('.factor-detail').first()).toHaveAttribute('data-open', 'true');
@@ -256,11 +295,13 @@ test("same-input recalculation retains analysis, disclosures, profile and strate
   expect(chevron?.height).toBe(16);
   const [download] = await Promise.all([
     page.waitForEvent('download'),
-    page.getByRole('button', { name: 'Export route & provenance' }).evaluate((node: HTMLButtonElement) => node.click()),
+    exportRoute.evaluate((node: HTMLButtonElement) => node.click()),
   ]);
   const exported = JSON.parse(await readFile((await download.path())!, 'utf8'));
   expect(exported.features[0].properties.analysisStatus).toBe('pending');
   expect(exported.features[0].properties.analysis).toBeUndefined();
+  expect(exported.features[0].properties.rankingStatus).toBe('pending');
+  expect(exported.features[0].properties.ranking).toBeUndefined();
   await expect(analysis.locator('.analysis-update-note')).toHaveText('');
   expect((await analysis.boundingBox())!.height).toBe(before);
 });

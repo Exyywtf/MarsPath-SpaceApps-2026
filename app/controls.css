@@ -100,12 +100,14 @@ html::-webkit-scrollbar, .scroll-viewport::-webkit-scrollbar { display: none; }
 .location-body .image-credit { margin-block: 16px 12px; }
 .atlas .map-controls { top: auto; right: var(--right-inset); bottom: var(--hud-bottom, 60px); }
 .atlas .imagery-label { left: auto; right: var(--right-inset); top: calc(var(--header-bottom) + 12px); }
-.atlas .map-legend, .atlas .inspection-card { top: auto; bottom: var(--hud-bottom, 60px); right: calc(var(--right-inset) + 56px); }
-.atlas .inspection-card { max-height: calc(100dvh - var(--header-bottom) - var(--hud-bottom, 60px) - 56px); overflow: auto; scrollbar-width: none; }
+.atlas .map-legend, .atlas .inspection-card { top: auto; bottom: var(--hud-info-bottom, 60px); right: calc(var(--right-inset) + 56px); }
+.atlas .inspection-card { max-height: var(--hud-info-max-height, 50dvh); overflow: auto; scrollbar-width: none; }
 .atlas:has(.inspection-card) .map-legend { display: none; }
 .atlas[data-hud-covered="true"] :is(.map-controls,.map-legend,.inspection-card) { visibility: hidden; pointer-events: none; }
+.atlas[data-hud-info-covered="true"] :is(.map-legend,.inspection-card) { visibility: hidden; pointer-events: none; }
 .show-map { display: none; }
-.atlas[data-hud-covered="true"] .show-map { display: inline-flex; position: absolute; left: 8px; top: 0; min-height: 44px; padding-inline: 10px; }
+.atlas[data-hud-covered="true"] .show-map,
+.atlas[data-hud-info-covered="true"] .sheet-full .show-map { display: inline-flex; position: absolute; left: 8px; top: 0; min-height: 44px; padding-inline: 10px; }
 @media (max-width: 1279px) {
   .sheet-grip { position: relative; height: 44px; }
   .sheet-grip > span { pointer-events: none; }

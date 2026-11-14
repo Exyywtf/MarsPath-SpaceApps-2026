@@ -164,7 +164,7 @@ export default function Atlas() {
   const [attachScroll, collapsed, interruptScroll, viewResults, editRoute, openEditors] = useResultsReveal({
     pending: engine.pending, generation: engine.generation,
     draftKey: engine.geometryKey,
-    directions: panel === "directions", placement: !!placement, expand: expandResults,
+    directions: panel === "directions", placement, expand: expandResults,
   });
   const location = locations.find((l) => l.id === selected);
   const filtered = locations.filter(
@@ -220,9 +220,10 @@ export default function Atlas() {
               ? { ...old, waypoints: [...old.waypoints, point] }
               : old,
       );
+      if (placement === "waypoint") expandResults();
       setPlacement(null);
     },
-    [placement],
+    [expandResults, placement],
   );
   const pick = useCallback(
     (p: Placement) => {
@@ -952,6 +953,9 @@ export default function Atlas() {
             {visited.has("directions") && (
               <ScrollArea className="workflow-view" viewportClassName="panel-scroll" viewportRef={attachScroll}
                 label="Directions planner" active={panel === "directions"} {...workflowState("directions")}
+                onPointerDownCapture={(event) => {
+                  if ((event.target as Element).closest(".scroll-track")) interruptScroll();
+                }}
                 viewportProps={{
                   onWheel: interruptScroll,
                   onTouchMove: interruptScroll,

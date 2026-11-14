@@ -47,17 +47,27 @@ export function useRouteEngine(
       if (data.kind !== "route-error" && data.key !== comparison.key) return;
       if (data.kind === "routes") {
         setState((old) => {
-          const sameRoutes = old.generation === data.id &&
-            old.result?.routes.length === data.result.routes.length &&
+          const sameOrder = old.result?.routes.length === data.result.routes.length &&
             old.result.routes.every((route, i) => route.id === data.result.routes[i].id);
+          const sameRoutes = old.generation === data.id && sameOrder;
+          const retained = old.geometryKey === geometryKey
+            ? matchingRouteAnalyses(old.result, data.result, old.analysis ?? old.previousAnalysis)
+            : undefined;
+          // The routes reply carries provisional scores. Keep the previous
+          // comparison visible until the matching analysis reply refreshes it.
+          const retainRanking = old.comparisonKey === data.key && sameOrder &&
+            data.result.routes.every((route) => retained?.[route.id]);
+          const result = {
+            ...data.result,
+            routes: sameRoutes ? old.result!.routes : data.result.routes,
+            ...(retainRanking && { scores: old.result!.scores, ranking: old.result!.ranking }),
+          };
           return {
             geometryKey, requestKey, generation: data.id,
             comparisonKey: data.key,
-            result: sameRoutes ? { ...data.result, routes: old.result!.routes } : data.result,
+            result,
             analysis: sameRoutes ? old.analysis : undefined,
-            previousAnalysis: old.geometryKey === geometryKey
-              ? matchingRouteAnalyses(old.result, data.result, old.analysis ?? old.previousAnalysis)
-              : undefined,
+            previousAnalysis: retained,
           };
         });
       } else if (data.kind === "analysis") {
@@ -111,7 +121,7 @@ export function useRouteEngine(
     error: complete ? state.error : undefined,
     analysis: complete ? state.analysis : undefined,
     displayAnalysis: complete ? state.analysis ?? state.previousAnalysis : previous?.analysis ?? previous?.previousAnalysis,
-    analysisUpdating: complete && !!state.result && !state.analysis,
+    analysisUpdating: !!previous || (complete && !!state.result && !state.analysis),
     analysisError: complete ? state.analysisError : undefined,
     rankingPending: !!state.result && complete && (state.comparisonKey !== comparison.key ||
       !state.analysis && !state.analysisError),

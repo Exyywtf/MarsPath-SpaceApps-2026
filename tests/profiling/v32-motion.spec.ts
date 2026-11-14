@@ -193,8 +193,10 @@ test("captures indicator drag and fade plus both recalculation replies", async (
   await page.evaluate(() => { document.documentElement.dataset.holdReplies = 'yes'; });
   await page.getByRole('button', { name: 'Recalculate', exact: true }).evaluate((node: HTMLButtonElement) => node.click());
   await expect(page.locator('.route-feedback')).toContainText('Calculating routes');
+  await expect(analysis.locator('.analysis-update-note')).toHaveText('Updating');
   const duringSearch = (await analysis.boundingBox())!.height;
   await page.screenshot({ path: output + '/recalc-search.png' });
+  await expect(page.getByRole('button', { name: 'Export route & provenance' })).toBeEnabled();
   await expect(analysis.locator('.analysis-update-note')).toHaveText('Updating');
   const duringAnalysis = (await analysis.boundingBox())!.height;
   await page.screenshot({ path: output + '/recalc-analysis.png' });
