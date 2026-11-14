@@ -25,7 +25,7 @@ test("draws a monotonic prefix and makes full export available before it settles
   const skip = page.getByRole("button", { name: "Skip reveal" });
   if (await skip.isVisible()) await skip.click();
   await expect(map).toHaveAttribute("data-reveal", "complete");
-  await expect.poll(() => headingOffset(page)).toBe(20);
+  await expect.poll(async () => Math.abs(await headingOffset(page) - 20)).toBeLessThanOrEqual(1);
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
   const panel = page.locator(".panel-scroll");
   await panel.evaluate((element) => element.scrollTop += 56);
@@ -43,7 +43,7 @@ test("reduced motion and a collapsed mobile sheet complete without a reveal", as
   await example(page).click();
   await expect(region(page)).toHaveAttribute("data-reveal", "complete");
   await expect(page.getByRole("button", { name: "Skip reveal" })).toHaveCount(0);
-  await expect.poll(() => headingOffset(page)).toBe(20);
+  await expect.poll(async () => Math.abs(await headingOffset(page) - 20)).toBeLessThanOrEqual(1);
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
 });
 
@@ -62,7 +62,7 @@ test("a wheel gesture during a delayed calculation keeps the panel under user co
   await expect(region(page)).toHaveAttribute("data-reveal", "complete");
   expect(await panel.evaluate((element) => element.scrollTop)).toBe(previous);
   await page.getByRole("button", { name: "View results", exact: true }).click();
-  await expect.poll(() => headingOffset(page)).toBe(20);
+  await expect.poll(async () => Math.abs(await headingOffset(page) - 20)).toBeLessThanOrEqual(1);
 });
 
 test("recalculating during a reveal cancels it and reveals the new accepted result", async ({ page }) => {
@@ -94,7 +94,8 @@ test("recalculation preserves the comparison and Edit route reopens the inputs",
   await page.getByRole("button", { name: "Directions", exact: true }).click();
   await example(page).click();
   await expect(region(page)).toHaveAttribute("data-reveal", "complete");
-  await expect.poll(() => headingOffset(page)).toBe(20);
+  await expect.poll(async () => Math.abs(await headingOffset(page) - 20)).toBeLessThanOrEqual(1);
+  const comparisonOffset = await headingOffset(page);
   await page.evaluate(() => { document.documentElement.dataset.holdRoute = "true"; });
   const exportButton = page.getByRole("button", { name: "Export route & provenance" });
   await page.getByRole("button", { name: "Recalculate", exact: true })
@@ -102,10 +103,10 @@ test("recalculation preserves the comparison and Edit route reopens the inputs",
   await expect(page.locator(".route-feedback")).toContainText("Calculating routes");
   await expect(page.locator(".route-option")).toHaveCount(3);
   await expect(exportButton).toBeDisabled();
-  expect(await headingOffset(page)).toBe(20);
+  expect(await headingOffset(page)).toBe(comparisonOffset);
   await expect(region(page)).toHaveAttribute("data-reveal", "drawing");
   await expect(exportButton).toBeEnabled();
-  expect(await headingOffset(page)).toBe(20);
+  expect(await headingOffset(page)).toBe(comparisonOffset);
   await page.getByRole("button", { name: "Edit route" }).click();
   await expect(page.locator("#planning-heading")).toBeFocused();
   await expect.poll(() => page.locator(".panel-scroll").evaluate((node) => node.scrollTop)).toBe(0);

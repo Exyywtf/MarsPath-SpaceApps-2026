@@ -8,7 +8,7 @@ import { prepareLayerInspection } from "./useLayerData";
 
 export type OverlayState = {
   active: LayerId | null;
-  phase: "idle" | "loading" | "ready" | "error";
+  phase: "idle" | "loading" | "hiding" | "ready" | "error";
   message: string;
 };
 
@@ -65,7 +65,7 @@ export function createScientificOverlay(
     });
   }
 
-  function fadeTo(index: number) {
+  function fadeTo(index: number, settled?: () => void) {
     cancelAnimationFrame(frame);
     const from = slots.map((slot) => slot.weight);
     const started = performance.now();
@@ -86,6 +86,7 @@ export function createScientificOverlay(
         }
         const next = queued;
         queued = undefined;
+        settled?.();
         next?.();
       }
     }
@@ -98,9 +99,12 @@ export function createScientificOverlay(
     const id = ++request;
     queued = undefined;
     if (!dataset) {
+      const previous = active;
       active = null;
-      report({ active, phase: "idle", message: "Choose a field to inspect" });
-      fadeTo(-1);
+      report({ active: previous, phase: "hiding", message: "Removing map overlay…" });
+      fadeTo(-1, () => {
+        if (id === request) report({ active: null, phase: "idle", message: "Choose a field to inspect" });
+      });
       return;
     }
     const ready = () => report({

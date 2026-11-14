@@ -131,8 +131,11 @@ export const RouteProfile = memo(function RouteProfile({
   onPoint: (point: LonLat | null) => void;
 }) {
   const [track, setTrack] = useState<Track>(route.terrain ? "elevation" : "temperature");
+  const [requestedTrack, setRequestedTrack] = useState(track);
   const [index, setIndex] = useState<number | null>(null);
   const frame = useRef(0);
+  const chart = useRef<HTMLDivElement>(null);
+  const transition = useRef<Animation | null>(null);
   const profile = useMemo<Point[]>(() => {
     if (track === "elevation")
       return route.terrain?.profile.map(({distance,elevation},i) => ({
@@ -188,23 +191,52 @@ export const RouteProfile = memo(function RouteProfile({
   }
   useEffect(() => () => {
     cancelAnimationFrame(frame.current);
+    transition.current?.cancel();
     onPoint(null);
   }, [onPoint]);
+  useEffect(() => {
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+    const finish = () => { if (reduced.matches) transition.current?.finish(); };
+    reduced.addEventListener("change", finish);
+    return () => reduced.removeEventListener("change", finish);
+  }, []);
+  function changeTrack(next: Track) {
+    cancelAnimationFrame(frame.current);
+    setIndex(null);
+    onPoint(null);
+    setRequestedTrack(next);
+    const graph = chart.current?.firstElementChild;
+    const opacity = graph ? getComputedStyle(graph).opacity : "1";
+    transition.current?.cancel();
+    transition.current = null;
+    if (!graph || matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setTrack(next);
+      return;
+    }
+    const animation = graph.animate([{ opacity }, { opacity: next === track ? 1 : 0 }], {
+      duration: 90, easing: "ease-out", fill: "forwards",
+    });
+    transition.current = animation;
+    animation.onfinish = () => {
+      transition.current = null;
+      setIndex(null);
+      onPoint(null);
+      setTrack(next);
+      if (next === track) animation.cancel();
+    };
+  }
   const display = current ? formatDistance(current.distance) + " · " +
     (current.value === null ? "No sample" : number(current.value,precision)+" "+unit) +
     (current.connector ? " · Unassessed terrain connector" : "") : "Hover or use the slider";
   return (
     <div className="profile-chart">
       <label className="analysis-select">Route profile
-        <select value={track} onChange={(e) => {
-          cancelAnimationFrame(frame.current);
-          setIndex(null); onPoint(null); setTrack(e.target.value as Track);
-        }}>
+        <select value={requestedTrack} onChange={(event) => changeTrack(event.target.value as Track)}>
           {route.terrain && <option value="elevation">Elevation</option>}
           {(Object.keys(factorInfo) as FactorId[]).map((id) => <option key={id} value={id}>{labels[id]}</option>)}
         </select>
       </label>
-      <div className="profile-frame">
+      <div className="profile-frame" ref={chart} aria-busy={requestedTrack !== track}>
       {plot ? <div className="profile-plot" key={track}>
         <div className="profile-units">{labels[track]} · {unit}</div>
         <svg viewBox="0 0 600 180" role="img" aria-label={labels[track]+" profile along route"}

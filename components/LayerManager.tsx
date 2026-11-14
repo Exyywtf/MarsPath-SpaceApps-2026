@@ -115,7 +115,7 @@ export default function LayerManager({
         })}
       </div>
       {(active || displayed) && (
-        <div className="layer-information">
+        <div className="layer-information" data-hiding={status.phase === "hiding"} inert={status.phase === "hiding"}>
           {radiationActive && (
             <label className="radiation-mode">
               Radiation view

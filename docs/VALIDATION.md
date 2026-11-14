@@ -1,5 +1,25 @@
 # Validation record
 
+## MarsPath V3.1
+
+- Browser coverage includes the nine requested viewports, all 13 destinations, fresh global fitting, empty endpoints, explicit destination links, stable map pixels, coordinate entry, dragging, Swap/Clear, waypoints, cancellation, export during reveal, and the three terrain-capability tiers. It also covers scientific inspection, rapid layer switching and retry, both radiation modes, Sources, Methodology, keyboard Help and reduced motion. Actual production test counts and the deployed commit are recorded in the development log.
+- Saved 72 before/after exploration, route, Sources and mouse-operated Help views at nine sizes in the ignored `tmp/v31-review` directory. Separate touch Help captures cover phone portrait, phone landscape and tablet orientations. Start, intermediate and settled motion frames are retained in its `motion` directory. The visual audit caught a clipped header at 834 px and the final layout uses accessible icon actions at that width.
+- Independent Python reran six original Jezero routes, twelve regional/coarse/science calculations and nine climate source-node comparisons. It verified the radiation checksums, masks, periodic interpolation and legend colours, then recomputed the new Jezero export's climate and radiation statistics. The production worker bytes match V3. Numerical source assets have their original checksums.
+- The automated accessibility audit covers settled interactive states. Motion is inspected separately. WebKit scroll positioning rounds the requested 20 px clearance by one pixel, so the regression allows 19–21 px and checks that recalculation retains the existing offset. Hardware screen-reader and physical iPad/phone testing remain outside this browser-emulation audit.
+
+| Three warmed 1440×900 Chromium trials | V3 | V3.1 |
+|---|---:|---:|
+| Median result latency | 167.8 ms | 169.0 ms |
+| Median trial p95 frame interval | 16.7 ms | 16.8 ms |
+| Median main-thread JavaScript | 78.8 ms | 80.4 ms |
+| Median layout time | 3.2 ms | 2.8 ms |
+| Long tasks across three trials | 1 | 1 |
+| Longest observed task | 159 ms | 159 ms |
+| Last calculation with three cached legs | 13 ms | 14 ms |
+| Median main-page JavaScript heap | 10.2 MB | 15.0 MB |
+
+The workload recalculates the Jezero example and makes 48 pointer moves. Both builds used cached NASA imagery during the measured trials and generated zero new NASA tile loads in those trials. The separate 40 live tile requests had a 1,019 ms median and 1,499 ms p95. Heap observations exclude the worker and GPU and vary with garbage collection. These results describe one Windows desktop. Raw observations and reveal-frame counts are in [v31-performance.json](../data/validation/v31-performance.json). The explicit profiling command writes ignored local review artifacts, and normal numerical tests keep committed validation records read-only.
+
 ## MarsPath 0.3.0
 
 - Application commit `6c954a2` passed all 22 Chromium journeys in 52.1 s on the [public Vercel alias](https://marspath-spaceapps-2026.vercel.app/) without credentials. Type checking, ESLint, 24 Vitest checks and the local and Vercel static builds passed. The public worker, methods and source deep links and radiation assets returned HTTP 200. The tests exercised live NASA WMTS, all 13 destinations, route export during reveal, cancellation, mobile scrolling, radiation modes and score-only climate preferences.

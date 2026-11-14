@@ -198,15 +198,22 @@
   background: var(--panel);
   border-radius: var(--radius-panel);
 }
-.topbar nav button { position: relative; }
-.topbar nav button.nav-active::after {
+.topbar nav { position: relative; }
+.topbar nav::before {
   position: absolute;
-  inset: auto 14px 4px;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--accent);
+  inset: 0 auto 0 0;
+  width: var(--tab-width);
+  transform: translateX(var(--tab-x));
+  opacity: var(--tab-visible, 0);
+  border-radius: var(--radius-control);
+  background: #f6bc8c12;
+  box-shadow: inset 0 -2px var(--accent);
+  transition: transform var(--motion-content) var(--ease-out), width var(--motion-content) var(--ease-out), opacity var(--motion-quick);
+  pointer-events: none;
   content: "";
 }
+.topbar nav button { position: relative; }
+.topbar nav button.nav-active { background: transparent; }
 .header-links > a:hover { background: #ffffff0c; color: var(--ink); }
 .map-footer {
   min-height: var(--footer-height);
@@ -218,7 +225,7 @@
 .placement-instruction { top: calc(var(--header-bottom) + 12px); }
 .panel-header h1 { font-size: var(--type-panel); }
 .panel-header .icon-button, .sheet-buttons .icon-button { min-width: 44px; }
-.panel-scroll { flex: 1; scrollbar-gutter: stable; }
+.panel-scroll { position: relative; flex: 1; scrollbar-gutter: stable; }
 .panel-header { gap: 4px; }
 .panel-header > h1 { overflow-wrap: anywhere; }
 .workflow-panel {
@@ -239,6 +246,21 @@
 .workflow-panel[data-open="true"] { visibility: visible; transition-delay: 0s; }
 .workflow-view:not([hidden]), .layer-details, .map-legend {
   animation: workflow-content-in var(--motion-content) var(--ease-out) both;
+}
+.layer-information, .map-legend { transition: opacity var(--motion-content) ease; }
+:is(.layer-information, .map-legend)[data-hiding="true"] { opacity: 0; }
+.map-legend[data-hiding="true"] { animation: none; }
+.workflow-view[data-leaving="true"] {
+  position: absolute;
+  pointer-events: none;
+  animation: workflow-content-out 160ms ease both;
+}
+@keyframes workflow-content-out {
+  50% { opacity: .12; }
+  to { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .workflow-view[data-leaving="true"] { visibility: hidden; }
 }
 .onboarding {
   position: relative;
@@ -302,7 +324,7 @@
   .map-legend, .inspection-card { top: calc(var(--header-bottom) + 54px); }
   .map-area:has(.inspection-card) .map-legend { display: none; }
 }
-@media (max-width: 830px) {
+@media (max-width: 1050px) {
   .header-links span { display: none; }
   .header-links > * { min-height: 44px; min-width: 44px; padding: 0 10px; }
 }
@@ -311,7 +333,7 @@
   .topbar { column-gap: 6px; row-gap: 1px; padding: 5px 9px; }
   .topbar nav { gap: 2px; }
   .topbar nav button { font-size: 14px; }
-  .topbar nav button.nav-active::after { inset: auto 10px 3px; }
+  .topbar nav::before { top: 4px; }
   .workflow-panel { left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); }
   .imagery-label { left: calc(var(--left-inset) + 4px); right: auto; }
   .map-controls { top: calc(var(--header-bottom) + 12px); }
@@ -339,6 +361,22 @@
   .topbar nav svg { width: 16px; }
   .panel-header { padding-inline: 8px 5px; }
 }
+
+details > summary { list-style: none; }
+details > summary::-webkit-details-marker { display: none; }
+:is(.atlas, .document-page) details > summary::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 8px;
+  flex-shrink: 0;
+  border-top: 1.5px solid var(--accent);
+  border-right: 1.5px solid var(--accent);
+  transform: rotate(45deg);
+  transition: transform var(--motion-content) var(--ease-out);
+}
+:is(.atlas, .document-page) details[open] > summary::before { transform: rotate(135deg); }
 
 @supports selector(details::details-content) {
   details {

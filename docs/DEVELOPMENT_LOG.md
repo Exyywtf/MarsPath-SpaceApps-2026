@@ -106,3 +106,10 @@ Inspected the supplied 31 files and live NASA service metadata during planning. 
 - Visited workflows keep their controls and scroll position. Scientific rasters crossfade between reused layers after the new image and inspection data load. A failed layer keeps the last working layer visible, and an older response cannot replace a newer selection.
 - Added map label fades, a stable profile frame, native disclosure transitions, shared Sources and Methodology navigation, and centred Help and NASA illustration dialogs. Touch Help uses three short sections; keyboard activation exposes the shortcut controls.
 - Tests exercised rapid switching and retry, focus on the published outcrop after opening nested evidence, touch Help at five sizes, document navigation and numerical radiation inspection. Radiation raster checksums, masks and numeric-to-legend checks passed the independent Python verifier.
+
+## 2026-11-14 — V3.1 final visual verification
+
+- Deployed `e4a7458` and passed all 29 production Chromium journeys. The subsequent visual audit added outgoing workflow/profile transitions, smooth overlay dismissal and disclosure chevrons, and fixed the tablet header overflow.
+- Captured and reviewed nine viewport comparisons and motion storyboards, including a real-time monotonic route reveal. The fixed warm benchmark measured a 169.0 ms median result latency and 16.8 ms median trial p95 frame interval in V3.1. The raw record also reports a 159 ms long task and the sampled heap, with worker/GPU and physical-device limitations.
+- Independent Python checks passed for the original terrain cases, regional/coarse/science routes, climate source nodes, radiation assets and the newly exported environmental profile. The route-worker bundle is byte-identical to V3.
+- A WebKit run exposed one-pixel scroll rounding and a test that attempted Swap after the editor had collapsed. Updated the checks to exercise Edit route and the requested approximate scroll clearance. All 16 affected WebKit journeys then passed. Ten final targeted Chromium journeys, the 24 numerical tests, type checking, lint and the static build passed before release.

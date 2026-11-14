@@ -41,6 +41,11 @@ test("fresh startup fits the whole globe through all nine layouts", async ({ pag
         edges,
         fitsPage: document.documentElement.scrollWidth <= innerWidth,
         background: getComputedStyle(document.querySelector(".map-area")!).backgroundColor,
+        headerFits: [...document.querySelectorAll(".topbar a, .topbar button")].every((control) => {
+          const rect = control.getBoundingClientRect();
+          const header = document.querySelector(".topbar")!.getBoundingClientRect();
+          return rect.left >= header.left && rect.right <= header.right;
+        }),
       };
     });
     expect(fit.edges.west, `${width} × ${height} west`).toBeGreaterThan(fit.frame.left);
@@ -48,6 +53,7 @@ test("fresh startup fits the whole globe through all nine layouts", async ({ pag
     expect(fit.edges.north, `${width} × ${height} north`).toBeGreaterThan(fit.frame.top);
     expect(fit.edges.south, `${width} × ${height} south`).toBeLessThan(fit.frame.bottom);
     expect(fit.fitsPage).toBe(true);
+    expect(fit.headerFits, `${width} × ${height} header`).toBe(true);
     expect(fit.background).toBe("rgb(9, 14, 18)");
   }
   await page.getByRole("button", { name: "Directions", exact: true }).click();
@@ -66,6 +72,8 @@ test("a verified destination link sets the startup view with an empty draft", as
   expect(resolution).toBeLessThan(0.03);
   await page.getByRole("button", { name: "Directions", exact: true }).click();
   await expect(page.locator(".point-label strong")).toHaveText(["Choose a start", "Choose a destination"]);
+  await page.getByRole("button", { name: "Recenter global map" }).click();
+  await expect.poll(async () => Number(await map.getAttribute("data-resolution"))).toBeGreaterThan(0.2);
   await page.goto("/?place=unknown");
   await expect(map).toHaveAttribute("data-ready", "true");
   await expect(page.getByRole("heading", { name: "Explore Mars" })).toBeVisible();
@@ -114,6 +122,9 @@ test("rapid layer switching rejects stale images and failed overlays can be retr
   await page.getByRole("button", { name: "Retry overlay" }).click();
   await expect(page.locator(".map-legend")).toContainText("Horizontal wind speed");
   await expect(map).toHaveAttribute("data-overlay", "wind");
+  await page.getByRole("button", { name: /^Horizontal wind speed/ }).click();
+  await expect(page.locator(".map-legend")).toHaveCount(0);
+  await expect(map).toHaveAttribute("data-overlay", "none");
 });
 
 test("workflow controls and scroll position survive tab switches and closing", async ({ page }) => {

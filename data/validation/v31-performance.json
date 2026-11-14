@@ -1,0 +1,138 @@
+{
+  "browser": "159.0.8154.6",
+  "cpu": "AMD Ryzen 5 9600X 6-Core Processor             ",
+  "builds": [
+    {
+      "version": "before",
+      "results": [
+        {
+          "resultMs": 167.79999999701977,
+          "frameP95Ms": 16.800000000000182,
+          "frameCount": 102,
+          "longTasks": 1,
+          "longestTaskMs": 159,
+          "scriptMs": 236.67499999999995,
+          "layoutMs": 3.9710000000000005,
+          "heapBytes": 9821768,
+          "nasaMisses": 0
+        },
+        {
+          "resultMs": 170.10000000149012,
+          "frameP95Ms": 16.700000000000728,
+          "frameCount": 102,
+          "longTasks": 0,
+          "longestTaskMs": 0,
+          "scriptMs": 78.76300000000003,
+          "layoutMs": 3.1759999999999993,
+          "heapBytes": 13678492,
+          "nasaMisses": 0
+        },
+        {
+          "resultMs": 167.30000000074506,
+          "frameP95Ms": 16.700000000000728,
+          "frameCount": 104,
+          "longTasks": 0,
+          "longestTaskMs": 0,
+          "scriptMs": 77.38600000000001,
+          "layoutMs": 2.9370000000000003,
+          "heapBytes": 10227032,
+          "nasaMisses": 0
+        }
+      ],
+      "worker": "13 ms \u00b7 3 cached legs"
+    },
+    {
+      "version": "after",
+      "results": [
+        {
+          "resultMs": 171.5,
+          "frameP95Ms": 16.799999999999272,
+          "frameCount": 107,
+          "longTasks": 1,
+          "longestTaskMs": 159,
+          "scriptMs": 237.80499999999998,
+          "layoutMs": 4.327,
+          "heapBytes": 16571736,
+          "nasaMisses": 0
+        },
+        {
+          "resultMs": 169,
+          "frameP95Ms": 16.800000000000182,
+          "frameCount": 103,
+          "longTasks": 0,
+          "longestTaskMs": 0,
+          "scriptMs": 80.41700000000002,
+          "layoutMs": 2.845,
+          "heapBytes": 14953816,
+          "nasaMisses": 0
+        },
+        {
+          "resultMs": 168.80000000074506,
+          "frameP95Ms": 16.700000000000728,
+          "frameCount": 101,
+          "longTasks": 0,
+          "longestTaskMs": 0,
+          "scriptMs": 78.92300000000002,
+          "layoutMs": 2.7569999999999992,
+          "heapBytes": 12349936,
+          "nasaMisses": 0
+        }
+      ],
+      "worker": "14 ms \u00b7 3 cached legs"
+    }
+  ],
+  "liveNasa": {
+    "count": 40,
+    "p50Ms": 1019,
+    "p95Ms": 1499
+  },
+  "limitation": "Headless Chromium on the same Windows desktop. Main-page heap excludes worker and GPU. NASA requests are shared between builds. Device emulation does not measure physical phone performance.",
+  "release": "MarsPath V3.1",
+  "baselineApplicationCommit": "6c954a2",
+  "recordedAt": "2026-11-14T18:13:13.521763+00:00",
+  "viewports": [
+    [
+      1920,
+      1080
+    ],
+    [
+      1440,
+      900
+    ],
+    [
+      1366,
+      768
+    ],
+    [
+      1024,
+      768
+    ],
+    [
+      834,
+      1194
+    ],
+    [
+      1194,
+      834
+    ],
+    [
+      390,
+      844
+    ],
+    [
+      375,
+      667
+    ],
+    [
+      844,
+      390
+    ]
+  ],
+  "reveal": {
+    "capturedFrames": 85,
+    "sampledDurationMs": 1341,
+    "monotonic": true,
+    "context": "Real-time Chromium recalculation. Primary reveal progress is sampled while distinct alternatives complete."
+  },
+  "reproduce": "Serve the retained V3 static export on 4332 and V3.1 on 4333. Run the v31 profiling test with MARSPATH_PROFILE_ONLY=1 for timings, or without that setting for all layout screenshots."
+}

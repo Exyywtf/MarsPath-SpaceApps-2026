@@ -5,6 +5,9 @@ test("accessible explore, directions, layers and modal states", async ({
 }) => {
   await page.goto("/");
   const check = async () => {
+    await page.evaluate(() => Promise.all(document.getAnimations()
+      .filter((animation) => animation.effect?.getTiming().iterations !== Infinity)
+      .map((animation) => animation.finished.catch(() => undefined))));
     const result = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
       .analyze();

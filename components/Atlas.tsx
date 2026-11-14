@@ -86,18 +86,32 @@ export default function Atlas() {
     searchRef = useRef<HTMLInputElement>(null),
     help = useRef<DialogHandle>(null),
     helpButton = useRef<HTMLButtonElement>(null);
-  const [{ panel, lastPanel, visited }, setWorkflow] = useState<{
+  const [{ panel, lastPanel, visited, leaving }, setWorkflow] = useState<{
     panel: Panel; lastPanel: Workflow; visited: ReadonlySet<Workflow>;
-  }>(() => ({ panel: "places", lastPanel: "places", visited: new Set(["places"]) }));
+    leaving: { id: Workflow; top: number; side: number } | null;
+  }>(() => ({ panel: "places", lastPanel: "places", visited: new Set(["places"]), leaving: null }));
   const visiblePanel = panel ?? lastPanel;
   const switchPanel = useCallback((next: Panel) => {
-    if (panel && scrollRef.current) scrollPositions.current[panel] = scrollRef.current.scrollTop;
+    const scroll = scrollRef.current;
+    if (panel && scroll) scrollPositions.current[panel] = scroll.scrollTop;
+    const style = scroll ? getComputedStyle(scroll) : null;
+    const animate = next && panel && next !== panel && !matchMedia("(prefers-reduced-motion: reduce)").matches;
     setWorkflow((current) => current.panel === next ? current : {
       panel: next,
       lastPanel: next ?? current.lastPanel,
       visited: next && !current.visited.has(next) ? new Set([...current.visited, next]) : current.visited,
+      leaving: animate ? {
+        id: panel,
+        top: (scrollPositions.current[next] ?? 0) - (scroll?.scrollTop ?? 0) + parseFloat(style?.paddingTop ?? "0"),
+        side: parseFloat(style?.paddingLeft ?? "0"),
+      } : null,
     });
   }, [panel]);
+  useEffect(() => {
+    if (!leaving) return;
+    const timer = setTimeout(() => setWorkflow((current) => ({ ...current, leaving: null })), 160);
+    return () => clearTimeout(timer);
+  }, [leaving]);
   const [selected, setSelected] = useState<string | null>(null),
     [sheet, setSheet] = useState<"peek" | "half" | "full">("half");
   const [draft, setDraft] = useState<PlannerDraft>(emptyDraft),
@@ -170,7 +184,7 @@ export default function Atlas() {
       const linked = locationFromSearch(window.location.search);
       if (linked) {
         setSelected(linked.id);
-        setWorkflow((old) => ({ panel: "location", lastPanel: "location", visited: new Set([...old.visited, "location"]) }));
+        setWorkflow((old) => ({ panel: "location", lastPanel: "location", visited: new Set([...old.visited, "location"]), leaving: null }));
       }
       try {
         setShortcuts(localStorage.getItem("marspath-shortcuts") !== "off");
@@ -398,6 +412,31 @@ export default function Atlas() {
   useLayoutEffect(() => {
     if (panel && scrollRef.current) scrollRef.current.scrollTop = scrollPositions.current[panel] ?? 0;
   }, [panel]);
+  useLayoutEffect(() => {
+    const nav = headerRef.current?.querySelector("nav");
+    if (!nav) return;
+    const measure = () => {
+      const active = nav.querySelector<HTMLElement>('[aria-pressed="true"]');
+      nav.style.setProperty("--tab-visible", active ? "1" : "0");
+      if (!active) return;
+      nav.style.setProperty("--tab-x", active.offsetLeft + "px");
+      nav.style.setProperty("--tab-width", active.offsetWidth + "px");
+    };
+    const observer = new ResizeObserver(measure);
+    observer.observe(nav);
+    measure();
+    return () => observer.disconnect();
+  }, [panel]);
+  function workflowState(id: Workflow) {
+    const exiting = leaving?.id === id;
+    return {
+      hidden: visiblePanel !== id && !exiting,
+      inert: visiblePanel !== id,
+      "aria-hidden": visiblePanel !== id || undefined,
+      "data-leaving": exiting,
+      style: exiting ? { top: leaving.top, left: leaving.side, right: leaving.side } : undefined,
+    };
+  }
   const dragStart = useRef(0);
   const title =
     visiblePanel === "places"
@@ -449,7 +488,7 @@ export default function Atlas() {
           </button>
         </nav>
         <div className="header-links">
-          <Link href="/sources/" aria-label="Scientific sources">
+          <Link href="/sources/" aria-label="Scientific sources" title="Scientific sources">
             <BookOpen size={18} />
             <span>Sources</span>
           </Link>
@@ -600,13 +639,13 @@ export default function Atlas() {
           </div>
         )}
         {layer && !placement && (
-          <div className="map-legend" key={layer.id}>
+          <div className="map-legend" key={layer.id} data-hiding={overlay.phase === "hiding"}>
             <strong>{layer.name}</strong>
             <LayerLegend layer={layer} />
             <span>{layer.kind}</span>
           </div>
         )}
-        {layer && inspectPoint && !placement && (
+        {layer && inspectPoint && !placement && overlay.phase !== "hiding" && (
           <aside
             className="inspection-card"
             aria-label="Scientific value inspection"
@@ -765,7 +804,7 @@ export default function Atlas() {
               if (e.target === e.currentTarget) interruptScroll();
             }}
           >
-            <div className="workflow-view" hidden={visiblePanel !== "places"}>
+            <div className="workflow-view" {...workflowState("places")}>
                 <label className="search">
                   <Search size={18} />
                   <input
@@ -882,7 +921,7 @@ export default function Atlas() {
                 </p>
             </div>
             {visited.has("layers") && (
-              <div className="layer-content workflow-view" hidden={visiblePanel !== "layers"}>
+              <div className="layer-content workflow-view" {...workflowState("layers")}>
                 <p className="panel-intro">
                   See the surface through different evidence.
                 </p>
@@ -963,7 +1002,7 @@ export default function Atlas() {
               </div>
             )}
             {visited.has("directions") && (
-              <div className="workflow-view" hidden={visiblePanel !== "directions"}>
+              <div className="workflow-view" {...workflowState("directions")}>
               <RoutePlanner
                 draft={draft}
                 mapReady={mapReady}
@@ -1009,7 +1048,7 @@ export default function Atlas() {
               </div>
             )}
             {visited.has("location") && location && (
-              <div className="workflow-view" key={location.id} hidden={visiblePanel !== "location"}>
+              <div className="workflow-view" key={location.id} {...workflowState("location")}>
                 <div className="location-visual">
                   {location.image && (
                     <Image
