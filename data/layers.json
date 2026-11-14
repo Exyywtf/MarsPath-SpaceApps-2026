@@ -1,0 +1,146 @@
+[
+  {
+    "id": "topography",
+    "name": "MOLA elevation",
+    "unit": "m",
+    "range": [
+      -8046.0,
+      21123.0
+    ],
+    "palette": [
+      "#29344a",
+      "#45677a",
+      "#728b7d",
+      "#afaa80",
+      "#e3d4b5"
+    ],
+    "imageUrl": "/processed/mola-quarter.png",
+    "imageSize": [
+      1440,
+      720
+    ],
+    "bounds": [
+      -180,
+      -90,
+      180,
+      90
+    ],
+    "sampling": "0.25° derived cells · ~14.8 km north–south",
+    "nativeResolution": "463.0935 m projected source",
+    "kind": "Measured terrain derivative",
+    "sourcePage": "https://astrogeology.usgs.gov/search/map/mars_mgs_mola_dem_463m",
+    "dataUrl": "/processed/mola-quarter-elevation.f32",
+    "sha256": "37256f0f380b9e1a6ea7dc54b67ec79720e9e8e6402b16dc1fea58ec117467f1",
+    "processedAt": "2026-11-14T13:01:06.261444+00:00",
+    "context": "Elevation above Martian areoid; cell average",
+    "terms": "NASA / USGS source credits; no endorsement"
+  },
+  {
+    "id": "temperature",
+    "name": "Atmospheric temperature",
+    "unit": "K",
+    "range": [
+      143.291,
+      207.346
+    ],
+    "palette": [
+      "#20202d",
+      "#7d2f58",
+      "#ce6045",
+      "#f5a458",
+      "#fff0a6"
+    ],
+    "imageUrl": "/processed/mcd-temperature.png",
+    "imageSize": [
+      1024,
+      512
+    ],
+    "bounds": [
+      -180,
+      -90,
+      180,
+      90
+    ],
+    "sampling": "64 × 48 export nodes · 5.714° lon × 3.830° lat",
+    "nativeResolution": "Not established from web export",
+    "kind": "Modelled climatology",
+    "sourcePage": "https://www-mars.lmd.jussieu.fr/mcd_python/",
+    "dataUrl": "/processed/mcd-v62.json",
+    "sha256": "aabe016b2609e0a083d47f9be782de94f13204e8d5c0c1c6f11867b8eeb02cbd",
+    "processedAt": "2026-11-14T13:01:06.261444+00:00",
+    "context": "Ls 21.3° · local time 00:00 at every longitude · 10 m above local surface · climatology average solar scenario",
+    "terms": "https://www-mars.lmd.jussieu.fr/mars/access"
+  },
+  {
+    "id": "pressure",
+    "name": "Atmospheric pressure",
+    "unit": "Pa",
+    "range": [
+      88.6751,
+      1238.46
+    ],
+    "palette": [
+      "#182d39",
+      "#3e6171",
+      "#7d958d",
+      "#c2c49b",
+      "#f4e6af"
+    ],
+    "imageUrl": "/processed/mcd-pressure.png",
+    "imageSize": [
+      1024,
+      512
+    ],
+    "bounds": [
+      -180,
+      -90,
+      180,
+      90
+    ],
+    "sampling": "64 × 48 export nodes · 5.714° lon × 3.830° lat",
+    "nativeResolution": "Not established from web export",
+    "kind": "Modelled climatology",
+    "sourcePage": "https://www-mars.lmd.jussieu.fr/mcd_python/",
+    "dataUrl": "/processed/mcd-v62.json",
+    "sha256": "aabe016b2609e0a083d47f9be782de94f13204e8d5c0c1c6f11867b8eeb02cbd",
+    "processedAt": "2026-11-14T13:01:06.261444+00:00",
+    "context": "Ls 21.3° · local time 00:00 at every longitude · 10 m above local surface · climatology average solar scenario",
+    "terms": "https://www-mars.lmd.jussieu.fr/mars/access"
+  },
+  {
+    "id": "wind",
+    "name": "Horizontal wind speed",
+    "unit": "m/s",
+    "range": [
+      0.120004,
+      39.43
+    ],
+    "palette": [
+      "#202a45",
+      "#315e79",
+      "#3a927d",
+      "#94bc6e",
+      "#e9da87"
+    ],
+    "imageUrl": "/processed/mcd-wind.png",
+    "imageSize": [
+      1024,
+      512
+    ],
+    "bounds": [
+      -180,
+      -90,
+      180,
+      90
+    ],
+    "sampling": "64 × 48 export nodes · 5.714° lon × 3.830° lat",
+    "nativeResolution": "Not established from web export",
+    "kind": "Modelled climatology",
+    "sourcePage": "https://www-mars.lmd.jussieu.fr/mcd_python/",
+    "dataUrl": "/processed/mcd-v62.json",
+    "sha256": "aabe016b2609e0a083d47f9be782de94f13204e8d5c0c1c6f11867b8eeb02cbd",
+    "processedAt": "2026-11-14T13:01:06.261444+00:00",
+    "context": "Ls 21.3° · local time 00:00 at every longitude · 10 m above local surface · climatology average solar scenario",
+    "terms": "https://www-mars.lmd.jussieu.fr/mars/access"
+  }
+]

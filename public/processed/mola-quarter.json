@@ -1,0 +1,67 @@
+{
+  "id": "mola-quarter-degree",
+  "name": "Global MOLA coarse numerical terrain",
+  "width": 1440,
+  "height": 720,
+  "grid": "geographic",
+  "wrapX": true,
+  "pixelSize": 14818.674380826555,
+  "angularStep": 0.25,
+  "nativePixelSize": 463.0935415503709,
+  "transform": [
+    0.25,
+    0,
+    -180,
+    0,
+    -0.25,
+    90
+  ],
+  "radius": 3396190,
+  "bounds": [
+    -180,
+    -90,
+    180,
+    90
+  ],
+  "sha256": "38a4eb0b4452855b8dabfac40a367b458555ab4c01b31235807ad0a53c031f4c",
+  "derivedSha256": "37256f0f380b9e1a6ea7dc54b67ec79720e9e8e6402b16dc1fea58ec117467f1",
+  "sourceUrl": "https://astrogeology.usgs.gov/search/map/mars_mgs_mola_dem_463m",
+  "sourcePage": "https://astrogeology.usgs.gov/search/map/mars_mgs_mola_dem_463m",
+  "acquired": "Supplied original; original acquisition date not recorded",
+  "processedAt": "2026-11-14T13:01:06.261444+00:00",
+  "elevationUrl": "/processed/mola-quarter-elevation.f32",
+  "slopeUrl": "/processed/mola-quarter-slope.f32",
+  "validUrl": "/processed/mola-quarter-valid.u8",
+  "validCells": 1036800,
+  "totalCells": 1036800,
+  "examples": [
+    [
+      [
+        130,
+        -4
+      ],
+      [
+        131,
+        -4
+      ]
+    ],
+    [
+      [
+        179,
+        0
+      ],
+      [
+        -179,
+        0
+      ]
+    ]
+  ],
+  "units": "m above areoid; degrees slope",
+  "processing": "Rasterio average resampling to 0.25 degree cells. Periodic longitude centred differences and latitude finite differences using Mars surface spacing. Edge latitude derivatives one-sided. All elevation and slope metrics use this derived grid, not native 463 m cells.",
+  "limitations": [
+    "Approximately 14.8 km north-south; east-west spacing varies with latitude.",
+    "Cell-average elevations hide local slopes and obstacles.",
+    "Global exploration context, not EVA navigation.",
+    "Source interpolation and physical elevation uncertainty are not quantified here."
+  ]
+}

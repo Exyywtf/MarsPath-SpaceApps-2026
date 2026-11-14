@@ -46,3 +46,14 @@ Inspected the supplied 31 files and live NASA service metadata during planning. 
 - Replaced the expensive unformatted chart with an extrema-preserving SVG profile and keyboard inspection linked to the map. Pointer coordinates now update their own component; view metadata updates after completed view changes, not continuously.
 - All 11 Vitest tests, typecheck, lint and the static build passed. All six local Playwright tests passed in 9.4 seconds, including genuine NASA/HiRISE tiles, mobile dragging and terrain download reuse. Normal tests no longer rewrite validation records.
 - Browser audit found and fixed an overridden font variable, geographic centre shifts during responsive padding updates, stale endpoint pixel metadata, and an onboarding card that intercepted a mobile drag. Climate overlays and coarse/science routing are next; no claim of measured FPS improvement yet.
+
+
+## 2026-11-14 — V2 P1 numerical overlays
+
+- P0 commit ce81abe deployed successfully. All six production Playwright tests passed in 19.3 seconds, including genuine NASA/HiRISE tiles and mobile route interaction.
+- Added numerical MOLA elevation plus MCD 6.2 temperature, pressure and horizontal wind speed overlays. Single active scalar layer has opacity, exact-domain legend, source/context and bilinear numerical inspection. Original screenshot colours are never inverted to values.
+- Acquired and retained the small source ASCII export (SHA-256 aabe016b2609e0a083d47f9be782de94f13204e8d5c0c1c6f11867b8eeb02cbd). Verified 64 longitude × 48 latitude nodes. Reconstructed unrounded linspace coordinates because printed longitudes are truncated. PNG resampling evaluates numerical values at pixel centres to avoid a half-cell shift.
+- Model context: Ls 21.3°, local 00:00 at every longitude, 10 m ALS, climatology average solar. Temperature 143.291–207.346 K, pressure 88.6751–1238.46 Pa, wind 0.120004–39.43 m/s. Wind duplicate seam discrepancy max 0.00151 m/s is recorded and averaged; temperature/pressure seams match.
+- User chose to send the MCD notice and explicitly confirmed it was sent to both authors. Agent did not send correspondence or independently verify delivery. Preserved MCD noncommercial conditions separately from MIT.
+- Created the 1440×720 MOLA derivative and finite-difference slope/mask arrays (9,331,200 decoded bytes). All derived cells have numerical support; this is not independent physical coverage or safety confidence. Routing integration follows in P2.
+- All 14 Vitest tests, TypeScript, ESLint and static build passed. All seven local Playwright journeys passed in 18.7 seconds. Browser inspection verified actual climatology values and responsive legends. One transient Windows write failure during regeneration was resolved by rerunning the deterministic processor; final array sizes and tests passed.

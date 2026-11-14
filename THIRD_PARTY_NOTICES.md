@@ -10,3 +10,9 @@ MarsPath's MIT license covers original software, not third-party data or brandin
 - Mars Climate Database: cited as context; screenshot provenance and registration are incomplete, so no screenshot is used for numerical inference.
 
 Dependency copyright/license files remain in installed packages. Next.js, React, Tailwind CSS, Lucide React, Recharts, esbuild and Vitest use MIT licenses; OpenLayers uses BSD-2-Clause; Playwright and TypeScript use Apache-2.0; ESLint uses MIT. Retain upstream notices when redistributing dependencies. See the pinned lockfile for exact package versions.
+
+
+## V2 numerical climate outputs and fonts
+
+- MCD 6.2 fields and derived maps: © LMD / OU / IAA / ESA / CNES. Noncommercial scientific use only without separate commercial authorization. Preserve origin/citations, disclaimers and https://www-mars.lmd.jussieu.fr/mars/access ; credits at https://www-mars.lmd.jussieu.fr/mcd_python/credit.html . User confirmed notification to authors sent on 2026-11-14; agent did not send email or independently verify delivery. These data are not relicensed under MIT.
+- Geist Sans and Geist Mono: Copyright The Geist Project Authors; SIL Open Font License 1.1, bundled in app/fonts/OFL.txt. Files copied unmodified from the installed Next.js distribution.

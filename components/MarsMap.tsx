@@ -8,6 +8,8 @@ import TileLayer from 'ol/layer/Tile';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import WMTS from 'ol/source/WMTS';
+import XYZ from 'ol/source/XYZ';
+import TileGrid from 'ol/tilegrid/TileGrid';
 import WMTSTileGrid from 'ol/tilegrid/WMTS';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
@@ -20,6 +22,7 @@ import { locations, asLonLat } from '@/lib/atlas';
 import services from '@/data/services.json';
 import { coordinateLabel, MARS_RADIUS, normalizeLon, marsDistance, type LonLat } from '@/lib/mars';
 import { splitDateLine, type Placement, type PlannerDraft } from '@/lib/planner';
+import type { LayerDataset } from '@/lib/layers';
 
 export interface MapHandle {focus:(point:LonLat,zoom?:number)=>void;reset:()=>void;zoomBy:(delta:number)=>void;centre:()=>LonLat|null;fitRoute:(points:LonLat[])=>void}
 export interface MapRoute {coordinates:LonLat[];color:string;selected:boolean;connectors?:LonLat[][]}
@@ -30,10 +33,12 @@ interface Props {
   onPlace:(point:LonLat)=>void;onMovePoint:(kind:'start'|'end'|number,point:LonLat)=>void;
   routes:MapRoute[];terrainBounds:number[];padding:number[];profilePoint?:LonLat|null;
   onInspect?:(point:LonLat)=>void;
+  layer?:LayerDataset|null;layerOpacity?:number;onLayerState?:(status:string)=>void;
 }
 const MarsMap=forwardRef<MapHandle,Props>(function MarsMap(props,ref){
   const host=useRef<HTMLDivElement>(null),map=useRef<Map|null>(null),handlers=useRef(props),syncMetadata=useRef<()=>void>(()=>{});
   const bases=useRef<TileLayer<WMTS>[]>([]),markers=useRef<VectorLayer<VectorSource>|null>(null);
+  const scalar=useRef<TileLayer<XYZ>|null>(null),scalarSources=useRef(new globalThis.Map<string,XYZ>());
   const routeSource=useRef(new VectorSource()),endpointSource=useRef(new VectorSource()),boundsSource=useRef(new VectorSource()),profileSource=useRef(new VectorSource());
   useEffect(()=>{handlers.current=props;});
   function duration(){return window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:220;}
@@ -74,7 +79,8 @@ const MarsMap=forwardRef<MapHandle,Props>(function MarsMap(props,ref){
       if(!endpointStyles.has(label))endpointStyles.set(label,new Style({image:new Circle({radius:13,fill:new Fill({color:label==='A'?'#a3e0c6':label==='B'?'#f8c087':'#e5e9e6'}),stroke:new Stroke({color:'#142421',width:3})}),text:new Text({text:label,font:'bold 12px sans-serif',fill:new Fill({color:'#142421'})})}));return endpointStyles.get(label);
     }});
     const profileLayer=new VectorLayer({source:profileSource.current,style:new Style({image:new Circle({radius:7,fill:new Fill({color:'#fff8ed'}),stroke:new Stroke({color:'#132d28',width:3})})})});
-    const instance=new Map({target:host.current,layers:[...tiles,boundsLayer,markerLayer,routeLayer,endpointLayer,profileLayer],view:new View({projection,center:[0,0],zoom:1,minZoom:0,maxZoom:17,constrainOnlyCenter:true,showFullExtent:true,padding:handlers.current.padding}),controls:defaultControls({zoom:false,rotate:false,attribution:false})});
+    const scalarLayer=new TileLayer<XYZ>({visible:false});scalar.current=scalarLayer;
+    const instance=new Map({target:host.current,layers:[...tiles,scalarLayer,boundsLayer,markerLayer,routeLayer,endpointLayer,profileLayer],view:new View({projection,center:[0,0],zoom:1,minZoom:0,maxZoom:17,constrainOnlyCenter:true,showFullExtent:true,padding:handlers.current.padding}),controls:defaultControls({zoom:false,rotate:false,attribution:false})});
     map.current=instance;instance.getView().fit([-180,-90,180,90],{padding:[24,24,24,24]});
     const translate=new Translate({layers:[endpointLayer]});instance.addInteraction(translate);
     translate.on('translateend',e=>{e.features.forEach(f=>{const p=(f.getGeometry() as Point).getCoordinates();handlers.current.onMovePoint(f.get('kind'),[normalizeLon(p[0]),Math.max(-90,Math.min(90,p[1]))]);});});
@@ -115,6 +121,20 @@ const MarsMap=forwardRef<MapHandle,Props>(function MarsMap(props,ref){
   useEffect(()=>{if(map.current){const v=map.current.getView(),centre=v.getCenter()?.slice();v.cancelAnimations();v.padding=props.padding;if(centre)v.setCenter(centre);map.current.once('postrender',syncMetadata.current);map.current.render();}},[props.padding]);
   useEffect(()=>{boundsSource.current.clear();const [w,s,e,n]=props.terrainBounds;boundsSource.current.addFeature(new Feature(new Polygon([[[w,s],[e,s],[e,n],[w,n],[w,s]]])));},[props.terrainBounds]);
   useEffect(()=>{profileSource.current.clear();if(props.profilePoint)profileSource.current.addFeature(new Feature(new Point(props.profilePoint)));},[props.profilePoint]);
+  useEffect(()=>{
+    const layer=props.layer,target=scalar.current;if(!target||!map.current)return;
+    if(!layer){target.setVisible(false);return;}
+    let source=scalarSources.current.get(layer.id);
+    if(!source){
+      const [width,height]=layer.imageSize;
+      source=new XYZ({projection:map.current.getView().getProjection(),tileGrid:new TileGrid({extent:layer.bounds,origin:[-180,90],resolutions:[360/width],tileSize:[width,height]}),tileUrlFunction:()=>layer.imageUrl,wrapX:true,crossOrigin:'anonymous',transition:duration()});
+      source.on('tileloadstart',()=>{if(handlers.current.layer?.id===layer.id)handlers.current.onLayerState?.('Loading map overlay…');});
+      source.on('tileloadend',()=>{if(handlers.current.layer?.id===layer.id)handlers.current.onLayerState?.('Overlay ready · click the map to inspect');});
+      source.on('tileloaderror',()=>{if(handlers.current.layer?.id===layer.id)handlers.current.onLayerState?.('Overlay image could not load. Toggle the layer to retry.');});
+      scalarSources.current.set(layer.id,source);
+    }
+    target.setSource(source);target.setVisible(true);target.setOpacity(props.layerOpacity??.7);
+  },[props.layer,props.layerOpacity]);
   return <div ref={host} className={'map-canvas'+(props.placement?' placing':'')} role="region" aria-label="Interactive Mars map" aria-describedby={props.placement?'placement-instruction':undefined} tabIndex={0} onKeyDown={e=>{if(e.key==='Enter'&&handlers.current.placement){e.preventDefault();const p=map.current?.getView().getCenter();if(p)handlers.current.onPlace([normalizeLon(p[0]),Math.max(-90,Math.min(90,p[1]))]);}}}/>;
 });
 export default MarsMap;
