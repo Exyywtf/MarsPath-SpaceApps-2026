@@ -1,0 +1,4 @@
+public/processed/mcd-v62-source.txt -text
+*.f32 -text
+*.u8 -text
+*.i16 -text

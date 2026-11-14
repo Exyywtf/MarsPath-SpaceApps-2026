@@ -57,3 +57,12 @@ Inspected the supplied 31 files and live NASA service metadata during planning. 
 - User chose to send the MCD notice and explicitly confirmed it was sent to both authors. Agent did not send correspondence or independently verify delivery. Preserved MCD noncommercial conditions separately from MIT.
 - Created the 1440×720 MOLA derivative and finite-difference slope/mask arrays (9,331,200 decoded bytes). All derived cells have numerical support; this is not independent physical coverage or safety confidence. Routing integration follows in P2.
 - All 14 Vitest tests, TypeScript, ESLint and static build passed. All seven local Playwright journeys passed in 18.7 seconds. Browser inspection verified actual climatology values and responsive legends. One transient Windows write failure during regeneration was resolved by rerunning the deterministic processor; final array sizes and tests passed.
+
+## 2026-11-14 — V2 global routing and science milestone
+
+- The scientific layer commit `0de0df8` deployed successfully. Its four-field inspection journey passed against production in 6.8 seconds.
+- Added a periodic 0.25° MOLA terrain graph and geographic fallback for unresolved legs. Terrain distance, elevation changes and slope use complete paths. Dotted connectors identify unassessed offsets at endpoints and stops. Fit on map centres date-line crossings on their actual local extent.
+- Added three cited Jezero delta type locations, scoring for Ancient Water and Sedimentary Geology, and optional single-stop candidates alongside the ordered user waypoints. Kept the original Jezero slope and terrain cost model.
+- Independently validated 12 V2 route calculations and nine numerical climate nodes. Maximum absolute model cost difference was about 0.00000184 m. Raster sample checks and full-path metrics passed.
+- Archived repeatable cached-imagery desktop measurements. The tested V2 pointer and pan workload used 77 ms of median main-thread JavaScript time versus 187 ms for V1. Three warm recalculations reused the terrain cache and worker. Both builds had a 16.7 ms 95th-percentile frame interval.
+- Added axe checks, keyboard/placement tests, a visit to each of the thirteen destinations, mobile sheet dragging and date-line route framing. A layer test once clicked the same position repeatedly, which could zoom via double-click. The current test inspects distinct positions and asserts that each control and inspection preserves the view.

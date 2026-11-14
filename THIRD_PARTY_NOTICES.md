@@ -9,7 +9,7 @@ MarsPath's MIT license covers original software, not third-party data or brandin
 - Resized source-page imagery: original image files and caption/credit pages are listed in `data/locations.json` and `docs/IMAGE_CREDITS.md`. Do not treat NASA hosting as a blanket license for all third-party imagery.
 - Mars Climate Database: cited as context; screenshot provenance and registration are incomplete, so no screenshot is used for numerical inference.
 
-Dependency copyright/license files remain in installed packages. Next.js, React, Tailwind CSS, Lucide React, Recharts, esbuild and Vitest use MIT licenses; OpenLayers uses BSD-2-Clause; Playwright and TypeScript use Apache-2.0; ESLint uses MIT. Retain upstream notices when redistributing dependencies. See the pinned lockfile for exact package versions.
+Dependency copyright and license files remain in installed packages. Next.js, React, Tailwind CSS, Lucide React, esbuild, Vitest and ESLint use MIT licenses. OpenLayers uses BSD-2-Clause. Playwright and TypeScript use Apache-2.0. Retain upstream notices when redistributing dependencies and consult the pinned lockfile for exact versions.
 
 
 ## V2 numerical climate outputs and fonts

@@ -38,6 +38,7 @@
   "exclude": [
     "node_modules",
     "all our mars info",
-    "out"
+    "out",
+    "tmp"
   ]
 }

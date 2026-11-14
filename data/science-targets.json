@@ -1,0 +1,26 @@
+[
+  {
+    "id":"jezero-d-tnl","name":"Thinly layered delta outcrop","unit":"D-tnl","coordinates":[77.350,18.451],
+    "objectives":["ancient-water","sedimentary"],"interpretation":"Fine-grained prodelta or distal lacustrine deposits",
+    "positionNote":"Representative type location published to 0.001°. This is coordinate rounding, not measured positional accuracy or a precise sample location.",
+    "sourceUrl":"https://pmc.ncbi.nlm.nih.gov/articles/PMC7116714/#Tab2",
+    "citation":"Stack et al. (2020), Photogeologic Map of the Perseverance Rover Field Site in Jezero Crater, Table 2; DOI 10.1007/s11214-020-00739-x",
+    "coordinateNote":"Table heading says lat/lon but numerical pairs are longitude then latitude, consistent with the paper's Jezero mapping extent (~77°E, ~18°N). Stored as east longitude, north latitude."
+  },
+  {
+    "id":"jezero-d-tkl","name":"Thickly layered delta outcrop","unit":"D-tkl","coordinates":[77.417,18.524],
+    "objectives":["ancient-water","sedimentary"],"interpretation":"Deltaic channel lobes, toe deposits or floodplain deposits",
+    "positionNote":"Representative type location published to 0.001°. Coordinate precision does not establish positional accuracy or safe access.",
+    "sourceUrl":"https://pmc.ncbi.nlm.nih.gov/articles/PMC7116714/#Tab2",
+    "citation":"Stack et al. (2020), Table 2; DOI 10.1007/s11214-020-00739-x",
+    "coordinateNote":"Published numerical pairs interpreted as longitude, latitude against the Jezero mapping extent."
+  },
+  {
+    "id":"jezero-d-tcl","name":"Curvilinear delta outcrop","unit":"D-tcl","coordinates":[77.387,18.472],
+    "objectives":["ancient-water","sedimentary"],"interpretation":"Point bars or subaqueous channel-levee deposits",
+    "positionNote":"Representative type location published to 0.001°. The outcrop type point is not a confirmed sampling site.",
+    "sourceUrl":"https://pmc.ncbi.nlm.nih.gov/articles/PMC7116714/#Tab2",
+    "citation":"Stack et al. (2020), Table 2; DOI 10.1007/s11214-020-00739-x",
+    "coordinateNote":"Published numerical pairs interpreted as longitude, latitude against the Jezero mapping extent."
+  }
+]

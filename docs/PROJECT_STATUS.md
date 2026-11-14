@@ -1,24 +1,19 @@
-# Project status
+# MarsPath 0.2.0 status
 
-## Complete and tested
+## Delivered
 
-- Static-export Next.js application and public Vercel atlas.
-- NASA Viking global imagery and MOLA relief, source attribution and correct Mars coordinates.
-- All 13 supplied destinations, search/filtering, source-linked descriptions and representative-coordinate caveats.
-- Regional CTX/HiRISE imagery, actual 20 m CTX numerical terrain, A*, two route modes, route metrics and elevation profiles.
-- Draggable endpoints, recalculation, explicit snapping, parameter changes, computed explanations, GeoJSON export and no stale metrics after a new endpoint pair.
-- Unit tests, three real-terrain examples, and independent Python Dijkstra/source-raster checks for six routes.
-- Final deployed application: 5 Playwright checks passed, including genuine HiRISE loading and actual desktop/mobile endpoint dragging and recalculation. See `docs/VALIDATION.md` for the release record.
-- Private GitHub repository, coherent pushed milestones, MIT original-software license.
+- A static export with public NASA imagery, all 13 scientific destinations and links to original coordinate, image and geology sources.
+- A responsive map and directions workflow with explicit A/B placement, coordinate forms, dragging, three ordered waypoints, keyboard operation and a reduced-motion option.
+- Numerical MOLA elevation and an MCD 6.2 climatology snapshot for temperature, pressure and horizontal wind speed. Each layer exposes units, sampling, opacity, a legend and numerical inspection.
+- Fine Jezero terrain routing on the 20 m CTX grid, coarse global routing on the 0.25° MOLA grid and geographic distance estimates when terrain cannot resolve the route.
+- A persistent route worker, three route candidates, verified Jezero delta outcrops, measured comparisons, linked elevation profiles and provenance export.
+- Separate data and software terms. The original software is MIT licensed. GitHub is private and deployments use the Vercel CLI.
 
-## Blocked by missing or unverified data
+See [the validation record](VALIDATION.md) for counts and limitations. The public methods page describes how to interpret each calculation.
 
-- Quantitative climate and radiation layers; screenshot georeferencing and radiation provenance remain unverified.
-- Official challenge Resources/submission-guide retrieval; no claim of verified award eligibility.
+## Limits
 
-## Not yet implemented
-
-- Additional supported routing regions, science-value routing, verified local mineral targets, public waypoint editing, uncertainty propagation and 3D terrain.
-- Automatic GitHub/Vercel integration linking; deployments currently use authenticated Vercel CLI.
-
-This release prioritizes a smaller working, validated system over inactive controls or fabricated coverage.
+- The coarse grid smooths local slopes and obstacles. Data coverage and test agreement do not establish physical alignment accuracy or astronaut safety.
+- Local science scoring is supported for Jezero delta type locations and two objectives. The published type positions are representative. Global mineral-layer registration, verified radiation values and additional fine regional DEMs remain unresolved.
+- Optional 3D, additional regions and comparison dividers were deferred.
+- The official challenge Resources and Submission Guide could not be retrieved in the earlier eligibility check. Award eligibility and submission remain unverified.

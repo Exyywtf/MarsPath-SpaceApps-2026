@@ -1,6 +1,6 @@
 # MarsPath
 
-A planet-wide Mars atlas with 13 scientific destinations and explainable, numerical-terrain route planning in a supported Jezero region.
+A planet-wide Mars atlas with 13 scientific destinations, inspectable terrain and climate layers, and numerical route comparisons.
 
 **Live app:** https://marspath-spaceapps-2026.vercel.app/
 
@@ -10,10 +10,10 @@ Built for NASA Space Apps 2026. Research and education only; no NASA endorsement
 
 ## Try the application
 
-1. Explore global Viking imagery and MOLA relief. Search or filter the 13 destinations and open their original scientific and coordinate references.
-2. Open **Mission planning**. Two terrain-sample endpoints appear inside the supported Jezero footprint.
-3. Drag A or B, or click the map twice to replace them. Compare shortest feasible and terrain-weighted alternatives, inspect the elevation profile, change the model assumptions, and read **Why this route?**.
-4. Export the route as GeoJSON carrying Mars coordinate conventions, source checksum, model parameters and limitations.
+1. Search or filter the 13 destinations in **Explore**. Every destination can be used as A or B and links to its scientific and coordinate sources.
+2. Open **Layers** and select MOLA elevation or an MCD temperature, pressure or wind-speed field. Click the map, or press Enter on the focused map, to inspect a value and its units.
+3. Open **Directions**. Set A and B on the map, enter coordinates, or use **Try Jezero terrain example**. Drag endpoints and add up to three ordered stops.
+4. Compare route metrics, select a science objective in Jezero, and inspect the elevation profile using the pointer or keyboard. Export the selected route and its provenance as Mars coordinates in a GeoJSON-shaped file.
 
 ## Run locally
 
@@ -44,29 +44,33 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-Set `BASE_URL` to the deployed site to run browser tests against production. Real NASA tile tests need network access. Vitest includes three real-terrain cases as well as controlled grids. Reproduce the independent Python checks after downloading the source terrain:
+Set `BASE_URL` to the deployed site to run browser tests against production. The NASA tile checks need network access. Vitest exercises both controlled grids and real Jezero and MOLA terrain. Normal tests leave validation records untouched. To regenerate the records, first make the original rasters available, then run:
 
 ```powershell
 py -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements-gis.txt
 .\.venv\Scripts\python.exe scripts/gis/process_terrain.py
+.\.venv\Scripts\python.exe scripts/gis/process_v2_layers.py
+$env:UPDATE_VALIDATION = '1'
+npm test
+Remove-Item Env:UPDATE_VALIDATION
 .\.venv\Scripts\python.exe scripts/validation/verify_routes.py
+.\.venv\Scripts\python.exe scripts/validation/verify_v2.py
 ```
 
-The GIS script preserves the downloaded source, exports native 20 m elevation/slope arrays, and records checksums and transforms. If the supplied global MOLA raster is available, it additionally exports a small average overview. Large original rasters stay ignored; deployable derivatives are tracked. To rerun the original supplied-file audit and source-image preparation, use `py scripts/prepare_atlas.py` with the original asset folder present.
+The GIS scripts preserve the originals. `scripts/gis/process_v2_layers.py` uses the supplied MOLA raster and the retained numerical MCD ASCII export to regenerate the 0.25° terrain derivative, climate arrays, and overlay PNGs. The build uses the tracked derivatives directly. Keep the large original rasters out of Git.
 
 ## Architecture
 
-Next.js static export + React + OpenLayers. Geographic map coordinates use a custom Mars sphere, not Earth Web Mercator. NASA WMTS imagery loads directly from Trek with published tile grids and coverage. Source-linked region data ships as JSON. The browser downloads numerical terrain only when planning and calculates A* in a cancellable Web Worker. No database, runtime AI, account, or API key is required by visitors.
+Next.js static export serves React and OpenLayers with a custom 3,396,190 m Mars sphere. NASA WMTS imagery loads directly from Mars Trek. A persistent Web Worker fetches numerical terrain on demand and caches terrain and computed legs. Climate, terrain derivatives and the 13 destination records ship as static assets. Visitors can use the public deployment without an account or API key.
 
 ## Limits and release scope
 
-- Global atlas: all 13 supplied regions.
-- Validated routing: the 20 m Jezero CTX terrain footprint only. Imagery can be much finer than elevation.
-- Two terrain-cost candidates; no certified hazard avoidance, science-value optimization, travel-time or radiation-dose estimates.
-- Climate/radiation screenshot registration is unverified; they do not enter routing or numerical readouts.
-- NASA services require internet and may be unavailable. No fabricated imagery fallback is used.
-- Repository remains private. Vercel CLI deployments work; automatic GitHub-to-Vercel linking did not succeed with the current integration access.
+- Fine terrain routing uses the 20 m Jezero DEM. The global MOLA tier uses 0.25° cells with approximately 14.8 km north–south spacing. Unresolved connections can use distance-only geographic planning.
+- Local science comparisons use three published representative Jezero delta type locations. Global science themes link to regions and original evidence.
+- MCD overlays show one modelled climatology snapshot. Radiation registration and a georeferenced global mineral layer are unresolved. Route costs use terrain distance and slope.
+- Terrain coverage and numerical validation measure inputs and calculations. Safety, rock-scale obstacles and physical alignment accuracy remain outside the model.
+- GitHub is private. The public Vercel deployment is managed through the CLI.
 
 See `docs/PROJECT_STATUS.md`, `docs/VALIDATION.md`, and the in-app methods page for details.
 

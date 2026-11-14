@@ -1,11 +1,165 @@
-'use client';
-import { Check, Gauge, Mountain, Thermometer, Wind } from 'lucide-react';
-import { scientificLayers, type LayerId, type LayerDataset } from '@/lib/layers';
-const icons={topography:Mountain,temperature:Thermometer,pressure:Gauge,wind:Wind};
-export function LayerLegend({layer}:{layer:LayerDataset}){
-  return <div className="layer-legend" aria-label={layer.name+' legend'}><div className="legend-gradient" style={{background:'linear-gradient(to right,'+layer.palette.join(',')+')'}}/><div><span>{layer.range[0].toLocaleString(undefined,{maximumFractionDigits:1})} {layer.unit}</span><span>{layer.range[1].toLocaleString(undefined,{maximumFractionDigits:1})} {layer.unit}</span></div></div>;
+"use client";
+import { Check, Gauge, Mountain, Thermometer, Wind } from "lucide-react";
+import {
+  scientificLayers,
+  type LayerId,
+  type LayerDataset,
+} from "@/lib/layers";
+const icons = {
+  topography: Mountain,
+  temperature: Thermometer,
+  pressure: Gauge,
+  wind: Wind,
+};
+export function LayerLegend({ layer }: { layer: LayerDataset }) {
+  return (
+    <div className="layer-legend" aria-label={layer.name + " legend"}>
+      <div
+        className="legend-gradient"
+        style={{
+          background:
+            "linear-gradient(to right," + layer.palette.join(",") + ")",
+        }}
+      />
+      <div>
+        <span>
+          {layer.range[0].toLocaleString(undefined, {
+            maximumFractionDigits: 1,
+          })}{" "}
+          {layer.unit}
+        </span>
+        <span>
+          {layer.range[1].toLocaleString(undefined, {
+            maximumFractionDigits: 1,
+          })}{" "}
+          {layer.unit}
+        </span>
+      </div>
+    </div>
+  );
 }
-export default function LayerManager({active,onActive,opacity,onOpacity,status}:{active:LayerId|null;onActive:(id:LayerId|null)=>void;opacity:number;onOpacity:(value:number)=>void;status:string}){
-  const layer=scientificLayers.find(l=>l.id===active);
-  return <section aria-labelledby="scientific-layer-title"><h2 className="section-heading" id="scientific-layer-title">Numerical science layers</h2><p className="small-note">Choose one field, then click the map to inspect its numerical value.</p><div className="scientific-layers">{scientificLayers.map(l=>{const Icon=icons[l.id];return <button key={l.id} className={'scientific-layer'+(active===l.id?' chosen':'')} aria-pressed={active===l.id} onClick={()=>onActive(active===l.id?null:l.id)}><Icon size={20}/><span><strong>{l.name}</strong><small>{l.kind} · {l.unit}</small></span>{active===l.id?<Check size={18}/>:<span className="layer-preview" style={{background:'linear-gradient(to top,'+l.palette.join(',')+')'}}/>}</button>;})}</div>{layer&&<div className="layer-information"><LayerLegend layer={layer}/><label className="slider-label">Layer opacity<span>{Math.round(opacity*100)}%</span><input type="range" aria-label="Scientific layer opacity" min="0" max="1" step=".05" value={opacity} onChange={e=>onOpacity(+e.target.value)}/></label><p role="status" className="small-note">{status}</p><p>{layer.context}</p><dl><dt>Sampling</dt><dd>{layer.sampling}</dd><dt>Native resolution</dt><dd>{layer.nativeResolution}</dd></dl><p className="small-note">{layer.id==='topography'?'Averaged MOLA elevations. Interpolation does not restore native terrain detail.':'Model means, not current weather or extreme conditions. Export sampling is not the native climate-model resolution.'}</p><a className="text-link" href={layer.sourcePage} target="_blank" rel="noreferrer">Dataset source ↗</a><a className="text-link" href={'/sources/#'+(layer.id==='topography'?'mola':'mcd')}>Processing, credits & limitations ↗</a></div>}<details className="quality-details"><summary>Radiation & minerals</summary><p>The supplied radiation image has unverified registration and is excluded from numerical layers and route costs. Mineral evidence is linked to each destination; there is no verified global mineral raster here.</p></details></section>;
+export default function LayerManager({
+  active,
+  onActive,
+  opacity,
+  onOpacity,
+  status,
+}: {
+  active: LayerId | null;
+  onActive: (id: LayerId | null) => void;
+  opacity: number;
+  onOpacity: (value: number) => void;
+  status: string;
+}) {
+  const layer = scientificLayers.find((l) => l.id === active);
+  return (
+    <section aria-labelledby="scientific-layer-title">
+      <h2 className="section-heading" id="scientific-layer-title">
+        Numerical science layers
+      </h2>
+      <p className="small-note">
+        Choose one field, then click the map to inspect its numerical value.
+      </p>
+      <div className="scientific-layers">
+        {scientificLayers.map((l) => {
+          const Icon = icons[l.id];
+          return (
+            <button
+              key={l.id}
+              className={
+                "scientific-layer" + (active === l.id ? " chosen" : "")
+              }
+              aria-pressed={active === l.id}
+              onClick={() => onActive(active === l.id ? null : l.id)}
+            >
+              <Icon size={20} />
+              <span>
+                <strong>{l.name}</strong>
+                <small>
+                  {l.kind} · {l.unit}
+                </small>
+              </span>
+              {active === l.id ? (
+                <Check size={18} />
+              ) : (
+                <span
+                  className="layer-preview"
+                  style={{
+                    background:
+                      "linear-gradient(to top," + l.palette.join(",") + ")",
+                  }}
+                />
+              )}
+            </button>
+          );
+        })}
+      </div>
+      {layer && (
+        <div className="layer-information">
+          <LayerLegend layer={layer} />
+          <label className="slider-label">
+            Layer opacity<span>{Math.round(opacity * 100)}%</span>
+            <input
+              type="range"
+              aria-label="Scientific layer opacity"
+              min="0"
+              max="1"
+              step=".05"
+              value={opacity}
+              onChange={(e) => onOpacity(+e.target.value)}
+            />
+          </label>
+          <p role="status" className="small-note">
+            {status}
+          </p>
+          <p>{layer.context}</p>
+          <dl>
+            <dt>Sampling</dt>
+            <dd>{layer.sampling}</dd>
+            <dt>Native resolution</dt>
+            <dd>{layer.nativeResolution}</dd>
+          </dl>
+          <p className="small-note">
+            {layer.id === "topography"
+              ? "Averaged MOLA elevations. Interpolation does not restore native terrain detail."
+              : "Model means, not current weather or extreme conditions. Export sampling is not the native climate-model resolution."}
+          </p>
+          <a
+            className="text-link"
+            href={layer.sourcePage}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Dataset source ↗
+          </a>
+          <a
+            className="text-link"
+            href={"/sources/#" + (layer.id === "topography" ? "mola" : "mcd")}
+          >
+            Processing, credits & limitations ↗
+          </a>
+        </div>
+      )}
+      <details className="quality-details">
+        <summary>Radiation & minerals</summary>
+        <p>
+          Curiosity measured radiation along its traverse in Gale Crater.
+          Those local observations cannot supply global radiation values.
+          Registration of the supplied radiation image is unverified.
+        </p>
+        <a
+          className="text-link"
+          href="https://science.nasa.gov/resource/radiation-measurements-on-mars/"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Curiosity radiation observations ↗
+        </a>
+        <p>Explore destination sources for orbital evidence of minerals.</p>
+        <a className="text-link" href="/sources/#nili">
+          Mineral evidence at Nili Fossae ↗
+        </a>
+      </details>
+    </section>
+  );
 }

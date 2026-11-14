@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0 — 2026-11-14
+
+- Redesign the atlas around the map with a single responsive panel, explicit endpoint placement, keyboard controls and reduced motion.
+- Add numerical MOLA elevation and MCD temperature, pressure and wind-speed layers with opacity, legends, value inspection and source context.
+- Compare 20 m Jezero routes, coarse global MOLA routes and distance-only geographic connections. Add ordered waypoints, published Jezero science targets, linked elevation inspection and provenance export.
+- Cache terrain and route legs in a persistent worker. Validate the new routes independently and exercise the public browser workflows.
+
 ## 0.1.0 — 2026-11-14
 
 - Initialize MarsPath static-export application, scientific standards, and software licensing.

@@ -7,15 +7,20 @@
       22.43
     ],
     "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
-    "level": "A",
-    "routingManifest": null,
-    "routingBounds": null,
+    "level": "B",
+    "routingManifest": "/processed/mola-quarter.json",
+    "routingBounds": [
+      -180,
+      -90,
+      180,
+      90
+    ],
     "sourceIds": [
       "trek",
       "gazetteer",
       "mawrth"
     ],
-    "availability": "Global atlas and source-linked research. No numerical regional routing dataset is enabled."
+    "availability": "Global imagery and 0.25° MOLA coarse terrain routing. No fine regional DEM or verified local science-stop registry is enabled. Geographic fallback for unresolved connections."
   },
   {
     "id": "oxia",
@@ -25,15 +30,20 @@
       17.28
     ],
     "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
-    "level": "A",
-    "routingManifest": null,
-    "routingBounds": null,
+    "level": "B",
+    "routingManifest": "/processed/mola-quarter.json",
+    "routingBounds": [
+      -180,
+      -90,
+      180,
+      90
+    ],
     "sourceIds": [
       "trek",
       "gazetteer",
       "oxia"
     ],
-    "availability": "Global atlas and source-linked research. No numerical regional routing dataset is enabled."
+    "availability": "Global imagery and 0.25° MOLA coarse terrain routing. No fine regional DEM or verified local science-stop registry is enabled. Geographic fallback for unresolved connections."
   },
   {
     "id": "valles",
@@ -43,15 +53,20 @@
       -14.01
     ],
     "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
-    "level": "A",
-    "routingManifest": null,
-    "routingBounds": null,
+    "level": "B",
+    "routingManifest": "/processed/mola-quarter.json",
+    "routingBounds": [
+      -180,
+      -90,
+      180,
+      90
+    ],
     "sourceIds": [
       "trek",
       "gazetteer",
       "valles"
     ],
-    "availability": "Global atlas and source-linked research. No numerical regional routing dataset is enabled."
+    "availability": "Global imagery and 0.25° MOLA coarse terrain routing. No fine regional DEM or verified local science-stop registry is enabled. Geographic fallback for unresolved connections."
   },
   {
     "id": "meridiani",
@@ -61,15 +76,20 @@
       -0.04
     ],
     "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
-    "level": "A",
-    "routingManifest": null,
-    "routingBounds": null,
+    "level": "B",
+    "routingManifest": "/processed/mola-quarter.json",
+    "routingBounds": [
+      -180,
+      -90,
+      180,
+      90
+    ],
     "sourceIds": [
       "trek",
       "gazetteer",
       "meridiani"
     ],
-    "availability": "Global atlas and source-linked research. No numerical regional routing dataset is enabled."
+    "availability": "Global imagery and 0.25° MOLA coarse terrain routing. No fine regional DEM or verified local science-stop registry is enabled. Geographic fallback for unresolved connections."
   },
   {
     "id": "jezero",
@@ -93,7 +113,7 @@
       "jezero",
       "ctx-dtm"
     ],
-    "availability": "Global atlas; detailed imagery and dynamic routing inside the published CTX DTM footprint only."
+    "availability": "20 m CTX regional terrain; global MOLA coarse terrain outside the footprint; verified delta type-outcrop science objectives."
   },
   {
     "id": "gale",
@@ -103,15 +123,20 @@
       -5.37
     ],
     "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
-    "level": "A",
-    "routingManifest": null,
-    "routingBounds": null,
+    "level": "B",
+    "routingManifest": "/processed/mola-quarter.json",
+    "routingBounds": [
+      -180,
+      -90,
+      180,
+      90
+    ],
     "sourceIds": [
       "trek",
       "gazetteer",
       "gale"
     ],
-    "availability": "Global atlas and source-linked research. No numerical regional routing dataset is enabled."
+    "availability": "Global imagery and 0.25° MOLA coarse terrain routing. No fine regional DEM or verified local science-stop registry is enabled. Geographic fallback for unresolved connections."
   },
   {
     "id": "nili",
@@ -121,15 +146,20 @@
       22.02
     ],
     "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
-    "level": "A",
-    "routingManifest": null,
-    "routingBounds": null,
+    "level": "B",
+    "routingManifest": "/processed/mola-quarter.json",
+    "routingBounds": [
+      -180,
+      -90,
+      180,
+      90
+    ],
     "sourceIds": [
       "trek",
       "gazetteer",
       "nili"
     ],
-    "availability": "Global atlas and source-linked research. No numerical regional routing dataset is enabled."
+    "availability": "Global imagery and 0.25° MOLA coarse terrain routing. No fine regional DEM or verified local science-stop registry is enabled. Geographic fallback for unresolved connections."
   },
   {
     "id": "eberswalde",
@@ -139,15 +169,20 @@
       -23.98
     ],
     "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
-    "level": "A",
-    "routingManifest": null,
-    "routingBounds": null,
+    "level": "B",
+    "routingManifest": "/processed/mola-quarter.json",
+    "routingBounds": [
+      -180,
+      -90,
+      180,
+      90
+    ],
     "sourceIds": [
       "trek",
       "gazetteer",
       "eberswalde"
     ],
-    "availability": "Global atlas and source-linked research. No numerical regional routing dataset is enabled."
+    "availability": "Global imagery and 0.25° MOLA coarse terrain routing. No fine regional DEM or verified local science-stop registry is enabled. Geographic fallback for unresolved connections."
   },
   {
     "id": "holden",
@@ -157,15 +192,20 @@
       -26.04
     ],
     "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
-    "level": "A",
-    "routingManifest": null,
-    "routingBounds": null,
+    "level": "B",
+    "routingManifest": "/processed/mola-quarter.json",
+    "routingBounds": [
+      -180,
+      -90,
+      180,
+      90
+    ],
     "sourceIds": [
       "trek",
       "gazetteer",
       "holden"
     ],
-    "availability": "Global atlas and source-linked research. No numerical regional routing dataset is enabled."
+    "availability": "Global imagery and 0.25° MOLA coarse terrain routing. No fine regional DEM or verified local science-stop registry is enabled. Geographic fallback for unresolved connections."
   },
   {
     "id": "gusev",
@@ -175,15 +215,20 @@
       -14.53
     ],
     "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
-    "level": "A",
-    "routingManifest": null,
-    "routingBounds": null,
+    "level": "B",
+    "routingManifest": "/processed/mola-quarter.json",
+    "routingBounds": [
+      -180,
+      -90,
+      180,
+      90
+    ],
     "sourceIds": [
       "trek",
       "gazetteer",
       "gusev"
     ],
-    "availability": "Global atlas and source-linked research. No numerical regional routing dataset is enabled."
+    "availability": "Global imagery and 0.25° MOLA coarse terrain routing. No fine regional DEM or verified local science-stop registry is enabled. Geographic fallback for unresolved connections."
   },
   {
     "id": "aram",
@@ -193,15 +238,20 @@
       2.52
     ],
     "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
-    "level": "A",
-    "routingManifest": null,
-    "routingBounds": null,
+    "level": "B",
+    "routingManifest": "/processed/mola-quarter.json",
+    "routingBounds": [
+      -180,
+      -90,
+      180,
+      90
+    ],
     "sourceIds": [
       "trek",
       "gazetteer",
       "aram"
     ],
-    "availability": "Global atlas and source-linked research. No numerical regional routing dataset is enabled."
+    "availability": "Global imagery and 0.25° MOLA coarse terrain routing. No fine regional DEM or verified local science-stop registry is enabled. Geographic fallback for unresolved connections."
   },
   {
     "id": "eridania",
@@ -211,15 +261,20 @@
       -31.5
     ],
     "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
-    "level": "A",
-    "routingManifest": null,
-    "routingBounds": null,
+    "level": "B",
+    "routingManifest": "/processed/mola-quarter.json",
+    "routingBounds": [
+      -180,
+      -90,
+      180,
+      90
+    ],
     "sourceIds": [
       "trek",
       "gazetteer",
       "eridania"
     ],
-    "availability": "Global atlas and source-linked research. No numerical regional routing dataset is enabled."
+    "availability": "Global imagery and 0.25° MOLA coarse terrain routing. No fine regional DEM or verified local science-stop registry is enabled. Geographic fallback for unresolved connections."
   },
   {
     "id": "sirenum",
@@ -229,14 +284,19 @@
       -38.8
     ],
     "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
-    "level": "A",
-    "routingManifest": null,
-    "routingBounds": null,
+    "level": "B",
+    "routingManifest": "/processed/mola-quarter.json",
+    "routingBounds": [
+      -180,
+      -90,
+      180,
+      90
+    ],
     "sourceIds": [
       "trek",
       "gazetteer",
       "sirenum"
     ],
-    "availability": "Global atlas and source-linked research. No numerical regional routing dataset is enabled."
+    "availability": "Global imagery and 0.25° MOLA coarse terrain routing. No fine regional DEM or verified local science-stop registry is enabled. Geographic fallback for unresolved connections."
   }
 ]

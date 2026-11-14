@@ -1,5 +1,25 @@
 # Validation record
 
+## MarsPath 0.2.0
+
+- The original Jezero numerical tests are part of the V2 suite. Representative V2 cases cover coarse MOLA near Gale, a coarse date-line crossing, a longer Gale–Jezero route and a Jezero route through a published delta outcrop.
+- An independent Python Dijkstra solver checked twelve V2 route calculations. The maximum absolute difference in model cost was 0.00000184 m. The script checks the full distances, ascent, descent and maximum slope, verifies that used cells are valid and compares original raster samples.
+- Nine interior numerical climate values were compared with the retained original ASCII file. The unit suite also checks the export axes, date line and bilinear inspection. See `data/validation/v2-independent.json` and `data/validation/v2-routes.json`.
+- Automated axe scans and manual-style browser interactions cover the tested Chromium views. The results describe those views and actions. A complete assistive technology and cross-browser conformance audit remains outside the validation.
+- Measured V1 vs V2 on the same Windows desktop with headless Chromium, three repetitions at 1440×900. The measurement workload uses cached NASA tiles. See `data/validation/performance.json` for per-run timings and the separate live requests.
+
+| Median measurement | V1 | V2 |
+|---|---:|---:|
+| Main-thread JavaScript time during pointer and pan sequence | 187 ms | 77 ms |
+| 95th-percentile frame interval | 16.7 ms | 16.7 ms |
+| Warm route recalculation | 294 ms | 197 ms |
+| Terrain requests over three warm recalculations | 9 | 0 |
+| Workers created over three warm recalculations | 3 | 0 |
+
+These timings describe the tested desktop workload. The main browser heap measurement excludes the worker and GPU. Run `npx playwright test --config playwright.profile.config.ts` with the baseline and candidate static previews available to reproduce the desktop comparison and screenshots.
+
+## MarsPath 0.1.0 archive
+
 ## Checks actually run
 
 - TypeScript check: passed.

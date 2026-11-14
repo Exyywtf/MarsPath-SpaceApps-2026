@@ -2,23 +2,23 @@
 
 ## Project description
 
-MarsPath is a planet-wide Mars atlas and transparent regional mission-planning tool. It brings real NASA orbital imagery, thirteen scientific destinations and source-linked geological context into one map. In a supported Jezero region, users can drag endpoints, calculate terrain-based routes, compare distance and terrain penalties, inspect elevation and understand why a recommendation changes.
+MarsPath is a planet-wide Mars atlas and mission-planning tool. It brings NASA orbital imagery, thirteen scientific destinations and inspectable numerical layers into one map. Users can set endpoints anywhere on Mars and see which calculations the terrain supports. In Jezero they can compare routes on the 20 m terrain grid and evaluate published geological type locations as science stops.
 
 ## Problem and originality
 
-Future surface explorers need to connect scientific opportunities with terrain evidence. MarsPath makes the boundary between global exploration and supported numerical planning explicit, and exposes the sources, assumptions and calculations behind its recommendations. It helps users ask scientific questions without presenting coarse climate imagery or unsupported hazards as local measurements.
+Future surface explorers need to connect scientific opportunities with terrain evidence. MarsPath shows which parts of a route have terrain support, how terrain resolution limits the result, and why a science detour changes the comparison. Atmospheric layers come from a fixed, numerical MCD 6.2 climatology snapshot and show the sampling and model context alongside each readout.
 
 ## NASA data and technical approach
 
 - NASA Mars Trek: Viking global optical mosaic, MOLA relief, regional CTX and HiRISE imagery.
-- USGS/NASA MGS MOLA numerical DEM: preserved source, reproducible audit and browser-friendly overview.
+- USGS/NASA MGS MOLA numerical DEM and a 0.25° derivative for global elevation inspection and coarse routing.
 - USGS/NASA Mars 2020 CTX DTM: 20 m native numerical terrain for Jezero planning.
 - NASA mission/image pages, IAU/USGS representative coordinates and a peer-reviewed Eridania study for source-linked descriptions.
 - Next.js static export, OpenLayers planetary coordinates, TypeScript A* in a cancellable browser worker, independently checked against Python Dijkstra.
 
 ## Validation and limitations
 
-Three real-terrain endpoint pairs produce six independently checked routes. Browser tests exercise real imagery, global navigation, sources and the route interaction flow. Validation demonstrates numerical consistency, not actual astronaut safety. Routing is regional; science-value optimization, climate/radiation penalties and rock-scale hazards are excluded. See the public methodology and `docs/VALIDATION.md`.
+An independent Python solver checked twelve V2 route calculations on real terrain, including a date-line crossing and a Jezero science stop. Browser tests exercise NASA imagery, all thirteen destinations, layer inspection, mobile directions and keyboard workflows. Fine routing and local science scoring are limited to supported Jezero terrain. Coarse routes serve global exploration. The route model does not assess rock-scale hazards or atmospheric and radiation exposure. See the public methodology and `docs/VALIDATION.md`.
 
 ## Links
 
@@ -31,10 +31,10 @@ Three real-terrain endpoint pairs produce six independently checked routes. Brow
 ## Demo guidance
 
 1. Open the whole planet and select a destination outside Jezero, such as Mawrth or Terra Sirenum. Show the source and representative-coordinate caveat.
-2. Switch optical/relief imagery and open Jezero's supported planner.
-3. Show the two actual route alternatives. Drag an endpoint and change the terrain preference.
-4. Open the elevation profile and **Why this route?**. Export the source-linked route.
-5. End on Sources & Methodology and the explicit 20 m terrain limitation.
+2. Select atmospheric temperature in Layers. Inspect a numerical value and explain the fixed model context.
+3. Open Directions and choose **Try Jezero terrain example**. Compare the routes, drag an endpoint, and show the three published delta type locations under Science objectives.
+4. Link the elevation profile to the map, open **Why this route?**, and export the result.
+5. Compare the fine Jezero tier with the coarse global tier and show the provenance on the methods page.
 
 Prepare any video/slide format only after checking the current official submission guide; its detailed requirements could not be independently retrieved in this session.
 

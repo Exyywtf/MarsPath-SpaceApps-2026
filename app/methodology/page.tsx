@@ -1,4 +1,219 @@
-import Link from 'next/link';
-import validation from '@/data/validation/independent.json';
-import terrain from '@/public/processed/jezero.json';
-export default function Methodology(){return <main className="document-page"><nav className="document-nav"><Link className="brand" href="/"><span className="brand-orbit"/>MarsPath</Link><Link href="/">Explorer</Link><Link href="/sources/">Sources</Link></nav><span className="eyebrow orange">METHODS & LIMITATIONS</span><h1>Know what the<br/>map can tell you.</h1><p className="lede">MarsPath combines authentic orbital imagery with a source-linked atlas. Measurements and recommendations must stay within the coverage and resolution of their inputs.</p><h2>Planetary coordinates</h2><p className="lede">Positions use planetocentric latitude and east-positive longitude. Displayed longitudes wrap between 180° west and 180° east. Numerical calculations use a sphere of radius 3,396,190 m, matching the supplied MOLA and published Jezero terrain products. No Earth Web Mercator distances are used.</p><h2>Imagery and progressive detail</h2><p className="lede">NASA Mars Trek WMTS matrices are interpreted in angular map units from their published origin and matrix dimensions. Global Viking imagery and MOLA relief remain available outside regional CTX and HiRISE footprints. Zooming beyond a product’s native resolution does not create new information.</p><h2>Terrain and uncertainty</h2><p className="lede">The global MOLA DEM has approximately 463 m projected pixel spacing. The Jezero CTX terrain product has 20 m projected spacing. Neither provides rock-scale obstacle detection. Elevation differences, terrain slope and geometric path length are model-derived quantities with limited spatial support.</p><h2>Regional route calculation</h2><p className="lede">The regional planner uses an eight-neighbour A* graph on native 20 m numerical terrain. Nodata and cells exceeding the selected slope assumption are excluded; diagonal moves cannot cut across blocked corners. Climate screenshots and unverified radiation estimates are excluded from route costs. The availability and validation status of the planner are shown in the application.</p><h2>Costs and recommendation</h2><div className="formula">cost = distance × (1 + λ × (slope / limit)²)</div><p className="lede">Shortest feasible uses λ = 0. Terrain-weighted defaults to λ = 4, adjustable 1–10. The 20° default slope constraint is an application assumption, adjustable 5–30°; it is not a NASA safety threshold. Slopes use elevation finite differences with latitude-corrected east/west spacing. Each edge uses the maximum of its endpoint slopes and inter-cell grade. The distance heuristic is valid because each permitted edge costs at least its Mars great-circle distance.</p><p className="lede">Length sums horizontal edge distances. Ascent/descent sum original elevation changes. Terrain penalty integrates distance × normalized slope²; it is not an accident probability. Recommendations compare the two candidates using min/max-normalized distance and terrain penalty, with default preference weights of 35 distance, 45 terrain and 20 science. Unavailable science is removed, giving 43.75% distance and 56.25% terrain. Equal values contribute zero and ties choose shortest. Changing the preference changes the comparison; changing λ or slope limit recalculates paths. If both paths coincide, the interface says so. Science value, climate, radiation and travel time are not scored.</p><h2>Independent numerical validation</h2><p className="lede">Three actual Jezero terrain endpoint pairs were computed in TypeScript and checked against an independent Python Dijkstra solver without a heuristic. Original GeoTIFF spot samples match the derivative. These checks demonstrate numerical consistency, not actual astronaut traversability.</p><div className="table-scroll"><table className="validation-table"><thead><tr><th>Case</th><th>Route</th><th>Distance</th><th>Max slope</th><th>Independent cost difference</th></tr></thead><tbody>{validation.results.map(r=><tr key={`${r.case}-${r.route}`}><td>{r.case}</td><td>{r.route==='shortest'?'Shortest':'Terrain-weighted'}</td><td>{(r.distanceM/1000).toFixed(3)} km</td><td>{r.maxSlopeDegrees.toFixed(2)}°</td><td>{r.absoluteCostDifference.toExponential(2)}</td></tr>)}</tbody></table></div><p className="small-note">Source SHA-256: <code className="checksum">{terrain.sha256}</code>. Cost agreement does not measure the terrain dataset’s physical accuracy.</p><h2>Coverage and missing inputs</h2><p className="lede">Numerical regional routing supports the published Jezero CTX footprint. Elsewhere, an explicitly labelled great-circle connection reports distance without terrain metrics. Endpoints snap to terrain-cell centres with offsets shown. Other destinations remain globally explorable. Local science-target optimization is not released. Supplied climate/radiation screenshots lack verified registration and are excluded from numerical measurements and route optimization.</p><h2>Numerical climate overlays</h2><p className="lede">Temperature, pressure and horizontal wind speed come from a numerical Mars Climate Database 6.2 export, not colours in screenshots. The fixed model context is Ls 21.3°, local time 00:00 at every longitude, 10 m above the local surface and climatology average solar conditions. The 64 × 48 export samples do not establish the native climate-model resolution. Values are interpolated model means, not live weather or extreme conditions. Climate is excluded from route costs.</p><p className="lede">The provider prints truncated integer longitude labels. We reconstruct its evenly spaced numerical axes, transpose and reverse the data to north-up, average duplicate date-line columns and resample at image pixel centres. Inspection and legends use the same numerical fields. Source context, checksums and processing records are available in the sources library.</p><h2>AI assistance</h2><p className="lede">AI assisted research navigation, implementation, design, debugging, data processing and documentation. The software is AI-assisted; the scientific evidence comes from the cited original institutions and publications. Generated explanations must describe actual computed results. No AI-generated surface photographs or invented scientific measurements are used.</p><h2>Software and data licensing</h2><p className="lede">MarsPath’s original software is MIT licensed. Mission imagery, scientific data and dependencies retain their own usage terms and credits. NASA names and imagery do not imply NASA approval or endorsement.</p><div className="notice">This is research-grade planning and education, not operational navigation or a guarantee of astronaut safety. Unknown hazards remain unknown.</div><Link className="text-link" href="/sources/">Inspect original evidence →</Link></main>;}
+import Link from "next/link";
+import validation from "@/data/validation/v2-independent.json";
+export default function Methodology() {
+  return (
+    <main className="document-page">
+      <nav className="document-nav">
+        <Link className="brand" href="/">
+          <span className="brand-orbit" />
+          MarsPath
+        </Link>
+        <Link href="/">Explorer</Link>
+        <Link href="/sources/">Sources</Link>
+      </nav>
+      <span className="eyebrow orange">Methods & limitations</span>
+      <h1>
+        Know what the
+        <br />
+        map can tell you.
+      </h1>
+      <p className="lede">
+        MarsPath makes calculations traceable to their inputs. A route is a
+        model result; neither a fine image nor a precise coordinate establishes
+        safe access.
+      </p>
+      <h2>Coordinates and imagery</h2>
+      <p className="lede">
+        Positions use planetocentric latitude and east-positive longitude,
+        normalized between 180° west and 180° east. Distances use a Mars sphere
+        of radius 3,396,190 m, matching the supplied MOLA and published Jezero
+        terrain products. Earth Web Mercator is not used. NASA Mars Trek WMTS
+        matrices use their actual origins, resolutions and dimensions. CTX 6 m
+        and HiRISE 0.25 m imagery appear only within available footprints; they
+        do not create matching terrain resolution.
+      </p>
+      <h2>Three levels of route support</h2>
+      <ul>
+        <li>
+          <strong>Regional terrain:</strong> native 20 m projected Jezero CTX
+          elevation cells, with latitude-corrected surface spacing.
+        </li>
+        <li>
+          <strong>Coarse terrain:</strong> MOLA elevations averaged to a 1440 ×
+          720, 0.25° grid. North–south spacing is about 14.8 km; east–west
+          spacing varies with latitude. The approximately 463 m source spacing
+          is not the routing resolution.
+        </li>
+        <li>
+          <strong>Geographic connection:</strong> great-circle distance through
+          ordered stops, without unsupported ascent, slope, risk or feasibility
+          claims. Exact poles and legs smaller than the available grid are
+          unresolved by terrain routing. Coarse search timeouts can produce an
+          explicitly labelled geographic result.
+        </li>
+      </ul>
+      <p className="lede">
+        A failed regional search retains its failure. Choosing a geographic
+        connection after that failure is explicit. Global connections are
+        exploration context, not practical EVA traverses. Missing terrain is
+        blocked; broad feature centres are destinations, not precise sample
+        sites.
+      </p>
+      <h2>Terrain costs and full-path measurements</h2>
+      <div className="formula">
+        cost = Σ distance × (1 + λ × (slope / limit)²)
+      </div>
+      <p className="lede">
+        Eight-neighbour A* searches numerical cells. Diagonals cannot cut
+        blocked corners. The global graph wraps longitude and stops at its first
+        and last latitude rows. Each edge uses the maximum of its two cell
+        slopes and inter-cell grade. The great-circle heuristic is admissible
+        because every permitted edge costs at least its spherical distance. The
+        worker yields every 2,048 expanded nodes to process cancellations. It
+        gives the base terrain comparison five seconds of search time and the
+        optional science-stop evaluation its own five-second budget.
+      </p>
+      <p className="lede">
+        Shortest uses λ = 0; the terrain-focused candidate defaults to λ = 4,
+        adjustable 1–10; balanced uses λ = 2. The 20° default slope assumption
+        is adjustable 5–30° and is not a NASA safety standard. Distance sums
+        full unsimplified edges. Ascent and descent sum original cell-elevation
+        changes. Mean slope is distance-weighted. Terrain penalty integrates
+        distance × normalized slope²; it is not an accident probability. Plot
+        simplification does not change these calculations.
+      </p>
+      <p className="lede">
+        Endpoints and stops snap to cell centres. Dotted connectors show the
+        unassessed offsets; total distance includes them, with a return
+        connector at intermediate stops. Terrain ascent, descent and slopes
+        exclude those connectors. The coarse grid hides local terrain even where
+        every numerical cell is valid.
+      </p>
+      <h2>Science-aware comparisons</h2>
+      <p className="lede">
+        Three representative Jezero delta type outcrops come from Stack et al.
+        (2020), Table 2: thinly layered, thickly layered and
+        truncated-curvilinear units. Their sedimentary/fluvial interpretations
+        support Ancient Water and Sedimentary Geology themes. Coordinates are
+        published to 0.001°; this rounding is not an independent accuracy
+        measurement. The table’s numerical pairs are interpreted as longitude
+        then latitude against its Jezero map extent. These points are not
+        confirmed sample sites.
+      </p>
+      <p className="lede">
+        Up to three relevant verified targets are evaluated as optional
+        single-stop insertions, while up to three user waypoints remain
+        mandatory and ordered. A target is counted when the route visits the
+        terrain cell containing its published type position. The interface names
+        included outcrops and explains their limits. Other science themes filter
+        source-linked regions rather than inventing local targets.
+      </p>
+      <p className="lede">
+        Recommendations minimize a weighted score of min/max-normalized
+        distance, min/max-normalized terrain penalty and the fraction of
+        selected objective types missed. Defaults are 35 / 45 / 20. Unavailable
+        science is removed and remaining weights renormalized. Equal criteria
+        contribute zero; ties choose the first candidate, shortest where
+        applicable. The balanced candidate is selected from the tested candidate
+        pool, whose size and attempts are reported. This is not a global science
+        optimum or a probability of finding life. Identical paths are disclosed.
+      </p>
+      <a
+        className="text-link"
+        href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7116714/#Tab2"
+        target="_blank"
+        rel="noreferrer"
+      >
+        Published Jezero type locations & interpretations ↗
+      </a>
+      <h2 id="validation-v2">Independent numerical validation</h2>
+      <p className="lede">
+        {validation.checks.length} V2 route calculations were checked with an
+        independent Python Dijkstra solver without a heuristic. These include a
+        date-line crossing, coarse terrain near Gale, a Gale-to-Jezero
+        connection and a science route through a published outcrop. Python also
+        recalculates full-path distance, ascent, descent and maximum slope, then
+        checks original GeoTIFF samples. These tests establish numerical
+        consistency, not physical positional accuracy or astronaut
+        traversability.
+      </p>
+      <div className="table-scroll">
+        <table className="validation-table">
+          <thead>
+            <tr>
+              <th>Case / tier</th>
+              <th>Candidate</th>
+              <th>Assessed distance</th>
+              <th>Cost difference</th>
+            </tr>
+          </thead>
+          <tbody>
+            {validation.checks.map((r) => (
+              <tr key={r.case + "-" + r.route}>
+                <td>
+                  {r.case} · {r.tier}
+                </td>
+                <td>{r.route}</td>
+                <td>{(r.distanceM / 1000).toFixed(3)} km</td>
+                <td>{r.absoluteCostDifference.toExponential(2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <h2>What quality percentages mean</h2>
+      <p className="lede">
+        Assessed route percentage is terrain-edge distance divided by total
+        distance including unassessed connectors. Dataset valid percentage
+        counts numerical mask cells. Missing-path percentage counts invalid
+        samples along the assessed path; these should be zero because missing
+        cells are blocked. None measures safety, source completeness, sub-cell
+        obstacles or alignment accuracy. Independent physical alignment accuracy
+        has not been measured. No aggregate confidence score is supplied.
+      </p>
+      <h2>Numerical climate overlays</h2>
+      <p className="lede">
+        Temperature, pressure and horizontal wind speed come from a numerical
+        Mars Climate Database 6.2 export. Its fixed context is Ls 21.3°, local
+        time 00:00 at every longitude, 10 m above the local surface and
+        climatology average solar conditions. The 64 × 48 export samples do not
+        establish native model resolution. These are interpolated model means,
+        not live weather or extreme conditions; no climate field contributes to
+        route costs.
+      </p>
+      <p className="lede">
+        The provider prints truncated integer longitude labels. We reconstruct
+        its unrounded evenly spaced axes, transpose and reverse values to
+        north-up, and average duplicate date-line columns. Their maximum wind
+        discrepancy is 0.00151 m/s; temperature and pressure seam columns match.
+        PNG pixels are generated by numerical interpolation at pixel centres,
+        avoiding a half-cell shift. Inspection, legends and images use the same
+        numerical fields. Source bytes, context and checksums are retained; nine
+        interior field nodes were independently compared with the source ASCII.
+      </p>
+      <p className="lede">
+        Supplied screenshots remain references. Unverified radiation
+        registration, unverified mineral rasters, weather extremes and
+        rock-scale hazards are excluded from numerical optimization.
+      </p>
+      <h2>AI assistance and licensing</h2>
+      <p className="lede">
+        AI assisted implementation, research navigation, design, processing,
+        validation and documentation. Scientific evidence comes from cited
+        institutions and publications. No generated Mars surface photographs or
+        invented measurements are used. Original software is MIT licensed;
+        imagery, datasets and fonts retain separate terms. MCD outputs retain
+        noncommercial conditions and attribution; the user confirmed its
+        required author notice was sent. NASA names and imagery do not imply
+        endorsement.
+      </p>
+      <div className="notice">
+        Research and education, not operational navigation. Unknown hazards
+        remain unknown.
+      </div>
+      <Link className="text-link" href="/sources/">
+        Inspect original evidence, processing & usage terms →
+      </Link>
+    </main>
+  );
+}

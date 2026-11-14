@@ -275,5 +275,22 @@
     "processing": "Concise paraphrase of linked original; representative region marker",
     "limitations": "Approximate deposit location published in the NASA image description.",
     "usage": "Follow original source and image-specific credits; no blanket relicensing"
+  },
+  {
+    "id": "jezero-photogeology",
+    "title": "Photogeologic Map of the Perseverance Rover Field Site in Jezero Crater",
+    "institution": "Stack et al. (2020), Space Science Reviews; Mars 2020 science team",
+    "type": "Peer-reviewed geology",
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7116714/#Tab2",
+    "description": "Table 2 representative type locations for D-tnl, D-tkl and D-tcl delta units support local Ancient Water and Sedimentary Geology objectives. Interpretations are geological evidence, not biosignature probabilities. DOI 10.1007/s11214-020-00739-x.",
+    "format": "Published numerical type locations and paraphrased unit interpretations",
+    "coverage": "Jezero delta mapped field site",
+    "resolution": "Map scale 1:5000; type coordinates rounded to 0.001°, not positional accuracy",
+    "units": "East longitude, north planetocentric latitude in degrees",
+    "crs": "Mars planetocentric / east-positive coordinates; paper map extent used to resolve mislabeled lat/lon column order",
+    "processing": "Selected three published type outcrops; no figure colours or crater-centre coordinates converted to sample sites",
+    "limitations": "Representative type positions, not exact sampling sites, established access points or safe locations. Alignment accuracy not independently measured.",
+    "usage": "Factual locations and paraphrased interpretations with citation; original publication terms apply. No paper figures redistributed.",
+    "accessed": "2026-11-14"
   }
 ]
