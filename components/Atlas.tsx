@@ -41,6 +41,7 @@ import {
   defaultSettings,
   emptyDraft,
   routeAppearance,
+  type EndpointKind,
   type PlannerDraft,
   type Placement,
 } from "@/lib/planner";
@@ -116,6 +117,8 @@ export default function Atlas() {
     [settings, setSettings] = useState(defaultSettings),
     [placement, setPlacement] = useState<Placement>(null),
     [revision, setRevision] = useState(0),
+    [removalRevision, setRemovalRevision] = useState(0),
+    [removedEndpoint, setRemovedEndpoint] = useState<EndpointKind | null>(null),
     [active, setActive] = useState<{ geometryKey: string; id: string } | null>(null),
     [drawing, setDrawing] = useState(false),
     [hideFeatured, setHideFeatured] = useState(false);
@@ -142,7 +145,7 @@ export default function Atlas() {
   const requestedLayer = scientificLayers.find((l) => l.id === layerId) ?? null;
   const layer = scientificLayers.find((l) => l.id === overlay.active) ?? null,
     inspection = useLayerData(layer, inspectPoint);
-  const engine = useRouteEngine(draft, settings, revision, climatePreferences);
+  const engine = useRouteEngine(draft, settings, revision, climatePreferences, removalRevision);
   const result = engine.result ?? engine.previous?.result;
   const updating = !!engine.previous;
   const [calculationSlow, setCalculationSlow] = useState(false);
@@ -256,17 +259,28 @@ export default function Atlas() {
   }, [mapReady]);
   useEffect(() => () => cancelAnimationFrame(focusFrame.current), []);
   const movePoint = useCallback(
-    (kind: "start" | "end" | number, point: LonLat) =>
+    (kind: EndpointKind | number, point: LonLat) =>
       setDraft((old) =>
         typeof kind === "number"
           ? {
               ...old,
               waypoints: old.waypoints.map((p, i) => (i === kind ? point : p)),
             }
-          : { ...old, [kind]: point },
+          : old[kind] ? { ...old, [kind]: point } : old,
       ),
     [],
   );
+  const removeEndpoint = useCallback((kind: EndpointKind) => {
+    if (!draft[kind]) return;
+    interruptScroll();
+    setDraft((old) => ({ ...old, [kind]: null }));
+    setRemovalRevision((old) => old + 1);
+    setRemovedEndpoint(kind);
+    setPlacement(null);
+    setDrawing(false);
+    setDismissedError(undefined);
+    setProfilePoint(null);
+  }, [draft, interruptScroll, setProfilePoint]);
   const select = useCallback(
     (id: string) => {
       const l = locations.find((l) => l.id === id);
@@ -494,6 +508,9 @@ export default function Atlas() {
           </button>
         </div>
       </header>
+      <span className="sr-only" role="status" aria-atomic="true">
+        {removedEndpoint && !draft[removedEndpoint] ? `Point ${removedEndpoint === "start" ? "A" : "B"} removed.` : ""}
+      </span>
       <section className="map-area" id="mars-map">
         <MarsMap
           ref={map}
@@ -512,6 +529,7 @@ export default function Atlas() {
           placement={placement}
           onPlace={place}
           onMovePoint={movePoint}
+          onRemoveEndpoint={removeEndpoint}
           routes={mapRoutes}
           routeGeneration={engine.generation}
           recommendedRoute={mapRoutes[recommended]?.id}
@@ -973,6 +991,7 @@ export default function Atlas() {
                 mapReady={mapReady}
                 settings={settings}
                 onDraft={setDraft}
+                onRemoveEndpoint={removeEndpoint}
                 onSettings={setSettings}
                 placement={placement}
                 onPlacement={pick}

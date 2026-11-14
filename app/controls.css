@@ -63,11 +63,23 @@ html::-webkit-scrollbar, .scroll-viewport::-webkit-scrollbar { display: none; }
 .accordion-content { display: flow-root; padding-block: 6px 12px; }
 .point-actions { display: block; }
 .has-leading-action { display: grid; grid-template-columns: minmax(0, 1fr) 120px; gap: 8px; align-items: center; }
-.point-actions .secondary-button { padding-inline: 8px; }
+.point-actions .accordion-actions .secondary-button { padding-inline: 8px; }
+.point-label { min-height: 44px; }
+.point-remove { margin-inline-start: auto; }
 .point-actions .accordion-trigger { justify-content: center; gap: 7px; padding-inline: 6px; }
 .point-actions .accordion-title { flex: 0 1 auto; }
 .point-actions .accordion-content { padding-block: 12px 2px; }
 .point-actions form { margin: 0; }
+.coordinate-apply {
+  display: grid;
+  place-items: center;
+  min-width: 112px;
+  min-height: 44px;
+  margin-inline: auto;
+  padding: 10px 16px;
+  font-size: var(--type-body);
+  line-height: 20px;
+}
 .planning-settings { margin-block: 20px 12px; border-top: 1px solid var(--line); }
 .planning-settings > .accordion { padding: 0; margin: 0; border: 0; border-bottom: 1px solid var(--line); }
 .planning-settings > .accordion .accordion-trigger { min-height: 52px; }

@@ -22,11 +22,13 @@ export function useRouteEngine(
   settings: PlannerSettings,
   revision: number,
   climate: ClimatePreferences,
+  removalRevision: number,
 ) {
   const worker = useRef<Worker | null>(null);
   const requestId = useRef(0);
   const { maxSlope, riskWeight, objectives, geographicOnly } = settings;
-  const geometryKey = JSON.stringify([draft, maxSlope, riskWeight, objectives, geographicOnly]);
+  const hasEndpoints = !!draft.start && !!draft.end;
+  const geometryKey = JSON.stringify([draft, maxSlope, riskWeight, objectives, geographicOnly, removalRevision]);
   const requestKey = revision + ":" + geometryKey;
   const comparison = useMemo<ComparisonRequest>(() => ({
     key: JSON.stringify([settings.distanceWeight, settings.terrainWeight, settings.scienceWeight, climate]),
@@ -104,15 +106,16 @@ export function useRouteEngine(
 
   const compareKey = comparison.key;
   useEffect(() => {
+    if (!hasEndpoints) return;
     const id = requestId.current;
     const timer = setTimeout(() => {
       worker.current?.postMessage({ id, kind: "compare", comparison: input.current.comparison } satisfies WorkerRequest);
     }, 90);
     return () => clearTimeout(timer);
-  }, [compareKey]);
+  }, [compareKey, hasEndpoints]);
 
-  const complete = state.requestKey === requestKey;
-  const previous = !complete && state.geometryKey === geometryKey && state.result ? state : undefined;
+  const complete = hasEndpoints && state.requestKey === requestKey;
+  const previous = hasEndpoints && !complete && state.geometryKey === geometryKey && state.result ? state : undefined;
   return {
     geometryKey,
     previous,
@@ -125,6 +128,6 @@ export function useRouteEngine(
     analysisError: complete ? state.analysisError : undefined,
     rankingPending: !!state.result && complete && (state.comparisonKey !== comparison.key ||
       !state.analysis && !state.analysisError),
-    pending: !!draft.start && !!draft.end && !complete,
+    pending: hasEndpoints && !complete,
   };
 }

@@ -1,7 +1,7 @@
 "use client";
 import EvidenceLink from "./EvidenceLink";
 import Accordion from "./Accordion";
-import { memo, useMemo, useState } from "react";
+import { memo, useMemo, useRef, useState } from "react";
 import {
   ArrowDownUp,
   Crosshair,
@@ -24,6 +24,7 @@ import {
   parseCoordinate,
   routeAppearance,
   splitDateLine,
+  type EndpointKind,
   type PlannerDraft,
   type PlannerSettings,
   type Placement,
@@ -36,6 +37,7 @@ interface Props {
   mapReady: boolean;
   settings: PlannerSettings;
   onDraft: (draft: PlannerDraft) => void;
+  onRemoveEndpoint: (kind: EndpointKind) => void;
   onSettings: (settings: PlannerSettings) => void;
   placement: Placement;
   onPlacement: (p: Placement) => void;
@@ -110,14 +112,16 @@ function PointEditor({
   mapReady,
   onSave,
   onPick,
+  onRemove,
 }: {
-  label: string;
+  label: "A" | "B";
   point: LonLat | null;
   mapReady: boolean;
   onSave: (p: LonLat) => void;
   onPick: () => void;
+  onRemove: () => void;
 }) {
-  const [error, setError] = useState("");
+  const pickButton = useRef<HTMLButtonElement>(null);
   return (
     <div className="point-editor">
       <div className="point-label">
@@ -131,8 +135,18 @@ function PointEditor({
               ? "Choose a start"
               : "Choose a destination"}
         </strong>
+        {point && (
+          <button className="icon-button point-remove" aria-label={`Remove point ${label}`} title={`Remove point ${label}`}
+            onClick={(event) => {
+              if (document.activeElement === event.currentTarget) pickButton.current?.focus({ preventScroll: true });
+              onRemove();
+            }}>
+            <Trash2 size={17} aria-hidden="true" />
+          </button>
+        )}
       </div>
       <Accordion className="point-actions" title="Coordinates" leadingAction={<button
+          ref={pickButton}
           className="secondary-button"
           disabled={!mapReady}
           onClick={onPick}
@@ -140,77 +154,87 @@ function PointEditor({
           <Crosshair size={16} />
           Set {label} on map
         </button>}>
-          <form
-            noValidate
-            onSubmit={(e) => {
-              e.preventDefault();
-              const data = new FormData(e.currentTarget);
-              try {
-                onSave(
-                  parseCoordinate(
-                    String(data.get("lat")),
-                    String(data.get("lon")),
-                  ),
-                );
-                setError("");
-              } catch (err) {
-                setError((err as Error).message);
-              }
-            }}
-          >
-            <div className="coordinate-fields">
-              <label>
-                Latitude °N
-                <input
-                  key={"lat" + point?.[1]}
-                  name="lat"
-                  aria-label={label + " latitude"}
-                  aria-invalid={!!error}
-                  aria-describedby={
-                    error ? label + "-coordinate-error" : undefined
-                  }
-                  type="number"
-                  step="any"
-                  min="-90"
-                  max="90"
-                  defaultValue={point?.[1] ?? ""}
-                  required
-                />
-              </label>
-              <label>
-                Longitude °E
-                <input
-                  key={"lon" + point?.[0]}
-                  name="lon"
-                  aria-label={label + " longitude"}
-                  aria-invalid={!!error}
-                  aria-describedby={
-                    error ? label + "-coordinate-error" : undefined
-                  }
-                  type="number"
-                  step="any"
-                  min="-180"
-                  max="360"
-                  defaultValue={point?.[0] ?? ""}
-                  required
-                />
-              </label>
-            </div>
-            <button className="secondary-button" type="submit">
-              Apply {label}
-            </button>
-            {error && (
-              <p
-                id={label + "-coordinate-error"}
-                role="alert"
-                className="field-error"
-              >
-                {error}
-              </p>
-            )}
-          </form>
+          <CoordinateForm label={label} point={point} onSave={onSave} />
       </Accordion>
     </div>
+  );
+}
+
+function CoordinateForm({ label, point, onSave }: { label: "A" | "B"; point: LonLat | null; onSave: (point: LonLat) => void }) {
+  const pointKey = point?.join(",") ?? "unset";
+  const [validation, setValidation] = useState({ pointKey, error: "" });
+  if (validation.pointKey !== pointKey) setValidation({ pointKey, error: "" });
+  const error = validation.pointKey === pointKey ? validation.error : "";
+  return (
+    <form
+      noValidate
+      onSubmit={(e) => {
+        e.preventDefault();
+        const data = new FormData(e.currentTarget);
+        try {
+          onSave(
+            parseCoordinate(
+              String(data.get("lat")),
+              String(data.get("lon")),
+            ),
+          );
+          setValidation({ pointKey, error: "" });
+        } catch (err) {
+          setValidation({ pointKey, error: (err as Error).message });
+        }
+      }}
+    >
+      <div className="coordinate-fields">
+        <label>
+          Latitude °N
+          <input
+            key={pointKey + "-lat"}
+            name="lat"
+            aria-label={label + " latitude"}
+            aria-invalid={!!error}
+            aria-describedby={
+              error ? label + "-coordinate-error" : undefined
+            }
+            type="number"
+            step="any"
+            min="-90"
+            max="90"
+            defaultValue={point?.[1] ?? ""}
+            required
+          />
+        </label>
+        <label>
+          Longitude °E
+          <input
+            key={pointKey + "-lon"}
+            name="lon"
+            aria-label={label + " longitude"}
+            aria-invalid={!!error}
+            aria-describedby={
+              error ? label + "-coordinate-error" : undefined
+            }
+            type="number"
+            step="any"
+            min="-180"
+            max="360"
+            defaultValue={point?.[0] ?? ""}
+            required
+          />
+        </label>
+      </div>
+      <button className="secondary-button coordinate-apply" type="submit">
+        <span>Apply {label}</span>
+      </button>
+      {error && (
+        <p
+          id={label + "-coordinate-error"}
+          role="alert"
+          className="field-error"
+        >
+          {error}
+        </p>
+      )}
+    </form>
   );
 }
 export default memo(function RoutePlanner(p: Props) {
@@ -321,6 +345,7 @@ export default memo(function RoutePlanner(p: Props) {
         mapReady={p.mapReady}
         onSave={(start) => p.onDraft({ ...p.draft, start })}
         onPick={() => p.onPlacement("start")}
+        onRemove={() => p.onRemoveEndpoint("start")}
       />
       <div className="between-points">
         <button
@@ -344,6 +369,7 @@ export default memo(function RoutePlanner(p: Props) {
         mapReady={p.mapReady}
         onSave={(end) => p.onDraft({ ...p.draft, end })}
         onPick={() => p.onPlacement("end")}
+        onRemove={() => p.onRemoveEndpoint("end")}
       />
       {p.draft.waypoints.map((point, i) => (
         <div className="waypoint-row" key={i}>

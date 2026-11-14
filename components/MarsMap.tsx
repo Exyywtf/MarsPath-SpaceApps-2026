@@ -17,6 +17,9 @@ import Polygon from "ol/geom/Polygon";
 import { Circle, Fill, RegularShape, Stroke, Style, Text } from "ol/style";
 import { defaults as defaultControls } from "ol/control";
 import Translate from "ol/interaction/Translate";
+import { primaryAction } from "ol/events/condition";
+import type { Coordinate } from "ol/coordinate";
+import type { Pixel } from "ol/pixel";
 import { defaults as defaultInteractions } from "ol/interaction/defaults";
 import DragPan from "ol/interaction/DragPan";
 import KeyboardPan from "ol/interaction/KeyboardPan";
@@ -34,6 +37,7 @@ import {
 import {
   splitDateLine,
   unwrapRoute,
+  type EndpointKind,
   type Placement,
   type PlannerDraft,
 } from "@/lib/planner";
@@ -41,6 +45,7 @@ import type { LayerDataset } from "@/lib/layers";
 import { createScientificOverlay, type OverlayState } from "@/lib/scientificOverlay";
 import { scienceTargets } from "@/lib/science";
 import { prepareReveal, revealPrefix } from "@/lib/routePresentation";
+import { installEndpointGestures } from "@/lib/endpointGestures";
 import { labelRect, selectMapLabels, type LabelInput, type LabelPlacement } from "@/lib/mapLabels";
 import type { MapInsets, MapLayout } from "@/lib/mapLayout";
 export type { MapInsets } from "@/lib/mapLayout";
@@ -48,7 +53,7 @@ export type { MapInsets } from "@/lib/mapLayout";
 const featuredLabels = new Set(["jezero", "gale", "valles", "oxia", "eridania"]);
 const revealTiming = { shortest: 740, longest: 1330, alternative: 270, stagger: 120 };
 const marsExtent = [-180, -90, 180, 90];
-type MarkerKind = "start" | "end" | number;
+type MarkerKind = EndpointKind | number;
 
 function endpointStyle(kind: MarkerKind, label: string) {
   const fill = new Fill({ color: kind === "start" ? "#ace5d0" : kind === "end" ? "#ffcb99" : "#e2e9e1" });
@@ -116,6 +121,7 @@ interface Props {
   placement: Placement;
   onPlace: (point: LonLat) => void;
   onMovePoint: (kind: MarkerKind, point: LonLat) => void;
+  onRemoveEndpoint: (kind: EndpointKind) => void;
   routes: MapRoute[];
   routeGeneration?: number;
   recommendedRoute?: string;
@@ -144,10 +150,15 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
   const scienceLayer = useRef<VectorLayer<VectorSource> | null>(null);
   const routeSource = useRef(new VectorSource()),
     endpointSource = useRef(new VectorSource()),
+    exitingEndpointSource = useRef(new VectorSource()),
     boundsSource = useRef(new VectorSource()),
     profileSource = useRef(new VectorSource());
   const profileMarker = useRef<Feature<Point> | null>(null);
-  const endpointMotion = useRef({ frame: 0, arriving: new globalThis.Map<Feature<Point>, number>() });
+  const endpointMotion = useRef({
+    frame: 0,
+    arriving: new globalThis.Map<Feature<Point>, number>(),
+    exiting: new globalThis.Map<EndpointKind, { feature: Feature<Point>; from: number; scale: number }>(),
+  });
   const reveal = useRef<{
     generation?: number;
     frame: number;
@@ -513,6 +524,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
         labelLayer,
         targets,
         routeLayer,
+        new VectorLayer({ source: exitingEndpointSource.current }),
         endpointLayer,
         profileLayer,
       ],
@@ -534,22 +546,34 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       }),
     });
     map.current = instance;
-    const translate = new Translate({ layers: [endpointLayer], hitTolerance: 11 });
+    const translate = new Translate({ layers: [endpointLayer], hitTolerance: 11, condition: primaryAction });
     instance.addInteraction(translate);
+    let translated = false;
+    translate.on("translatestart", () => { translated = false; });
+    translate.on("translating", () => { translated = true; });
     translate.on("translateend", (e) => {
+      if (!translated) return;
+      translated = false;
       e.features.forEach((f) => {
-        const p = (f.getGeometry() as Point).getCoordinates();
-        handlers.current.onMovePoint(f.get("kind"), [
-          normalizeLon(p[0]),
-          Math.max(-90, Math.min(90, p[1])),
-        ]);
+        const kind = f.get("kind") as MarkerKind;
+        const { draft } = handlers.current;
+        const previous = typeof kind === "number" ? draft.waypoints[kind] : draft[kind];
+        if (!previous) return;
+        const geometry = f.getGeometry() as Point;
+        if (e.mapBrowserEvent.originalEvent.type === "pointercancel") {
+          geometry.setCoordinates(previous);
+          return;
+        }
+        const [lon, lat] = geometry.getCoordinates();
+        const next: LonLat = [normalizeLon(lon), Math.max(-90, Math.min(90, lat))];
+        if (next[0] !== previous[0] || next[1] !== previous[1]) handlers.current.onMovePoint(kind, next);
       });
     });
-    instance.on("singleclick", (e) => {
-      if (Math.abs(e.coordinate[1]) > 90) return;
-      const point: LonLat = [normalizeLon(e.coordinate[0]), e.coordinate[1]];
+    function mapTap(pixel: Pixel, coordinate: Coordinate) {
+      if (Math.abs(coordinate[1]) > 90) return;
+      const point: LonLat = [normalizeLon(coordinate[0]), coordinate[1]];
       const hit = instance.forEachFeatureAtPixel(
-        e.pixel,
+        pixel,
         (f) => {
           const location = f.get("locationId") as string | undefined,
             science = f.get("scienceId") as string | undefined;
@@ -567,7 +591,15 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       } else if (hit?.location) handlers.current.onSelect(hit.location);
       else if (hit?.science) handlers.current.onScienceSelect?.(hit.science);
       else if (overlay.getActive()) handlers.current.onInspect?.(point);
-    });
+    }
+    instance.on("singleclick", (event) => mapTap(event.pixel, event.coordinate));
+    const disposeEndpointGestures = installEndpointGestures(instance, (pixel) => {
+      const feature = instance.forEachFeatureAtPixel(pixel, (candidate) => candidate, {
+        layerFilter: (layer) => layer === endpointLayer,
+      });
+      const kind = feature?.get("kind") as MarkerKind | undefined;
+      return (kind === "start" || kind === "end") && handlers.current.draft[kind] ? kind : undefined;
+    }, () => handlers.current, (kind) => handlers.current.onRemoveEndpoint(kind), mapTap);
     let lastPointer = 0;
     instance.on("pointermove", (e) => {
       if (Date.now() - lastPointer >= 100) {
@@ -780,6 +812,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       refreshLabels.current = () => {};
       observer.disconnect();
       motion.removeEventListener("change", stop);
+      disposeEndpointGestures();
       overlay.dispose();
       scalar.current = null;
       instance.setTarget(undefined);
@@ -922,6 +955,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
   }, [routes, routeGeneration, recommendedRoute]);
   useEffect(() => {
     const source = endpointSource.current;
+    const exiting = exitingEndpointSource.current;
     const motion = endpointMotion.current;
     const { start, end, waypoints } = props.draft;
     const points = [
@@ -932,6 +966,13 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     const remaining = new Set(source.getFeatures() as Feature<Point>[]);
     for (const [point, kind, label] of points) {
       if (!point) continue;
+      if (typeof kind !== "number") {
+        const previous = motion.exiting.get(kind);
+        if (previous) {
+          exiting.removeFeature(previous.feature);
+          motion.exiting.delete(kind);
+        }
+      }
       const existing = source.getFeatureById(kind) as Feature<Point> | null;
       if (existing) {
         remaining.delete(existing);
@@ -954,6 +995,12 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     for (const unused of remaining) {
       motion.arriving.delete(unused);
       source.removeFeature(unused);
+      const kind = unused.getId();
+      if ((kind === "start" || kind === "end") && duration()) {
+        const style = unused.getStyle() as Style;
+        motion.exiting.set(kind, { feature: unused, from: performance.now(), scale: style.getImage()!.getScaleArray()[0] });
+        exiting.addFeature(unused);
+      }
     }
     function settle(now: number) {
       const reduced = !duration();
@@ -966,9 +1013,24 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
         feature.changed();
         if (progress >= 1) motion.arriving.delete(feature);
       }
-      motion.frame = motion.arriving.size ? requestAnimationFrame(settle) : 0;
+      for (const [kind, { feature, from, scale }] of motion.exiting) {
+        const progress = reduced ? 1 : Math.min(1, (now - from) / 140);
+        if (progress === 1) {
+          exiting.removeFeature(feature);
+          motion.exiting.delete(kind);
+          continue;
+        }
+        const style = feature.getStyle() as Style;
+        const shrink = scale * (1 - 0.22 * progress);
+        style.getImage()?.setScale(shrink);
+        style.getImage()?.setOpacity(1 - progress);
+        style.getText()?.setScale(shrink);
+        style.getText()?.getFill()?.setColor([17, 29, 34, 1 - progress]);
+        feature.changed();
+      }
+      motion.frame = motion.arriving.size || motion.exiting.size ? requestAnimationFrame(settle) : 0;
     }
-    if (motion.arriving.size && !motion.frame) motion.frame = requestAnimationFrame(settle);
+    if ((motion.arriving.size || motion.exiting.size) && !motion.frame) motion.frame = requestAnimationFrame(settle);
     if (map.current) {
       map.current.once("postrender", syncMetadata.current);
       map.current.render();
@@ -976,10 +1038,13 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
   }, [props.draft]);
   useEffect(() => {
     const motion = endpointMotion.current;
+    const exiting = exitingEndpointSource.current;
     return () => {
       cancelAnimationFrame(motion.frame);
       motion.frame = 0;
       motion.arriving.clear();
+      motion.exiting.clear();
+      exiting.clear();
     };
   }, []);
   useEffect(() => {

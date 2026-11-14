@@ -6,7 +6,8 @@ import {
   type LonLat,
 } from "./mars";
 import type { RouteResult, TerrainMeta } from "./routing";
-export type Placement = "start" | "end" | "waypoint" | null;
+export type EndpointKind = "start" | "end";
+export type Placement = EndpointKind | "waypoint" | null;
 export type RoutingTier = "regional" | "coarse" | "geographic";
 export interface PlannerDraft {
   start: LonLat | null;
