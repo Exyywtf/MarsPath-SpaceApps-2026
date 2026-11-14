@@ -36,3 +36,13 @@ Inspected the supplied 31 files and live NASA service metadata during planning. 
 - Final local TypeScript, ESLint and static production build passed. Eight Vitest tests and six independent Python route/source checks passed. Export inspection found no raw TIFF or TypeScript source.
 - Original files remain untouched. Repository remains private; original software is MIT licensed. CLI deployment works; automatic GitHub/Vercel linking remains unresolved. Routing supports the 20 m Jezero grid; climate/radiation and science-value scoring remain excluded.
 - Official challenge Resources/submission-guide access remained blocked by 502/SSL errors. The checklist leaves those eligibility checks unresolved. No competition submission was made.
+
+
+## 2026-11-14 — V2 P0 interface and worker milestone
+
+- Replaced competing sidebars with a readable map-first interface and responsive single workflow sheet; locally bundled Geist with its OFL notice.
+- Added explicit A/B placement, coordinate entry, swapping, clearing, ordered waypoints, persistent drafts, Help, shortcuts and reduced-motion map navigation. Third clicks no longer replace endpoints.
+- Kept the original terrain frontier/costs and measurements; exposed the same search through a generator for cooperative cancellation. Persistent request-ID worker caches decoded terrain (64 MiB bound). Added an explicitly unassessed geographic connection outside the regional DEM.
+- Replaced the expensive unformatted chart with an extrema-preserving SVG profile and keyboard inspection linked to the map. Pointer coordinates now update their own component; view metadata updates after completed view changes, not continuously.
+- All 11 Vitest tests, typecheck, lint and the static build passed. All six local Playwright tests passed in 9.4 seconds, including genuine NASA/HiRISE tiles, mobile dragging and terrain download reuse. Normal tests no longer rewrite validation records.
+- Browser audit found and fixed an overridden font variable, geographic centre shifts during responsive padding updates, stale endpoint pixel metadata, and an onboarding card that intercepted a mobile drag. Climate overlays and coarse/science routing are next; no claim of measured FPS improvement yet.

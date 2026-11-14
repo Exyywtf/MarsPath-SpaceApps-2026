@@ -20,6 +20,8 @@ it('computes and checks three actual Jezero terrain traverses',()=>{
     }
     return {id:index+1,endpoints,maxSlope:20,riskWeight:4,routes:routes.map(({coordinates,profile,...route})=>({...route,coordinateCount:coordinates.length,profileCount:profile.length}))};
   });
-  mkdirSync('data/validation',{recursive:true});
-  writeFileSync('data/validation/routes.json',JSON.stringify({terrainSha256:meta.sha256,cases},null,2));
+  if(process.env.UPDATE_VALIDATION==='1'){
+    mkdirSync('data/validation',{recursive:true});
+    writeFileSync('data/validation/routes.json',JSON.stringify({terrainSha256:meta.sha256,cases},null,2));
+  }
 },60000);

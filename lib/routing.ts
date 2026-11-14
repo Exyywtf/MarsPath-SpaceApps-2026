@@ -26,7 +26,9 @@ class MinHeap {
   pop():number|undefined {if(!this.ids.length)return undefined;const result=this.ids[0],id=this.ids.pop()!,p=this.priorities.pop()!;if(this.ids.length){let i=0;while(i*2+1<this.ids.length){let child=i*2+1;if(child+1<this.ids.length&&this.priorities[child+1]<this.priorities[child])child++;if(this.priorities[child]>=p)break;this.ids[i]=this.ids[child];this.priorities[i]=this.priorities[child];i=child;}this.ids[i]=id;this.priorities[i]=p;}return result;}
 }
 const neighbours=[[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]];
-export function findPath(terrain:Terrain,start:number,end:number,maxSlope:number,lambda:number,heuristic=true):{cells:number[];cost:number;expanded:number}{
+export interface PathResult {cells:number[];cost:number;expanded:number}
+// Both validation and the worker use this frontier and identical tie breaking.
+export function* pathSteps(terrain:Terrain,start:number,end:number,maxSlope:number,lambda:number,heuristic=true):Generator<void,PathResult,void>{
   const {meta,elevation,slope,valid}=terrain;
   if(!Number.isFinite(maxSlope)||maxSlope<=0||maxSlope>90||!Number.isFinite(lambda)||lambda<0)throw new Error('Invalid routing parameters.');
   const passable=(i:number)=>i>=0&&i<valid.length&&valid[i]===1&&Number.isFinite(elevation[i])&&Number.isFinite(slope[i])&&slope[i]<=maxSlope;
@@ -42,6 +44,7 @@ export function findPath(terrain:Terrain,start:number,end:number,maxSlope:number
     if(closed[u])continue;
     if(u===end){const cells=[u];while(cells[cells.length-1]!==start){const p=parent[cells[cells.length-1]];if(p<0)throw new Error('Route reconstruction failed.');cells.push(p);}return {cells:cells.reverse(),cost:g[u],expanded};}
     closed[u]=1;expanded++;
+    if(expanded%2048===0)yield;
     const ux=u%meta.width,uy=Math.floor(u/meta.width),a=cellCoordinate(meta,u);
     for(const [dx,dy] of neighbours){
       const x=ux+dx,y=uy+dy;if(x<0||x>=meta.width||y<0||y>=meta.height)continue;
@@ -56,6 +59,20 @@ export function findPath(terrain:Terrain,start:number,end:number,maxSlope:number
       if(candidate<g[v]){g[v]=candidate;parent[v]=u;heap.push(v,candidate+h(v));}
     }
   }
+}
+export function findPath(terrain:Terrain,start:number,end:number,maxSlope:number,lambda:number,heuristic=true):PathResult{
+  const steps=pathSteps(terrain,start,end,maxSlope,lambda,heuristic);
+  let step=steps.next();while(!step.done)step=steps.next();return step.value;
+}
+export async function findPathAsync(terrain:Terrain,start:number,end:number,maxSlope:number,lambda:number,control:{cancelled:()=>boolean;deadline:number}):Promise<PathResult>{
+  const steps=pathSteps(terrain,start,end,maxSlope,lambda);
+  let step=steps.next();
+  while(!step.done){
+    if(control.cancelled())throw new Error('Cancelled');
+    if(performance.now()>control.deadline)throw new Error('Terrain search exceeded the five-second budget. Try closer points or geographic planning.');
+    await new Promise<void>(resolve=>setTimeout(resolve,0));step=steps.next();
+  }
+  if(control.cancelled())throw new Error('Cancelled');return step.value;
 }
 export function measurePath(terrain:Terrain,cells:number[],maxSlope:number):Pick<RouteResult,'distance'|'ascent'|'descent'|'maxSlope'|'meanSlope'|'riskIntegral'|'profile'|'coordinates'>{
   let distance=0,ascent=0,descent=0,max=terrain.slope[cells[0]],weighted=0,riskIntegral=0;
