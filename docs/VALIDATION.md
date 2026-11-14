@@ -1,5 +1,23 @@
 # Validation record
 
+## MarsPath 0.3.0
+
+- Application commit `6c954a2` passed all 22 Chromium journeys in 52.1 s on the [public Vercel alias](https://marspath-spaceapps-2026.vercel.app/) without credentials. Type checking, ESLint, 24 Vitest checks and the local and Vercel static builds passed. The public worker, methods and source deep links and radiation assets returned HTTP 200. The tests exercised live NASA WMTS, all 13 destinations, route export during reveal, cancellation, mobile scrolling, radiation modes and score-only climate preferences.
+- The read-only V3 Python check validates checksums, raster masks, Mars longitude wrapping, georeferenced sample colours and the expected model pressure domain. An independent spherical calculation matched the Jezero export’s weighted temperature, pressure, wind speed and radiation means to within 0.00001 of their displayed units before rounding, and distance to within 0.01 m. V2 independent terrain checks still pass.
+- The PIA03480 controls match printed grid lines with a 95th-percentile residual of 1.39 source pixels or less. The five landmark residuals are below 4.89 source pixels. These are checks on the artwork registration. Absolute geographical dose accuracy remains unknown.
+- The sampled reveal progressed monotonically over 82 captured frames and 1.35 s. Before-and-after exploration and route views at 1920×1080, 1440×900, 1024×768 and 390×844 and reveal screenshots are in the ignored local `tmp/v3-review` folder.
+
+| Measured in headless Chromium at 1440×900 | V2 `c40fe5f` | V3 `6c954a2` |
+|---|---:|---:|
+| Median time from warm Recalculate to results | 224 ms | 222 ms |
+| Median trial p95 frame interval | 16.7 ms | 16.8 ms |
+| Median main-thread JavaScript time for the workload | 18 ms | 90 ms |
+| Long tasks across three trials | 1 | 1 |
+| Last warm terrain calculation with three cached legs | 13 ms | 17 ms |
+| Median main JS heap after a trial | 22.3 MB | 16.5 MB |
+
+The fixed workload recalculates the Jezero example and moves the pointer over the map 54 times. The animation adds JavaScript work. Live NASA requests were measured separately for 86 tile loads, with a 528 ms median and a 1,367 ms 95th percentile. Two new tile loads fell within one V2 run. Heap sampling excludes the worker and GPU and varies with garbage collection. These measurements cover one Windows desktop and do not establish mobile runtime performance. Raw timings are in [v3-performance.json](../data/validation/v3-performance.json). To repeat the comparison, serve copies of the V2 and V3 static builds on ports 4321 and 4320 and run `npx playwright test --config playwright.profile.config.ts v3.spec.ts`.
+
 ## MarsPath 0.2.0
 
 - Deployed application commit `811074a` passed all 15 Playwright journeys in 31.5 seconds against the public Vercel alias on November 14, 2026. The tests used fresh browser contexts without credentials. Local Chromium passed the same 15 journeys in 24.1 seconds. Type checking, ESLint, the 18-test Vitest suite and the local and Vercel static builds passed.

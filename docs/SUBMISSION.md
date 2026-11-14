@@ -18,7 +18,7 @@ Future surface explorers need to connect scientific opportunities with terrain e
 
 ## Validation and limitations
 
-An independent Python solver checked twelve V2 route calculations on real terrain, including a date-line crossing and a Jezero science stop. Browser tests exercise NASA imagery, all thirteen destinations, layer inspection, mobile directions and keyboard workflows. Fine routing and local science scoring are limited to supported Jezero terrain. Coarse routes serve global exploration. The route model does not assess rock-scale hazards or atmospheric and radiation exposure. See the public methodology and `docs/VALIDATION.md`.
+An independent Python solver checked twelve V2 route calculations on real terrain, including a date-line crossing and a Jezero science stop. V3 adds route-linked environmental profiles and two radiation views. The numerical radiation view describes one published cosmic-ray scenario and carries zero route weight. All 22 V3 production browser journeys passed, covering NASA imagery, all thirteen destinations, overlays, mobile directions and keyboard workflows. Fine routing and local science scoring cover the supported Jezero terrain. See the public methodology and `docs/VALIDATION.md`.
 
 ## Links
 

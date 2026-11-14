@@ -1,0 +1,95 @@
+{
+  "browser": "159.0.8154.6",
+  "cpu": "AMD Ryzen 5 9600X 6-Core Processor             ",
+  "timeframe": "Three fixed 1440 \u00d7 900 Chromium trials after warming the view. Each recalculates the Jezero example, then executes 54 pointer moves over the map.",
+  "limitation": "Browser main JS heap excludes worker memory and GPU. Headless desktop figures do not measure mobile hardware.",
+  "cachedTiles": 86,
+  "separateLiveNasaMs": {
+    "samples": 86,
+    "median": 528,
+    "p95": 1367
+  },
+  "builds": [
+    {
+      "version": "V2",
+      "trials": [
+        {
+          "resultsMs": 224,
+          "p95FrameMs": 16.799999999999727,
+          "frames": 120,
+          "longTasks": 1,
+          "longestTaskMs": 153,
+          "mainScriptMs": 171.719,
+          "heapBytes": 22290248,
+          "networkMisses": 2
+        },
+        {
+          "resultsMs": 221,
+          "p95FrameMs": 16.700000000000728,
+          "frames": 120,
+          "longTasks": 0,
+          "longestTaskMs": 0,
+          "mainScriptMs": 17.691000000000013,
+          "heapBytes": 25143344,
+          "networkMisses": 0
+        },
+        {
+          "resultsMs": 226,
+          "p95FrameMs": 16.700000000000728,
+          "frames": 119,
+          "longTasks": 0,
+          "longestTaskMs": 0,
+          "mainScriptMs": 17.805000000000014,
+          "heapBytes": 11144204,
+          "networkMisses": 0
+        }
+      ],
+      "terrainWorkerLast": "13 ms \u00b7 3 cached legs"
+    },
+    {
+      "version": "V3",
+      "trials": [
+        {
+          "resultsMs": 221,
+          "p95FrameMs": 16.800000000000182,
+          "frames": 120,
+          "longTasks": 1,
+          "longestTaskMs": 158,
+          "mainScriptMs": 236.049,
+          "heapBytes": 19228112,
+          "networkMisses": 0
+        },
+        {
+          "resultsMs": 222,
+          "p95FrameMs": 16.799999999999272,
+          "frames": 119,
+          "longTasks": 0,
+          "longestTaskMs": 0,
+          "mainScriptMs": 85.05699999999999,
+          "heapBytes": 16461288,
+          "networkMisses": 0
+        },
+        {
+          "resultsMs": 225,
+          "p95FrameMs": 16.700000000000728,
+          "frames": 120,
+          "longTasks": 0,
+          "longestTaskMs": 0,
+          "mainScriptMs": 89.83000000000003,
+          "heapBytes": 13531896,
+          "networkMisses": 0
+        }
+      ],
+      "terrainWorkerLast": "17 ms \u00b7 3 cached legs"
+    }
+  ],
+  "commits": {
+    "V2": "c40fe5f",
+    "V3": "6c954a2"
+  },
+  "reveal": {
+    "frames": 82,
+    "observedMilliseconds": 1349.8999999999996,
+    "progressMonotonic": true
+  }
+}
