@@ -148,3 +148,11 @@ Inspected the supplied 31 files and live NASA service metadata during planning. 
 - Legends and inspection cards now dock above a tablet sheet when their boxes intersect it. The zoom controls can remain beside the sheet. The tablet regression checks both information cards and the zoom controls.
 - A same-input route response keeps the matching recommendation until fresh scores arrive. The interface marks the analysis as updating during both stages and exports report pending analysis and ranking until the current results are available. The browser regression holds the analysis message and supplies distinct provisional and completed scores.
 - The revised static build, type checking, lint and all 29 numerical and unit tests passed. The updated planner, floating scientific controls and delayed-response checks passed in Chromium and WebKit.
+
+## 2026-11-15 00:59 Asia/Dubai — V3.2 production verification
+
+- Pushed and deployed `5c683f9` as a prebuilt static export. Vercel deployment `dpl_9ztdnfJdakgxse7m96bU8tjv3Ync` is Ready at the [public atlas](https://marspath-spaceapps-2026.vercel.app/).
+- All 39 Chromium and 39 WebKit journeys passed against the public alias in 1.7 and 2.1 minutes. A separate map click-through opened all 13 pins. Confirmed live NASA WMTS, deep links, science inspection, exports and the orbit icon in a visible Chrome tab. Deployed HTML, worker, sampled science assets, static navigation payload and icons matched the local build.
+- Captured the nine approved viewport comparisons and start, intermediate and settled interaction frames. Both desktop engines measured the environmental section at 299.39 px before, during and after recalculation. Touch emulation covered phone and tablet layouts. WebKit used touch taps and keyboard scrolling. The physical devices and hardware screen readers remain untested.
+- The final warmed Chromium comparison measured 166.9 ms median result latency and 16.8 ms median p95 frame interval for both versions. Both had one 156 ms long task. The 40 separate live NASA fetches had a 1,057 ms median and 1,349 ms p95. Raw timing and heap samples are in `data/validation/v32-performance.json`.
+- The worker and scientific assets retain their established checksums. The software uses MIT terms and the datasets retain their individual terms. GitHub visibility was verified as private.

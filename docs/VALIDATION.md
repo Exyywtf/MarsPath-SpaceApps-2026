@@ -1,5 +1,26 @@
 # Validation record
 
+## MarsPath V3.2
+
+- Application commit `5c683f9` passed 39 Chromium and 39 WebKit journeys on the public Vercel site. The runs took 1.7 and 2.1 minutes. Type checking, lint, the 29 numerical and unit tests, the independent Python checks and the static export also passed.
+- Production tests covered live Viking and HiRISE tiles, all 13 destinations, keyboard and touch controls, waypoint editing, scientific layers, both radiation modes and export while new analysis is pending. A separate production click-through opened all 13 map pins at their recorded coordinates. The orbit icon was visible in a Chrome tab. The deployed worker, sampled scientific assets, favicons and navigation payload matched local bytes.
+- The nine viewport comparisons and Chromium and WebKit motion captures are in the ignored `tmp/v32-review` directory. Touch swiping was exercised in Chromium. WebKit used touch taps and native keyboard scrolling. WebKit uses a 220 ms CSS entry fade because the Windows test engine crashed during native atlas transitions. The browser runs cover emulated devices. Physical devices and hardware screen readers remain untested.
+- The independent Python checks covered six original Jezero paths, 12 regional, coarse and science route calculations, nine climate source nodes, the radiation rasters and the environmental samples in the new route export.
+
+| Three warmed 1440×900 Chromium trials | V3.1 `fda8fa9` | V3.2 `5c683f9` |
+|---|---:|---:|
+| Median time from Recalculate to export-ready route | 166.9 ms | 166.9 ms |
+| Median trial p95 frame interval | 16.8 ms | 16.8 ms |
+| Median main-thread script time | 61.4 ms | 54.9 ms |
+| Median layout time | 2.17 ms | 1.88 ms |
+| Longest task | 156 ms | 156 ms |
+| Last worker calculation with three cached legs | 13 ms | 13 ms |
+| Median sampled main-page heap | 13.55 MB | 14.52 MB |
+
+Each trial recalculates the Jezero example and performs 48 pointer moves. Both builds served all measured tile requests from the shared cache. The separate 40 live NASA tile fetches had a median of 1,057 ms and a p95 of 1,349 ms. Heap observations exclude worker and GPU memory and vary with garbage collection. The measurements describe a single Windows desktop. See [the raw V3.2 performance record](../data/validation/v32-performance.json).
+
+To repeat the comparison, serve the V3.1 static export on port 4334 and V3.2 on port 4333. Run `npx playwright test --config=playwright.profile.config.ts v32.spec.ts --browser=chromium`. Set `MARSPATH_PROFILE_ONLY=1` to skip the nine viewport captures. For motion frames, run `v32-motion.spec.ts` with the same configuration and set `MOTION_OUTPUT` to choose the local destination.
+
 ## MarsPath V3.1
 
 - Released application commit `2363667` passed all **30 Chromium and 30 WebKit production journeys** against the public Vercel alias without credentials. The runs completed in 1.4 and 1.6 minutes respectively. Type checking, lint, all 24 numerical tests, independent Python checks and the static production build passed. The coordinate-edit completion guard is included in both browser suites.
