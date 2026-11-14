@@ -66,6 +66,7 @@ interface Props {
   onCoordinate: (label: string) => void;
   onImagery: (label: string) => void;
   onTileState: (ok: boolean) => void;
+  onReady: () => void;
   onScale: (scale: string) => void;
   draft: PlannerDraft;
   placement: Placement;
@@ -530,6 +531,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       instance.render();
     });
     observer.observe(host.current);
+    handlers.current.onReady();
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const stop = () => {
       instance.getView().cancelAnimations();

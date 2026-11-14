@@ -65,6 +65,7 @@ const CoordinateReadout = memo(
 );
 export default function Atlas() {
   const map = useRef<MapHandle>(null),
+    pendingFocus = useRef<{ point: LonLat; zoom: number } | null>(null),
     readout = useRef<{ set: (s: string) => void }>(null),
     panelRef = useRef<HTMLElement>(null),
     searchRef = useRef<HTMLInputElement>(null),
@@ -84,6 +85,7 @@ export default function Atlas() {
     [opacity, setOpacity] = useState(0.45),
     [showLocations, setShowLocations] = useState(true);
   const [imagery, setImagery] = useState("Viking · 232 m mosaic"),
+    [mapReady, setMapReady] = useState(false),
     [scale, setScale] = useState(""),
     [tileState, setTileState] = useState<boolean | null>(null),
     [padding, setPadding] = useState<number[]>([80, 24, 48, 24]);
@@ -179,14 +181,27 @@ export default function Atlas() {
     },
     [placement],
   );
-  const pick = useCallback((p: Placement) => {
-    setPlacement(p);
-    setPanel("directions");
-    setSheet("peek");
-    setOnboarding(false);
-    document
-      .querySelector<HTMLElement>(".map-canvas")
-      ?.focus({ preventScroll: true });
+  const pick = useCallback(
+    (p: Placement) => {
+      if (p && !mapReady) return;
+      setPlacement(p);
+      setPanel("directions");
+      setSheet(p ? "peek" : "half");
+      setOnboarding(false);
+      if (p)
+        document
+          .getElementById("interactive-mars-map")
+          ?.focus({ preventScroll: true });
+    },
+    [mapReady],
+  );
+  const mapDidInitialize = useCallback(() => {
+    setMapReady(true);
+    const focus = pendingFocus.current;
+    if (focus) {
+      pendingFocus.current = null;
+      map.current?.focus(focus.point, focus.zoom);
+    }
   }, []);
   const movePoint = useCallback(
     (kind: "start" | "end" | number, point: LonLat) =>
@@ -213,9 +228,12 @@ export default function Atlas() {
       setSelected(id);
       setPanel("location");
       setSheet("half");
-      map.current?.focus(asLonLat(l.coordinates), id === "valles" ? 4 : 6);
+      const point = asLonLat(l.coordinates);
+      const zoom = id === "valles" ? 4 : 6;
+      if (mapReady) map.current?.focus(point, zoom);
+      else pendingFocus.current = { point, zoom };
     },
-    [placement, place],
+    [mapReady, placement, place],
   );
   const setCoordinate = useCallback(
     (label: string) => readout.current?.set(label),
@@ -413,6 +431,7 @@ export default function Atlas() {
           onCoordinate={setCoordinate}
           onImagery={setImagery}
           onTileState={setTileState}
+          onReady={mapDidInitialize}
           onScale={setScale}
           draft={draft}
           placement={placement}
@@ -475,14 +494,23 @@ export default function Atlas() {
           </div>
         )}
         <div className="map-controls">
-          <button aria-label="Zoom in" onClick={() => map.current?.zoomBy(1)}>
+          <button
+            aria-label="Zoom in"
+            disabled={!mapReady}
+            onClick={() => map.current?.zoomBy(1)}
+          >
             <Plus size={19} />
           </button>
-          <button aria-label="Zoom out" onClick={() => map.current?.zoomBy(-1)}>
+          <button
+            aria-label="Zoom out"
+            disabled={!mapReady}
+            onClick={() => map.current?.zoomBy(-1)}
+          >
             <Minus size={19} />
           </button>
           <button
             aria-label="Recenter global map"
+            disabled={!mapReady}
             onClick={() => map.current?.reset()}
           >
             <Compass size={19} />
@@ -793,6 +821,7 @@ export default function Atlas() {
             {panel === "directions" && (
               <RoutePlanner
                 draft={draft}
+                mapReady={mapReady}
                 settings={settings}
                 onDraft={setDraft}
                 onSettings={setSettings}
@@ -870,6 +899,7 @@ export default function Atlas() {
                   </div>
                   <button
                     className="text-button"
+                    disabled={!mapReady}
                     onClick={() =>
                       map.current?.focus(
                         location.id === "jezero"

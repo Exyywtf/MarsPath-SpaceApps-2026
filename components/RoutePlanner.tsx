@@ -30,6 +30,7 @@ export const terrainMetadata = metadata;
 const noRoutes: PlannedRoute[] = [];
 interface Props {
   draft: PlannerDraft;
+  mapReady: boolean;
   settings: PlannerSettings;
   onDraft: (draft: PlannerDraft) => void;
   onSettings: (settings: PlannerSettings) => void;
@@ -90,11 +91,13 @@ function compareTerrainCandidates(
 function PointEditor({
   label,
   point,
+  mapReady,
   onSave,
   onPick,
 }: {
   label: string;
   point: LonLat | null;
+  mapReady: boolean;
   onSave: (p: LonLat) => void;
   onPick: () => void;
 }) {
@@ -114,7 +117,11 @@ function PointEditor({
         </strong>
       </div>
       <div className="point-actions">
-        <button className="secondary-button" onClick={onPick}>
+        <button
+          className="secondary-button"
+          disabled={!mapReady}
+          onClick={onPick}
+        >
           <Crosshair size={16} />
           Set {label} on map
         </button>
@@ -436,6 +443,7 @@ export default memo(function RoutePlanner(p: Props) {
       <PointEditor
         label="A"
         point={p.draft.start}
+        mapReady={p.mapReady}
         onSave={(start) => p.onDraft({ ...p.draft, start })}
         onPick={() => p.onPlacement("start")}
       />
@@ -458,6 +466,7 @@ export default memo(function RoutePlanner(p: Props) {
       <PointEditor
         label="B"
         point={p.draft.end}
+        mapReady={p.mapReady}
         onSave={(end) => p.onDraft({ ...p.draft, end })}
         onPick={() => p.onPlacement("end")}
       />
@@ -485,7 +494,7 @@ export default memo(function RoutePlanner(p: Props) {
       <div className="button-row">
         <button
           className="text-button"
-          disabled={p.draft.waypoints.length >= 3}
+          disabled={!p.mapReady || p.draft.waypoints.length >= 3}
           onClick={() => p.onPlacement("waypoint")}
         >
           <Plus size={16} />
@@ -502,7 +511,11 @@ export default memo(function RoutePlanner(p: Props) {
           Clear
         </button>
       </div>
-      <button className="example-button secondary-button" onClick={p.onExample}>
+      <button
+        className="example-button secondary-button"
+        disabled={!p.mapReady}
+        onClick={p.onExample}
+      >
         Try Jezero terrain example
       </button>
       <ScienceObjectives
