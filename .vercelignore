@@ -1,0 +1,8 @@
+all our mars info/
+data/raw/
+.git/
+.venv/
+tmp/
+test-results/
+playwright-report/
+out/

@@ -1,0 +1,571 @@
+[
+  {
+    "filename": "all important areas and descriptions.txt",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\all important areas and descriptions.txt",
+    "bytes": 18210,
+    "format": ".txt",
+    "sha256": "75ed9b79d8897b045a95acd906dd1d600e4a2144ae7d6d2b63a11b4ab8b42ac4",
+    "intendedUse": "Research / provenance reference",
+    "reliability": "Supplied text; independently check claims"
+  },
+  {
+    "filename": "Aram Chaos — Fractured and Sulfate-Rich Terrain.jpg",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\Mars POI the specific close up images\\Mars POIs\\Aram Chaos — Fractured and Sulfate-Rich Terrain.jpg",
+    "bytes": 225011,
+    "format": ".jpg",
+    "sha256": "ff6740491bee652b502386bb6ca4170b8bdad0b2a648dc065bae4907bb0b7348",
+    "dimensions": [
+      1147,
+      860
+    ],
+    "mode": "RGB",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "Eberswalde Crater — Ancient Delta.jpg",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\Mars POI the specific close up images\\Mars POIs\\Eberswalde Crater — Ancient Delta.jpg",
+    "bytes": 469857,
+    "format": ".jpg",
+    "sha256": "d06593bc7dfc11f6d0ad846bae260354efb1978e974e11f70d215b5afbcfc79c",
+    "dimensions": [
+      2048,
+      1536
+    ],
+    "mode": "RGB",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "Eridania Basin — Ancient Altered Terrain.jpg",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\Mars POI the specific close up images\\Mars POIs\\Eridania Basin — Ancient Altered Terrain.jpg",
+    "bytes": 228169,
+    "format": ".jpg",
+    "sha256": "ab712f6d3c1e534ab440fd3f2e70e3cd0bc0a3f4f6ba67170100f77c9edb7545",
+    "dimensions": [
+      1376,
+      860
+    ],
+    "mode": "RGB",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "gale crater.jpg",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\Mars POI the specific close up images\\Mars POIs\\gale crater.jpg",
+    "bytes": 3424697,
+    "format": ".jpg",
+    "sha256": "ee342363ff3bda2073ef83808f60d798d8b144bac1392e45cb3dcf4665ebac6e",
+    "dimensions": [
+      8000,
+      2583
+    ],
+    "mode": "RGB",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "Gusev Crater — Columbia Hills.jpg",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\Mars POI the specific close up images\\Mars POIs\\Gusev Crater — Columbia Hills.jpg",
+    "bytes": 2179022,
+    "format": ".jpg",
+    "sha256": "238b4c826e906f3887c6b339de101c964b09ebeb691fb680c3c5f9da9941f2dc",
+    "dimensions": [
+      12617,
+      3440
+    ],
+    "mode": "RGB",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "Holden Crater — Ancient Lake Sediments.jpg",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\Mars POI the specific close up images\\Mars POIs\\Holden Crater — Ancient Lake Sediments.jpg",
+    "bytes": 454169,
+    "format": ".jpg",
+    "sha256": "cd5bd2de0051247e15ec4847da261b955ffcebb8365c7d07655eb24025c909cb",
+    "dimensions": [
+      2048,
+      1536
+    ],
+    "mode": "RGB",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "jezero crater.jpg",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\Mars POI the specific close up images\\Mars POIs\\jezero crater.jpg",
+    "bytes": 272804,
+    "format": ".jpg",
+    "sha256": "87c6d21970a1e645d4f90e389ea997c19f9a5c72c00059240bd9e0cf5cc6b6bd",
+    "dimensions": [
+      1562,
+      1160
+    ],
+    "mode": "RGB",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "Mawrth Vallis — Layered Clay Deposits.jpg",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\Mars POI the specific close up images\\Mars POIs\\Mawrth Vallis — Layered Clay Deposits.jpg",
+    "bytes": 94737,
+    "format": ".jpg",
+    "sha256": "8c8ee526fde88e7cc34cb381db94263ae4307d0c6bcc7fbe555de1d6553e2f15",
+    "dimensions": [
+      860,
+      647
+    ],
+    "mode": "RGB",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "meridiani planum.jpg",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\Mars POI the specific close up images\\Mars POIs\\meridiani planum.jpg",
+    "bytes": 258332,
+    "format": ".jpg",
+    "sha256": "76a865434fcd17499e9bd3ae12dacab94bcb99b25d5d2ca6ba1b589556bfdc6d",
+    "dimensions": [
+      2048,
+      701
+    ],
+    "mode": "RGB",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "Nili Fossae — Colourful Mineral Layers.jpg",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\Mars POI the specific close up images\\Mars POIs\\Nili Fossae — Colourful Mineral Layers.jpg",
+    "bytes": 244022,
+    "format": ".jpg",
+    "sha256": "d0c57274a7436220bc9c9c69280f0b962b49f69947f01b115c71ff8a499bce51",
+    "dimensions": [
+      1280,
+      960
+    ],
+    "mode": "RGB",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "Oxia Planum — Ancient Clay-Rich Terrain.jpg",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\Mars POI the specific close up images\\Mars POIs\\Oxia Planum — Ancient Clay-Rich Terrain.jpg",
+    "bytes": 724597,
+    "format": ".jpg",
+    "sha256": "c645b3ce4de5bad9926b64a3157183312cb252fcdcf3d378fc26bab4637d42c1",
+    "dimensions": [
+      2880,
+      1800
+    ],
+    "mode": "RGB",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "Terra Sirenum — Chloride Salt Deposits.jpg",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\Mars POI the specific close up images\\Mars POIs\\Terra Sirenum — Chloride Salt Deposits.jpg",
+    "bytes": 219023,
+    "format": ".jpg",
+    "sha256": "1f9a926a347100bf767807cb9715939c1ac63794ba97162ddb5ce90ac2607406",
+    "dimensions": [
+      1024,
+      1162
+    ],
+    "mode": "RGB",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "Valles Marineris — Melas Chasma.jpg",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\Mars POI the specific close up images\\Mars POIs\\Valles Marineris — Melas Chasma.jpg",
+    "bytes": 791836,
+    "format": ".jpg",
+    "sha256": "0c818ecd03b86648c952b04488afdafe0dbc1179c19e19f02cbacfa2d46c6bbd",
+    "dimensions": [
+      1920,
+      1440
+    ],
+    "mode": "RGB",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "Mars_MGS_MOLA_DEM_mosaic_global_463m.tif",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\Mars_MGS_MOLA_DEM_mosaic_global_463m.tif",
+    "bytes": 2125771142,
+    "format": ".tif",
+    "sha256": "38a4eb0b4452855b8dabfac40a367b458555ab4c01b31235807ad0a53c031f4c",
+    "dimensions": [
+      23040,
+      46080
+    ],
+    "georeferencing": "{'KeyDirectoryVersion': 1, 'KeyRevision': 1, 'KeyRevisionMinor': 0, 'GTModelTypeGeoKey': <ModelType.Projected: 1>, 'GTRasterTypeGeoKey': <RasterPixel.IsArea: 1>, 'GTCitationGeoKey': 'Equirectangular Mars', 'GeographicTypeGeoKey': <GCS.User_Defined: 32767>, 'GeogCitationGeoKey': 'GCS Name = GCS_Mars|Datum = D_Mars|Ellipsoid = Mars_localRadius|Primem = Reference_Meridian|', 'GeogGeodeticDatumGeoKey': 32767, 'GeogAngularUnitsGeoKey': <Angular.Degree: 9102>, 'GeogEllipsoidGeoKey': <Ellipse.User_Defined: 32767>, 'GeogSemiMajorAxisGeoKey': 3396190.0, 'GeogSemiMinorAxisGeoKey': 3396190.0, 'GeogPrimeMeridianLongGeoKey': 0.0, 'ProjectedCSTypeGeoKey': <PCS.User_Defined: 32767>, 'ProjectionGeoKey': <Proj.User_Defined: 32767>, 'ProjCoordTransGeoKey': <CT.Equirectangular: 17>, 'ProjLinearUnitsGeoKey': <Linear.Meter: 9001>, 'ProjStdParallel1GeoKey': 0.0, 'ProjFalseEastingGeoKey': 0.0, 'ProjFalseNorthingGeoKey': 0.0, 'ProjCenterLongGeoKey': 0.0, 'ProjCenterLatGeoKey': 0.0, 'ModelPixelScale': [463.0935415503709, 463.0935415503709, 0.0], 'ModelTiepoint': [0.0, 0.0, 0.0, -10669675.197320545, 5334837.598660273, 0.0]}",
+    "source": "USGS MGS MOLA DEM 463m; supplied filename matches published product",
+    "coverage": "Global Mars",
+    "resolution": "463.0935415503709 projected metres/pixel",
+    "units": "Elevation metres above areoid per source documentation",
+    "reliability": "Broad terrain; interpolated gaps, no rock-scale hazards",
+    "intendedUse": "Windowed terrain context and overview",
+    "processing": "Read-only inspection; numerical derivatives generated separately"
+  },
+  {
+    "filename": "MarsPath_alignment_preview.png",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\MarsPath_Aligned_Maps_Package\\MarsPath_alignment_preview.png",
+    "bytes": 2356097,
+    "format": ".png",
+    "sha256": "5a136ce3ed4b9c9506d45a26e97f8dc59135cc121c3aaa798341fe916d718a54",
+    "dimensions": [
+      1850,
+      850
+    ],
+    "mode": "RGB",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "MarsPath_ALIGNMENT_README.txt",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\MarsPath_Aligned_Maps_Package\\MarsPath_ALIGNMENT_README.txt",
+    "bytes": 2776,
+    "format": ".txt",
+    "sha256": "30ccdcb0864dd97841081c1cf82ac0f5e67dcdb53cb4bec696983dd370d06a70",
+    "intendedUse": "Research / provenance reference",
+    "reliability": "Supplied text; independently check claims"
+  },
+  {
+    "filename": "MarsPath_pressure_1850x850.png",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\MarsPath_Aligned_Maps_Package\\MarsPath_pressure_1850x850.png",
+    "bytes": 1098869,
+    "format": ".png",
+    "sha256": "7f103a47f08bd3cc9e02c792ff1316eefcd4c0e82539cc675be9f5ca238a635e",
+    "dimensions": [
+      1850,
+      850
+    ],
+    "mode": "RGB",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "MarsPath_pressure_overlay_45pct.png",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\MarsPath_Aligned_Maps_Package\\MarsPath_pressure_overlay_45pct.png",
+    "bytes": 1240478,
+    "format": ".png",
+    "sha256": "10a49a7a04b618f91e20d800d778cd86764477ccf030bca4a6d9cedb5e07028c",
+    "dimensions": [
+      1850,
+      850
+    ],
+    "mode": "RGBA",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "MarsPath_pressure_unmarked_1850x850.png",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\MarsPath_Aligned_Maps_Package\\MarsPath_pressure_unmarked_1850x850.png",
+    "bytes": 1127041,
+    "format": ".png",
+    "sha256": "6fd43e7dc28656945baf2d721e631dc8c99028c256c29aa16776533429a2df30",
+    "dimensions": [
+      1850,
+      850
+    ],
+    "mode": "RGB",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "MarsPath_Radiation_Aligned_1850x850.png",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\MarsPath_Aligned_Maps_Package\\MarsPath_Radiation_Aligned_1850x850.png",
+    "bytes": 1375780,
+    "format": ".png",
+    "sha256": "4a0e348b572a8060fb3bc2a4ac830024aca4bdd9ec38614d24aaf56580620c6a",
+    "dimensions": [
+      1850,
+      850
+    ],
+    "mode": "RGB",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "MarsPath_Radiation_Aligned_Clean_1850x850.png",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\MarsPath_Aligned_Maps_Package\\MarsPath_Radiation_Aligned_Clean_1850x850.png",
+    "bytes": 1606058,
+    "format": ".png",
+    "sha256": "1c1e2ae8cc6e49f88af0b357c02ab4c814d0666b04f31c03d7fc88f0613f8803",
+    "dimensions": [
+      1850,
+      850
+    ],
+    "mode": "RGBA",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "MarsPath_Radiation_Alignment_Preview_1850x850.png",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\MarsPath_Aligned_Maps_Package\\MarsPath_Radiation_Alignment_Preview_1850x850.png",
+    "bytes": 2548437,
+    "format": ".png",
+    "sha256": "e97a69ee59b3ffaa2118b0cfefcb01c58529d3797f5d4ecb6370396d1b641d11",
+    "dimensions": [
+      1850,
+      850
+    ],
+    "mode": "RGB",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "MarsPath_Radiation_Overlay_45pct_1850x850.png",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\MarsPath_Aligned_Maps_Package\\MarsPath_Radiation_Overlay_45pct_1850x850.png",
+    "bytes": 1606065,
+    "format": ".png",
+    "sha256": "59a0565d2b8bb6a7aff8a227f8fc4e70e635c98af6948f52a3a06a097d58a17b",
+    "dimensions": [
+      1850,
+      850
+    ],
+    "mode": "RGBA",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "MarsPath_temperature_1850x850.png",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\MarsPath_Aligned_Maps_Package\\MarsPath_temperature_1850x850.png",
+    "bytes": 956684,
+    "format": ".png",
+    "sha256": "4038398849df4ebd5c56ebb31eccb2acaae0fc2ae7d8fde82c8b85836c40dfd6",
+    "dimensions": [
+      1850,
+      850
+    ],
+    "mode": "RGB",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "MarsPath_temperature_overlay_45pct.png",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\MarsPath_Aligned_Maps_Package\\MarsPath_temperature_overlay_45pct.png",
+    "bytes": 1069869,
+    "format": ".png",
+    "sha256": "1f0396708559e21d971254061dd6d1f07c02695898ea0ea894792781a0e65ad9",
+    "dimensions": [
+      1850,
+      850
+    ],
+    "mode": "RGBA",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "MarsPath_temperature_unmarked_1850x850.png",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\MarsPath_Aligned_Maps_Package\\MarsPath_temperature_unmarked_1850x850.png",
+    "bytes": 980270,
+    "format": ".png",
+    "sha256": "bfb3c036ee30d968bd58e7081b462bca86ce5292e8e63a7d370d8c2f4b6c9395",
+    "dimensions": [
+      1850,
+      850
+    ],
+    "mode": "RGB",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "MarsPath_Topographic_Corrected_1850x850.png",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\MarsPath_Aligned_Maps_Package\\MarsPath_Topographic_Corrected_1850x850.png",
+    "bytes": 2687120,
+    "format": ".png",
+    "sha256": "f41be78763dd88a1e6fd33c6da38ccf7895380725624b27ceb910d2142f6f8bc",
+    "dimensions": [
+      1850,
+      850
+    ],
+    "mode": "RGB",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "MarsPath_wind_speed_1850x850.png",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\MarsPath_Aligned_Maps_Package\\MarsPath_wind_speed_1850x850.png",
+    "bytes": 1052554,
+    "format": ".png",
+    "sha256": "d461ad9002c410befd5d7be546cfc72e386dd1eafad6addbd0be85c8e59960f2",
+    "dimensions": [
+      1850,
+      850
+    ],
+    "mode": "RGB",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "MarsPath_wind_speed_overlay_45pct.png",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\MarsPath_Aligned_Maps_Package\\MarsPath_wind_speed_overlay_45pct.png",
+    "bytes": 1164743,
+    "format": ".png",
+    "sha256": "2e894eb1314318d8f85e5574ebd41dcf18a3505648a667d669bd2facd54d4988",
+    "dimensions": [
+      1850,
+      850
+    ],
+    "mode": "RGBA",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  },
+  {
+    "filename": "MarsPath_wind_speed_unmarked_1850x850.png",
+    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\MarsPath_Aligned_Maps_Package\\MarsPath_wind_speed_unmarked_1850x850.png",
+    "bytes": 1068250,
+    "format": ".png",
+    "sha256": "8dfa35839fb6dd703f771ec9106daff4ad3114b54bc253a3fe833740561b3a4d",
+    "dimensions": [
+      1850,
+      850
+    ],
+    "mode": "RGB",
+    "source": "Supplied image; original provenance requires individual verification",
+    "coverage": "See source notes; PNG geography provisional",
+    "resolution": "Rendered pixel dimensions are not scientific spatial resolution",
+    "units": "Not numerically sampled",
+    "reliability": "Reference only until verified",
+    "intendedUse": "Reference archive; prefer source-linked mission imagery",
+    "processing": "No changes to original"
+  }
+]
