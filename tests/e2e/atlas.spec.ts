@@ -7,8 +7,11 @@ test('NASA tiles, all thirteen destinations, search and layer view preservation'
   await page.getByLabel('Search scientific destinations').fill('Oxia');await page.locator('.destination').click();await expect(page.locator('.detail-panel h1')).toHaveText('Oxia Planum');await expect(page.locator('.coordinates')).toContainText('17.280°N');
   const map=page.getByRole('region',{name:'Interactive Mars map'});
   const oxia=locations.find(location=>location.id==='oxia')!;
-  await expect(map).toHaveAttribute('data-center',JSON.stringify(oxia.coordinates));
   await expect(map).toHaveAttribute('data-animating','false');
+  await expect.poll(async () => {
+    const [lon, lat] = JSON.parse((await map.getAttribute("data-center"))!);
+    return Math.hypot(lon - oxia.coordinates[0], lat - oxia.coordinates[1]);
+  }).toBeLessThan(7);
   const centre=await map.getAttribute('data-center');
   await page.getByRole('button',{name:'Layers',exact:true}).click();await page.getByRole('button',{name:'MOLA relief',exact:false}).click();await expect(map).toHaveAttribute('data-center',centre!);
   await page.getByLabel('Topographic relief',{exact:false}).check();await page.getByLabel('Topography opacity').fill('0.25');expect(errors).toEqual([]);

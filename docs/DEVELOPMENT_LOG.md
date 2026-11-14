@@ -89,3 +89,8 @@ Inspected the supplied 31 files and live NASA service metadata during planning. 
 - Independently checked the numerical raster colours and compared the Jezero GeoJSON means for four environmental factors against Python using the full route. Captured V2 and V3 layouts at four widths and recorded the actual reveal intervals.
 - Pushed and deployed `6c954a2`. All 22 unauthenticated production Chromium journeys passed in 52.1 s, including the production bundle delay, imagery, sources, route, overlay and export checks. The 24 Vitest tests, type checking, lint and static builds passed.
 - The 1440×900 comparison measured 222 ms median warm result latency in V3, compared with 224 ms in V2. The median trial 95th-percentile frame interval was 16.8 ms in V3. The reveal increased median main-thread JavaScript time from 18 ms to 90 ms. See the validation record for live tile timings and memory limits.
+
+## 2026-11-14 — V3.1 startup and camera
+
+- Started from `393b85e` and retained the prior static export for visual comparison. The atlas now fits Mars inside the initial usable viewport. Camera movement is reserved for navigation, explicit fit actions and actual viewport resizing. A verified `?place=jezero` destination link starts focused, with an empty draft.
+- Seven targeted Chromium journeys passed locally, including globe framing at nine viewports, no restored endpoints, pixel stability across panels, relief and scientific opacity defaults, live NASA tiles, and all 13 destinations. The 24 existing Vitest tests passed.

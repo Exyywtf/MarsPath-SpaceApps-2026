@@ -80,11 +80,14 @@ test("recalculating during a reveal cancels it and reveals the new accepted resu
 });
 
 test("featured Jezero survives filtering and opening Directions preserves the draft", async ({ page }) => {
-  await page.addInitScript(() => {
-    sessionStorage.setItem("marspath-draft-v2", JSON.stringify({ start: [77.419, 18.466], end: null, waypoints: [] }));
-  });
   await page.goto("/");
   await expect(region(page)).toHaveAttribute("data-animating", "false");
+  await page.getByRole("button", { name: "Directions", exact: true }).click();
+  await page.locator(".point-editor").first().locator("summary").click();
+  await page.getByLabel("A latitude", { exact: true }).fill("18.466");
+  await page.getByLabel("A longitude", { exact: true }).fill("77.419");
+  await page.getByRole("button", { name: "Apply A", exact: true }).click();
+  await page.getByRole("button", { name: "Explore", exact: true }).click();
   await page.locator(".place-filters summary").click();
   await page.getByRole("button", { name: "Clays", exact: true }).click();
   const card = page.getByRole("region", { name: "Jezero Crater" });
@@ -92,5 +95,6 @@ test("featured Jezero survives filtering and opening Directions preserves the dr
   await card.getByRole("button", { name: "Plan detailed route" }).click();
   await expect(page.locator(".point-label strong").first()).toContainText("77.419°E");
   await expect(page.getByRole("button", { name: "Replace draft with Jezero example" })).toBeVisible();
-  await expect.poll(async () => JSON.parse((await region(page).getAttribute("data-center"))!)[0]).toBeGreaterThan(77);
+  await expect(region(page)).toHaveAttribute("data-animating", "false");
+  await expect.poll(async () => Number(await region(page).getAttribute("data-resolution"))).toBeLessThan(0.005);
 });

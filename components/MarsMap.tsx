@@ -24,7 +24,7 @@ import KeyboardPan from "ol/interaction/KeyboardPan";
 import KeyboardZoom from "ol/interaction/KeyboardZoom";
 import Kinetic from "ol/Kinetic";
 import TileState from "ol/TileState";
-import { locations, asLonLat } from "@/lib/atlas";
+import { locations, asLonLat, locationFromSearch, destinationZoom } from "@/lib/atlas";
 import services from "@/data/services.json";
 import {
   coordinateLabel,
@@ -45,12 +45,35 @@ import { prepareReveal, revealPrefix } from "@/lib/routePresentation";
 
 const featuredLabels = new Set(["jezero", "gale", "valles", "oxia", "eridania"]);
 const revealTiming = { shortest: 740, longest: 1330, alternative: 270, stagger: 120 };
+const marsExtent = [-180, -90, 180, 90];
+export type MapInsets = [top: number, right: number, bottom: number, left: number];
+
+function measureFrame(instance: Map, getInsets: Props["getInsets"]) {
+  const [width, height] = instance.getSize() ?? [0, 0];
+  if (!width || !height) return null;
+  const [top, right, bottom, left] = getInsets(width, height);
+  // Keep an actionable map area when a sheet or browser toolbar fills the viewport.
+  const padding: MapInsets = [
+    Math.min(top, height * 0.37),
+    Math.min(right, width * 0.3),
+    Math.min(bottom, height - Math.min(top, height * 0.37) - Math.min(100, height * 0.3)),
+    Math.min(left, width - Math.min(right, width * 0.3) - Math.min(120, width * 0.38)),
+  ];
+  return {
+    width, height, padding,
+    offset: [(padding[3] - padding[1]) / 2, (padding[2] - padding[0]) / 2] as LonLat,
+  };
+}
+
+function framedCenter(point: number[], offset: LonLat, resolution: number): LonLat {
+  return [point[0] - offset[0] * resolution, point[1] - offset[1] * resolution];
+}
 
 export interface MapHandle {
   focus: (point: LonLat, zoom?: number) => void;
   reset: () => void;
   zoomBy: (delta: number) => void;
-  centre: () => LonLat | null;
+  rememberInsets: () => void;
   fitRoute: (points: LonLat[]) => void;
   finishReveal: () => void;
   showProfilePoint: (point: LonLat | null) => void;
@@ -84,7 +107,7 @@ interface Props {
   recommendedRoute?: string;
   onRevealState: (drawing: boolean) => void;
   terrainBounds: number[];
-  padding: number[];
+  getInsets: (width: number, height: number) => MapInsets;
   onInspect?: (point: LonLat) => void;
   layer?: LayerDataset | null;
   layerOpacity?: number;
@@ -97,6 +120,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     map = useRef<Map | null>(null),
     handlers = useRef(props),
     syncMetadata = useRef<() => void>(() => {});
+  const frame = useRef<ReturnType<typeof measureFrame>>(null);
   const bases = useRef<TileLayer<WMTS>[]>([]),
     markers = useRef<VectorLayer<VectorSource>[]>([]);
   const scalar = useRef<TileLayer<XYZ> | null>(null),
@@ -127,22 +151,40 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       ? 0
       : 220;
   }
+  const actions = useRef({
+    readFrame() {
+      return map.current ? measureFrame(map.current, handlers.current.getInsets) : null;
+    },
+    focus(point: LonLat, zoom: number, time: number) {
+      const view = map.current?.getView();
+      const targetFrame = this.readFrame();
+      if (!view || !targetFrame) return;
+      const longitude = point[0] + 360 * Math.round(((view.getCenter()?.[0] ?? 0) - point[0]) / 360);
+      const resolution = view.getResolutionForZoom(zoom);
+      const center = framedCenter([longitude, point[1]], targetFrame.offset, resolution);
+      view.cancelAnimations();
+      if (time) view.animate({ center, resolution, duration: time });
+      else {
+        view.setResolution(resolution);
+        view.setCenter(center);
+      }
+    },
+  });
   useImperativeHandle(
     ref,
     () => ({
       focus: (point, zoom = 6) => {
-        const v = map.current?.getView();
-        v?.cancelAnimations();
-        v?.animate({ center: point, zoom, duration: duration() });
-        if (v && host.current)
-          host.current.dataset.animating = String(v.getAnimating());
+        actions.current.focus(point, zoom, duration());
+        syncMetadata.current();
       },
       reset: () => {
         const v = map.current?.getView();
+        const targetFrame = actions.current.readFrame();
+        if (!v || !targetFrame) return;
         v?.cancelAnimations();
-        v?.fit([-180, -90, 180, 90], {
-          padding: [24, 24, 24, 24],
-          duration: duration(),
+        v.fit(v.getProjection().getExtent(), {
+          padding: targetFrame.padding,
+          duration: duration() || undefined,
         });
         if (v && host.current)
           host.current.dataset.animating = String(v.getAnimating());
@@ -155,16 +197,16 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
         if (v && host.current)
           host.current.dataset.animating = String(v.getAnimating());
       },
-      centre: () => {
-        const p = map.current?.getView().getCenter();
-        return p
-          ? [normalizeLon(p[0]), Math.max(-90, Math.min(90, p[1]))]
-          : null;
+      rememberInsets: () => {
+        const next = actions.current.readFrame();
+        if (next?.width === frame.current?.width && next?.height === frame.current?.height)
+          frame.current = next;
       },
       fitRoute: (points) => {
         if (!points.length) return;
         const view = map.current?.getView();
-        if (!view) return;
+        const targetFrame = actions.current.readFrame();
+        if (!view || !targetFrame) return;
         const line = new MultiLineString([unwrapRoute(points)]);
         const [west, , east] = line.getExtent();
         const currentLongitude = view.getCenter()?.[0] ?? 0;
@@ -174,8 +216,8 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
         view.cancelAnimations();
         view.fit(line, {
           maxZoom: 14,
-          padding: [30, 30, 30, 30],
-          duration: duration(),
+          padding: targetFrame.padding.map((value) => value + 12),
+          duration: duration() || undefined,
         });
         if (host.current)
           host.current.dataset.animating = String(view.getAnimating());
@@ -203,8 +245,8 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     const projection = new Projection({
       code: "MARSPATH:2000",
       units: "degrees",
-      extent: [-180, -90, 180, 90],
-      worldExtent: [-180, -90, 180, 90],
+      extent: marsExtent,
+      worldExtent: marsExtent,
       global: true,
       metersPerUnit: (MARS_RADIUS * Math.PI) / 180,
       getPointResolution: (resolution, point) =>
@@ -471,14 +513,12 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       view: new View({
         projection,
         center: [0, 0],
-        zoom: 1,
-        minZoom: 0,
+        minZoom: -2,
         maxZoom: 17,
         extent: [-Infinity, -90, Infinity, 90],
         constrainOnlyCenter: true,
         smoothExtentConstraint: false,
         enableRotation: false,
-        padding: handlers.current.padding,
       }),
       controls: defaultControls({
         zoom: false,
@@ -486,7 +526,6 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
         attribution: false,
       }),
     });
-    instance.getView().fit([-180, -90, 180, 90], { padding: [24, 24, 24, 24] });
     map.current = instance;
     const translate = new Translate({ layers: [endpointLayer] });
     instance.addInteraction(translate);
@@ -605,13 +644,34 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     });
     syncMetadata.current = syncView;
     instance.on("moveend", syncView);
-    const observer = new ResizeObserver(() => {
+    const resize = () => {
       instance.updateSize();
-      instance.once("postrender", syncView);
+      const next = actions.current.readFrame();
+      if (!next) return;
+      const view = instance.getView(), previous = frame.current;
+      frame.current = next;
+      if (!previous) {
+        const linked = locationFromSearch(window.location.search);
+        if (linked) actions.current.focus(asLonLat(linked.coordinates), destinationZoom(linked.id), 0);
+        else view.fit(projection.getExtent(), { padding: next.padding });
+        instance.renderSync();
+        if (host.current) host.current.dataset.ready = "true";
+        syncView();
+        handlers.current.onReady();
+      } else if (next.width !== previous.width || next.height !== previous.height) {
+        const center = view.getCenter(), resolution = view.getResolution();
+        if (center && resolution) {
+          view.cancelAnimations();
+          const target = framedCenter(center, [-previous.offset[0], -previous.offset[1]], resolution);
+          view.setCenter(framedCenter(target, next.offset, resolution));
+        }
+        instance.once("postrender", syncView);
+      }
       instance.render();
-    });
+    };
+    const observer = new ResizeObserver(resize);
     observer.observe(host.current);
-    handlers.current.onReady();
+    resize();
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const stop = () => {
       instance.getView().cancelAnimations();
@@ -629,6 +689,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       motion.removeEventListener("change", stop);
       instance.setTarget(undefined);
       map.current = null;
+      frame.current = null;
     };
   }, []);
   useEffect(() => {
@@ -784,17 +845,6 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     }
   }, [props.draft]);
   useEffect(() => {
-    if (map.current) {
-      const v = map.current.getView(),
-        centre = v.getCenter()?.slice();
-      v.cancelAnimations();
-      v.padding = props.padding;
-      if (centre) v.setCenter(centre);
-      map.current.once("postrender", syncMetadata.current);
-      map.current.render();
-    }
-  }, [props.padding]);
-  useEffect(() => {
     boundsSource.current.clear();
     const [w, s, e, n] = props.terrainBounds;
     boundsSource.current.addFeature(
@@ -886,7 +936,12 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
           (props.placement || props.layer)
         ) {
           e.preventDefault();
-          const p = map.current?.getView().getCenter();
+          const view = map.current?.getView();
+          const center = view?.getCenter(), resolution = view?.getResolution();
+          const targetFrame = actions.current.readFrame();
+          const p = center && resolution && targetFrame
+            ? framedCenter(center, [-targetFrame.offset[0], -targetFrame.offset[1]], resolution)
+            : center;
           if (p) {
             const point: LonLat = [
               normalizeLon(p[0]),

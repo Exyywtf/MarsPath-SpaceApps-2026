@@ -8,6 +8,12 @@ export interface Location {
 }
 export const locations: Location[] = records;
 export const asLonLat = (p: number[]): LonLat => [p[0], p[1]];
+export function locationFromSearch(search: string) {
+  const id = new URLSearchParams(search).get("place");
+  return locations.find((location) => location.id === id);
+}
+
+export const destinationZoom = (id: string) => id === "valles" ? 4 : 6;
 export const globalSources = [
   {id:'trek',title:'NASA Mars Trek WMTS imagery',institution:'NASA / JPL / USGS',type:'Orbital imagery',url:'https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=mars',description:'Viking global color mosaic; MOLA hillshade; regional CTX and HiRISE mosaics. Native resolutions and coverage vary. Tiles are visualization, not numerical terrain.'},
   {id:'mola',title:'MGS MOLA global DEM, 463 m',institution:'NASA / USGS',type:'Numerical terrain',url:'https://astrogeology.usgs.gov/search/map/mars_mgs_mola_dem_463m',description:'Supplied 46,080 × 23,040 int16 raster, Mars equirectangular sphere R=3,396,190 m, nodata −32768. Broad terrain context only; elevation referenced to the Martian areoid.'},

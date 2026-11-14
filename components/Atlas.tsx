@@ -31,7 +31,7 @@ import {
   Search,
   X,
 } from "lucide-react";
-import { locations, asLonLat } from "@/lib/atlas";
+import { locations, asLonLat, destinationZoom, locationFromSearch } from "@/lib/atlas";
 import { coordinateLabel, type LonLat } from "@/lib/mars";
 import {
   defaultSettings,
@@ -43,7 +43,7 @@ import {
 import { useRouteEngine } from "@/lib/useRouteEngine";
 import { useResultsReveal } from "@/lib/useResultsReveal";
 import { defaultClimatePreferences } from "@/lib/routeAnalysis";
-import type { MapHandle, MapRoute } from "./MarsMap";
+import type { MapHandle, MapInsets, MapRoute } from "./MarsMap";
 import RoutePlanner, { terrainMetadata } from "./RoutePlanner";
 import regions from "@/data/regions.json";
 import { scientificLayers, layerValue, type LayerId } from "@/lib/layers";
@@ -69,8 +69,12 @@ const CoordinateReadout = memo(
 export default function Atlas() {
   const map = useRef<MapHandle>(null),
     pendingFocus = useRef<((target: MapHandle) => void) | null>(null),
+    focusFrame = useRef(0),
     readout = useRef<{ set: (s: string) => void }>(null),
     panelRef = useRef<HTMLElement>(null),
+    headerRef = useRef<HTMLElement>(null),
+    footerRef = useRef<HTMLElement>(null),
+    controlsRef = useRef<HTMLDivElement>(null),
     searchRef = useRef<HTMLInputElement>(null),
     help = useRef<HTMLDialogElement>(null);
   const [panel, setPanel] = useState<Panel>("places"),
@@ -88,18 +92,17 @@ export default function Atlas() {
     [tag, setTag] = useState("All"),
     [basemap, setBasemap] = useState("optical"),
     [topography, setTopography] = useState(false),
-    [opacity, setOpacity] = useState(0.45),
+    [opacity, setOpacity] = useState(0.50),
     [showLocations, setShowLocations] = useState(true);
   const [imagery, setImagery] = useState("Viking · 232 m mosaic"),
     [mapReady, setMapReady] = useState(false),
     [scale, setScale] = useState(""),
-    [tileState, setTileState] = useState<boolean | null>(null),
-    [padding, setPadding] = useState<number[]>([80, 24, 48, 24]);
+    [tileState, setTileState] = useState<boolean | null>(null);
   const [shortcuts, setShortcuts] = useState(true),
     [onboarding, setOnboarding] = useState(false),
-    [restored, setRestored] = useState(false);
+    [preferencesReady, setPreferencesReady] = useState(false);
   const [layerId, setLayerId] = useState<LayerId | null>(null),
-    [layerOpacity, setLayerOpacity] = useState(0.7),
+    [layerOpacity, setLayerOpacity] = useState(0.75),
     [layerStatus, setLayerStatus] = useState("Choose a field to inspect"),
     [inspectPoint, setInspectPoint] = useState<LonLat | null>(null);
   const layer = scientificLayers.find((l) => l.id === layerId) ?? null,
@@ -124,42 +127,27 @@ export default function Atlas() {
     let alive = true;
     Promise.resolve().then(() => {
       if (!alive) return;
+      const linked = locationFromSearch(window.location.search);
+      if (linked) {
+        setSelected(linked.id);
+        setPanel("location");
+      }
       try {
-        const saved = JSON.parse(
-          sessionStorage.getItem("marspath-draft-v2") || "null",
-        );
-        const valid = (p: unknown) =>
-          Array.isArray(p) &&
-          p.length === 2 &&
-          p.every(Number.isFinite) &&
-          Math.abs(p[1]) <= 90 &&
-          p[0] >= -180 &&
-          p[0] < 180;
-        if (
-          saved &&
-          (saved.start === null || valid(saved.start)) &&
-          (saved.end === null || valid(saved.end)) &&
-          Array.isArray(saved.waypoints) &&
-          saved.waypoints.length <= 3 &&
-          saved.waypoints.every(valid)
-        )
-          setDraft(saved);
         setShortcuts(localStorage.getItem("marspath-shortcuts") !== "off");
-        setOnboarding(!localStorage.getItem("marspath-onboarded"));
+        setOnboarding(!linked && !localStorage.getItem("marspath-onboarded"));
       } catch {}
-      setRestored(true);
+      setPreferencesReady(true);
     });
     return () => {
       alive = false;
     };
   }, []);
   useEffect(() => {
-    if (restored)
+    if (preferencesReady)
       try {
-        sessionStorage.setItem("marspath-draft-v2", JSON.stringify(draft));
         localStorage.setItem("marspath-shortcuts", shortcuts ? "on" : "off");
       } catch {}
-  }, [draft, shortcuts, restored]);
+  }, [shortcuts, preferencesReady]);
   const open = useCallback((next: Panel) => {
     setPanel(next);
     setPlacement(null);
@@ -207,6 +195,14 @@ export default function Atlas() {
       if (map.current) focus(map.current);
     }
   }, []);
+  const moveCamera = useCallback((action: (target: MapHandle) => void) => {
+    cancelAnimationFrame(focusFrame.current);
+    focusFrame.current = requestAnimationFrame(() => {
+      if (map.current && mapReady) action(map.current);
+      else pendingFocus.current = action;
+    });
+  }, [mapReady]);
+  useEffect(() => () => cancelAnimationFrame(focusFrame.current), []);
   const movePoint = useCallback(
     (kind: "start" | "end" | number, point: LonLat) =>
       setDraft((old) =>
@@ -233,11 +229,10 @@ export default function Atlas() {
       setPanel("location");
       setSheet("half");
       const point = asLonLat(l.coordinates);
-      const zoom = id === "valles" ? 4 : 6;
-      if (mapReady) map.current?.focus(point, zoom);
-      else pendingFocus.current = (target) => target.focus(point, zoom);
+      const zoom = destinationZoom(id);
+      moveCamera((target) => target.focus(point, zoom));
     },
-    [mapReady, placement, place],
+    [moveCamera, placement, place],
   );
   const setCoordinate = useCallback(
     (label: string) => readout.current?.set(label),
@@ -252,19 +247,15 @@ export default function Atlas() {
     setSettings((old) => ({ ...old, geographicOnly: false }));
     setPlacement(null);
     setSheet("half");
-    map.current?.focus([77.44, 18.46], 11);
-  }, []);
+    moveCamera((target) => target.focus([77.44, 18.46], 11));
+  }, [moveCamera]);
   const featureJezero = useCallback((directions: boolean) => {
     open(directions ? "directions" : "location");
     setSelected("jezero");
     const [west, south, east, north] = terrainMetadata.bounds;
     const focus = (target: MapHandle) => target.fitRoute([[west, south], [east, north]]);
-    // Let the new panel report its padding before starting the camera move.
-    if (map.current) requestAnimationFrame(() => requestAnimationFrame(() => {
-      if (map.current) focus(map.current);
-    }));
-    else pendingFocus.current = focus;
-  }, [open]);
+    moveCamera(focus);
+  }, [moveCamera, open]);
   const candidates = result?.routes;
   const scores = result?.scores;
   const recommended = scores ? scores.indexOf(Math.min(...scores)) : -1;
@@ -282,37 +273,19 @@ export default function Atlas() {
   useEffect(() => {
     map.current?.showProfilePoint(null);
   }, [engine.generation, selectedIndex, panel]);
+  const getMapInsets = useCallback((width: number, height: number): MapInsets => {
+    const header = headerRef.current, footer = footerRef.current;
+    const panel = panelRef.current, controls = controlsRef.current;
+    const top = header ? header.offsetTop + header.offsetHeight : 0;
+    const right = controls ? width - controls.offsetLeft : 0;
+    const panelOpen = panel?.dataset.open === "true";
+    const sidebar = panelOpen && getComputedStyle(panel).getPropertyValue("--side-panel").trim() === "1";
+    const bottom = panelOpen && !sidebar ? height - panel.offsetTop : footer?.offsetHeight ?? 0;
+    const left = sidebar ? panel.offsetLeft + panel.offsetWidth : header?.offsetLeft ?? 0;
+    return [top + 10, right + 8, bottom + 10, left + 10];
+  }, []);
   useLayoutEffect(() => {
-    const update = () => {
-      const box = panelRef.current?.getBoundingClientRect(),
-        wide = window.innerWidth >= 1280,
-        top = window.innerWidth <= 650 ? 180 : 88;
-      const next =
-        panel && box
-          ? wide
-            ? [top, 32, 56, box.width + 48]
-            : [
-                top,
-                16,
-                Math.min(
-                  box.height + 56,
-                  Math.max(56, window.innerHeight - top - 64),
-                ),
-                16,
-              ]
-          : [top, 24, 56, 24];
-      setPadding((old) =>
-        old.every((n, i) => Math.abs(n - next[i]) < 1) ? old : next,
-      );
-    };
-    const observer = new ResizeObserver(update);
-    if (panelRef.current) observer.observe(panelRef.current);
-    window.addEventListener("resize", update);
-    update();
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("resize", update);
-    };
+    map.current?.rememberInsets();
   }, [panel, sheet]);
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
@@ -387,7 +360,7 @@ export default function Atlas() {
       <a className="skip-link skip-map" href="#interactive-mars-map">
         Skip to map
       </a>
-      <header className="topbar">
+      <header className="topbar" ref={headerRef}>
         <Link className="brand" href="/" aria-label="MarsPath home">
           <span className="brand-orbit" />
           MarsPath
@@ -457,7 +430,7 @@ export default function Atlas() {
           recommendedRoute={mapRoutes[recommended]?.id}
           onRevealState={setDrawing}
           terrainBounds={terrainMetadata.bounds}
-          padding={padding}
+          getInsets={getMapInsets}
           layer={layer}
           layerOpacity={layerOpacity}
           onLayerState={setLayerStatus}
@@ -517,7 +490,7 @@ export default function Atlas() {
             </button>
           </div>
         )}
-        <div className="map-controls">
+        <div className="map-controls" ref={controlsRef}>
           <button
             aria-label="Zoom in"
             disabled={!mapReady}
@@ -535,7 +508,10 @@ export default function Atlas() {
           <button
             aria-label="Recenter global map"
             disabled={!mapReady}
-            onClick={() => map.current?.reset()}
+            onClick={() => {
+              setSheet((old) => old === "full" ? "half" : old);
+              moveCamera((target) => target.reset());
+            }}
           >
             <Compass size={19} />
           </button>
@@ -589,7 +565,7 @@ export default function Atlas() {
             </a>
           </aside>
         )}
-        <footer className="map-footer">
+        <footer className="map-footer" ref={footerRef}>
           <CoordinateReadout ref={readout} />
           <span className="scale-indicator">
             <i />
@@ -609,6 +585,7 @@ export default function Atlas() {
           id="workflow-panel"
           tabIndex={-1}
           ref={panelRef}
+          data-open="true"
           className={
             "workflow-panel sheet-" +
             sheet +
@@ -730,6 +707,21 @@ export default function Atlas() {
                     </button>
                   )}
                 </label>
+                {onboarding && (
+                  <div className="onboarding" role="region" aria-label="Getting started">
+                    <button className="icon-button" aria-label="Dismiss getting started" onClick={dismissOnboarding}>
+                      <X size={17} />
+                    </button>
+                    <strong>A field guide to Mars</strong>
+                    <p>Explore a destination, inspect a scientific layer, or compare routes between A and B.</p>
+                    <button className="text-button" onClick={() => {
+                      dismissOnboarding();
+                      help.current?.showModal();
+                    }}>
+                      How it works <ArrowUpRight size={15} />
+                    </button>
+                  </div>
+                )}
                 {hideFeatured ? (
                   <button className="text-button" onClick={() => setHideFeatured(false)}>Show featured Jezero</button>
                 ) : (
@@ -1040,31 +1032,6 @@ export default function Atlas() {
             )}
           </div>
         </aside>
-      )}
-      {onboarding && (
-        <div className="onboarding" role="region" aria-label="Getting started">
-          <button
-            className="icon-button"
-            aria-label="Dismiss getting started"
-            onClick={dismissOnboarding}
-          >
-            <X size={18} />
-          </button>
-          <strong>A field guide to Mars</strong>
-          <p>
-            Explore a place, reveal a layer, or choose A and B to compare
-            routes. Every calculation shows its limits.
-          </p>
-          <button
-            className="text-button"
-            onClick={() => {
-              dismissOnboarding();
-              help.current?.showModal();
-            }}
-          >
-            How it works <ArrowUpRight size={15} />
-          </button>
-        </div>
       )}
       <dialog ref={help} className="help-dialog" aria-labelledby="help-title">
         <div className="panel-header">
