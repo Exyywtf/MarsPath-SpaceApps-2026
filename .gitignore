@@ -1,0 +1,14 @@
+node_modules/
+.next/
+out/
+.vercel/
+all our mars info/
+data/raw/
+.venv/
+__pycache__/
+*.tsbuildinfo
+.env*
+!.env.example
+test-results/
+playwright-report/
+tmp/
