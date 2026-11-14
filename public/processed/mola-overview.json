@@ -1,0 +1,14 @@
+{
+  "width": 720,
+  "height": 360,
+  "bounds": [
+    -180,
+    -90,
+    180,
+    90
+  ],
+  "nodata": -32768,
+  "units": "m above areoid",
+  "method": "Rasterio average overview, 0.5\u00b0 bins, not local terrain",
+  "sourceUrl": "https://astrogeology.usgs.gov/search/map/mars_mgs_mola_dem_463m"
+}
