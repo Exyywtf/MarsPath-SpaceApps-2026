@@ -134,5 +134,14 @@
     "monotonic": true,
     "context": "Real-time Chromium recalculation. Primary reveal progress is sampled while distinct alternatives complete."
   },
-  "reproduce": "Serve the retained V3 static export on 4332 and V3.1 on 4333. Run the v31 profiling test with MARSPATH_PROFILE_ONLY=1 for timings, or without that setting for all layout screenshots."
+  "reproduce": "Serve the retained V3 static export on 4332 and V3.1 on 4333. Run the v31 profiling test with MARSPATH_PROFILE_ONLY=1 for timings, or without that setting for all layout screenshots.",
+  "profiledApplicationCommit": "336b002",
+  "releasedApplicationCommit": "2363667",
+  "productionVerification": {
+    "chromiumJourneys": 30,
+    "webkitJourneys": 30,
+    "deployment": "marspath-spaceapps-2026-l6k1339q8-exyys-projects.vercel.app",
+    "publicAlias": "https://marspath-spaceapps-2026.vercel.app/",
+    "checkedAt": "2026-11-14T18:23:37.333840+00:00"
+  }
 }

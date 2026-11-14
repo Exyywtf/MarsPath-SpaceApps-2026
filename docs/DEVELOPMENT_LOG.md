@@ -118,3 +118,10 @@ Inspected the supplied 31 files and live NASA service metadata during planning. 
 
 - The `336b002` deployment passed 29 Chromium production journeys. Its full WebKit run passed 28 and exposed a timing issue where route completion could hide a recently edited coordinate error. Pointer interaction inside the planning form now cancels automatic results scrolling and collapse.
 - Added a deterministic regression that holds the terrain reply, enters an invalid latitude, moves focus outside the form and then releases the reply. The error and editing controls stay visible. All 11 WebKit route-interaction journeys passed locally, along with lint, the static build and all 24 numerical tests.
+
+## 2026-11-14 22:23 Asia/Dubai — V3.1 production verification
+
+- Pushed and deployed `2363667` to the existing [public MarsPath alias](https://marspath-spaceapps-2026.vercel.app/). Vercel deployment `Fp3iN2s8K58vYQabE8e56AE6pQps` is Ready. The application uses the prebuilt Next.js static export.
+- All **30 Chromium production journeys passed in 1.4 minutes** and all **30 WebKit production journeys passed in 1.6 minutes**, including the delayed-coordinate-edit regression, all 13 destinations, real NASA imagery, scientific layers, radiation modes, route drawing and export, keyboard operation, touch Help and document navigation.
+- The public route worker, climate data, radiation pressure grid and historical raster return HTTP 200 and match the local build bytes. Verified destination and science-source deep links also return HTTP 200.
+- The numerical assets, terrain/ranking model and source terms retain their previous versions. The private GitHub repository contains the software's MIT licence and separate dataset terms. Visual evidence remains in the ignored local review directory. Device checks use browser emulation on Windows, with hardware screen-reader and physical-device testing remaining unverified.
