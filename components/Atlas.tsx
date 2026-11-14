@@ -801,7 +801,8 @@ export default function Atlas() {
                 interruptScroll();
             }}
             onPointerDown={(e) => {
-              if (e.target === e.currentTarget) interruptScroll();
+              const target = e.target as Element;
+              if (target === e.currentTarget || target.closest("#route-planning")) interruptScroll();
             }}
           >
             <div className="workflow-view" {...workflowState("places")}>

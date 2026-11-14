@@ -113,3 +113,8 @@ Inspected the supplied 31 files and live NASA service metadata during planning. 
 - Captured and reviewed nine viewport comparisons and motion storyboards, including a real-time monotonic route reveal. The fixed warm benchmark measured a 169.0 ms median result latency and 16.8 ms median trial p95 frame interval in V3.1. The raw record also reports a 159 ms long task and the sampled heap, with worker/GPU and physical-device limitations.
 - Independent Python checks passed for the original terrain cases, regional/coarse/science routes, climate source nodes, radiation assets and the newly exported environmental profile. The route-worker bundle is byte-identical to V3.
 - A WebKit run exposed one-pixel scroll rounding and a test that attempted Swap after the editor had collapsed. Updated the checks to exercise Edit route and the requested approximate scroll clearance. All 16 affected WebKit journeys then passed. Ten final targeted Chromium journeys, the 24 numerical tests, type checking, lint and the static build passed before release.
+
+## 2026-11-14 — V3.1 coordinate-edit completion guard
+
+- The `336b002` deployment passed 29 Chromium production journeys. Its full WebKit run passed 28 and exposed a timing issue where route completion could hide a recently edited coordinate error. Pointer interaction inside the planning form now cancels automatic results scrolling and collapse.
+- Added a deterministic regression that holds the terrain reply, enters an invalid latitude, moves focus outside the form and then releases the reply. The error and editing controls stay visible. All 11 WebKit route-interaction journeys passed locally, along with lint, the static build and all 24 numerical tests.

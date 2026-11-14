@@ -65,6 +65,27 @@ test("a wheel gesture during a delayed calculation keeps the panel under user co
   await expect.poll(async () => Math.abs(await headingOffset(page) - 20)).toBeLessThanOrEqual(1);
 });
 
+test("editing during a calculation keeps coordinate errors and the planner visible", async ({ page }) => {
+  let release!: () => void;
+  const held = new Promise<void>((resolve) => { release = resolve; });
+  await page.route(/jezero.*elevation\.f32$/, async (route) => { await held; await route.continue(); });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Directions", exact: true }).click();
+  await example(page).click();
+  await expect(page.locator(".route-status")).toContainText("Calculating");
+  await page.locator(".point-editor").first().locator("summary").click();
+  await page.getByLabel("A latitude", { exact: true }).fill("91");
+  await page.getByRole("button", { name: "Apply A", exact: true }).click();
+  await expect(page.locator(".field-error")).toContainText("Latitude");
+  // A pointer click can leave focus outside the editor in WebKit.
+  await page.locator("#workflow-title").focus();
+  release();
+  await expect(region(page)).toHaveAttribute("data-reveal", "complete");
+  await expect(page.locator(".field-error")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Add waypoint", exact: true })).toBeVisible();
+  expect(await page.evaluate(() => scrollY)).toBe(0);
+});
+
 test("recalculating during a reveal cancels it and reveals the new accepted result", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Directions", exact: true }).click();
