@@ -1,0 +1,184 @@
+[
+  {
+    "id": "mawrth-summary",
+    "claim": "Clay-bearing layered terrain records ancient interactions between water and rock.",
+    "sourceIds": [
+      "mawrth"
+    ],
+    "sourceUrls": [
+      "https://science.nasa.gov/resource/clay-minerals-in-mawrth-vallis-region-of-mars/"
+    ],
+    "locationId": "mawrth",
+    "status": "source-linked; automated retrieval completed",
+    "evidenceSection": "Original source description / caption",
+    "uncertainty": "USGS/IAU representative feature centre; not a local science target."
+  },
+  {
+    "id": "oxia-summary",
+    "claim": "A broad clay-bearing plain studied as a rover landing site and a record of ancient aqueous alteration.",
+    "sourceIds": [
+      "oxia"
+    ],
+    "sourceUrls": [
+      "https://science.nasa.gov/photojournal/possible-future-mars-landing-site-in-oxia-planum/"
+    ],
+    "locationId": "oxia",
+    "status": "source-linked; automated retrieval completed",
+    "evidenceSection": "Original source description / caption",
+    "uncertainty": "USGS/IAU representative feature centre; not a local science target."
+  },
+  {
+    "id": "valles-summary",
+    "claim": "This vast canyon system exposes layered deposits; Melas Chasma provides a window into its sedimentary history.",
+    "sourceIds": [
+      "valles"
+    ],
+    "sourceUrls": [
+      "https://science.nasa.gov/photojournal/deposits-along-the-northern-wall-of-melas-chasma/"
+    ],
+    "locationId": "valles",
+    "status": "source-linked; automated retrieval completed",
+    "evidenceSection": "Original source description / caption",
+    "uncertainty": "USGS/IAU representative feature centre; not a local science target."
+  },
+  {
+    "id": "meridiani-summary",
+    "claim": "Opportunity explored hematite-bearing sedimentary materials in this equatorial plain, investigating evidence of past water.",
+    "sourceIds": [
+      "meridiani"
+    ],
+    "sourceUrls": [
+      "https://science.nasa.gov/resource/meridiani-planum-2/"
+    ],
+    "locationId": "meridiani",
+    "status": "source-linked; automated retrieval completed",
+    "evidenceSection": "Original source description / caption",
+    "uncertainty": "USGS/IAU representative feature centre; not a local science target."
+  },
+  {
+    "id": "jezero-summary",
+    "claim": "A preserved delta and crater-floor rocks make Jezero a key site for investigating ancient environments. Perseverance explores this region.",
+    "sourceIds": [
+      "jezero"
+    ],
+    "sourceUrls": [
+      "https://science.nasa.gov/mission/mars-2020-perseverance/"
+    ],
+    "locationId": "jezero",
+    "status": "source-linked; automated retrieval completed",
+    "evidenceSection": "Original source description / caption",
+    "uncertainty": "USGS/IAU representative feature centre; not a local science target."
+  },
+  {
+    "id": "gale-summary",
+    "claim": "Curiosity studies the layered rocks of Mount Sharp to investigate the history of ancient Martian environments.",
+    "sourceIds": [
+      "gale"
+    ],
+    "sourceUrls": [
+      "https://science.nasa.gov/resource/a-guide-to-gale-crater/"
+    ],
+    "locationId": "gale",
+    "status": "source-linked; automated retrieval completed",
+    "evidenceSection": "Original source description / caption",
+    "uncertainty": "USGS/IAU representative feature centre; not a local science target."
+  },
+  {
+    "id": "nili-summary",
+    "claim": "Orbital spectroscopy reveals carbonate-bearing materials and other mineral signatures that constrain the region’s alteration history.",
+    "sourceIds": [
+      "nili"
+    ],
+    "sourceUrls": [
+      "https://science.nasa.gov/photojournal/mineral-spectra-from-nili-fossae-mars/"
+    ],
+    "locationId": "nili",
+    "status": "source-linked; automated retrieval completed",
+    "evidenceSection": "Original source description / caption",
+    "uncertainty": "USGS/IAU representative feature centre; not a local science target."
+  },
+  {
+    "id": "eberswalde-summary",
+    "claim": "Preserved branching channels and delta deposits record sediment transport into an ancient standing body of water.",
+    "sourceIds": [
+      "eberswalde"
+    ],
+    "sourceUrls": [
+      "https://science.nasa.gov/resource/eberswalde-delta-3-d/"
+    ],
+    "locationId": "eberswalde",
+    "status": "source-linked; automated retrieval completed",
+    "evidenceSection": "Original source description / caption",
+    "uncertainty": "USGS/IAU representative feature centre; not a local science target."
+  },
+  {
+    "id": "holden-summary",
+    "claim": "A former rover landing-site candidate with alluvial fans, flood deposits and clay-bearing sedimentary materials.",
+    "sourceIds": [
+      "holden"
+    ],
+    "sourceUrls": [
+      "https://science.nasa.gov/resource/four-finalist-landing-site-candidates-for-mars-science-laboratory/"
+    ],
+    "locationId": "holden",
+    "status": "source-linked; automated retrieval completed",
+    "evidenceSection": "Original source description / caption",
+    "uncertainty": "USGS/IAU representative feature centre; not a local science target."
+  },
+  {
+    "id": "gusev-summary",
+    "claim": "Spirit investigated altered rocks in Columbia Hills. Silica-rich deposits have been interpreted as evidence of hydrothermal processes.",
+    "sourceIds": [
+      "gusev"
+    ],
+    "sourceUrls": [
+      "https://ares.jsc.nasa.gov/missions/mer/important-discoveries.html"
+    ],
+    "locationId": "gusev",
+    "status": "source-linked; automated retrieval completed",
+    "evidenceSection": "Original source description / caption",
+    "uncertainty": "USGS/IAU representative feature centre; not a local science target."
+  },
+  {
+    "id": "aram-summary",
+    "claim": "Fractured terrain and layered sulfate-bearing deposits record a complex history of geological and chemical change.",
+    "sourceIds": [
+      "aram"
+    ],
+    "sourceUrls": [
+      "https://www.jpl.nasa.gov/images/pia25358-a-complex-geologic-history-of-aram-chaos/"
+    ],
+    "locationId": "aram",
+    "status": "source-linked; automated access incomplete",
+    "evidenceSection": "Original source description / caption",
+    "uncertainty": "USGS/IAU representative feature centre; not a local science target."
+  },
+  {
+    "id": "eridania-summary",
+    "claim": "Mineral deposits in this broad basin system have been interpreted as ancient hydrothermal seafloor deposits. This is an interpretation, not evidence of life.",
+    "sourceIds": [
+      "eridania"
+    ],
+    "sourceUrls": [
+      "https://www.nature.com/articles/ncomms15978"
+    ],
+    "locationId": "eridania",
+    "status": "source-linked; automated retrieval completed",
+    "evidenceSection": "Original source description / caption",
+    "uncertainty": "Published northern-basin rim example (180.9°E, 31.5°S), representing a much broader basin system."
+  },
+  {
+    "id": "sirenum-summary",
+    "claim": "Chloride-bearing deposits in topographic depressions provide evidence relevant to ancient water accumulation and evaporation.",
+    "sourceIds": [
+      "sirenum"
+    ],
+    "sourceUrls": [
+      "https://science.nasa.gov/resource/bright-exposures-of-chloride-salt-on-southern-mars/"
+    ],
+    "locationId": "sirenum",
+    "status": "source-linked; automated retrieval completed",
+    "evidenceSection": "Original source description / caption",
+    "uncertainty": "Approximate deposit location published in the NASA image description."
+  }
+]
