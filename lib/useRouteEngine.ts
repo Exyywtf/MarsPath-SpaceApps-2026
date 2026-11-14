@@ -16,6 +16,7 @@ export function useRouteEngine(
   const keyRef = useRef(key);
   const [state, setState] = useState<{
     key: string;
+    id?: number;
     result?: PlannerResult;
     error?: string;
   }>({ key: "" });
@@ -32,6 +33,7 @@ export function useRouteEngine(
       if (event.data.id === requestId.current)
         setState({
           key: keyRef.current,
+          id: event.data.id,
           result: event.data.result,
           error: event.data.error,
         });
@@ -60,6 +62,7 @@ export function useRouteEngine(
   const complete = state.key === key;
   return {
     result: complete ? state.result : undefined,
+    generation: complete && state.result ? state.id : undefined,
     error: complete ? state.error : undefined,
     pending: !!draft.start && !!draft.end && !complete,
   };

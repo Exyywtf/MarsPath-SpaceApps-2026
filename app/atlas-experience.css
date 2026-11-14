@@ -1,0 +1,47 @@
+.jezero-feature {
+  margin-top: 16px;
+  padding: 6px 16px 10px;
+  border: 1px solid #82644e;
+  border-top: 2px solid #e8ad7c;
+  border-radius: 9px;
+  background: #2b2521;
+}
+.feature-kicker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  color: #ffd1a5;
+  font-size: 12px;
+}
+.feature-kicker .icon-button { margin-left: auto; margin-right: -8px; }
+.jezero-feature h2 { font-size: 23px; letter-spacing: -.026em; margin: 0; }
+.jezero-feature p { color: #ded2c5; font-size: 14px; line-height: 1.5; margin: 5px 0 13px; }
+.feature-data { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 10px 0; border-top: 1px solid #615044; margin: 0 0 4px; }
+.feature-data dt { color: #ffe1c4; font-variant-numeric: tabular-nums; font-weight: 580; font-size: 16px; }
+.feature-data dd { margin: 3px 0 0; color: #e2d4c6; font-size: 12px; }
+.feature-actions { display: grid; grid-template-columns: 1.2fr 1fr; gap: 8px; }
+.feature-actions button { padding: 8px; font-size: 13px; }
+.feature-source { font-size: 12px; }
+.route-result-title { margin-top: 14px; }
+.route-result-title h2 { color: var(--ink); font-size: 18px; margin: 0; }
+.result-actions { display: flex; align-items: center; }
+.result-actions .icon-button { color: var(--accent); }
+.plan-summary { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 0 12px; background: #152021; border: 1px solid #52665b; border-radius: 8px; }
+.plan-summary > span { display: flex; align-items: center; gap: 10px; }
+.result-jump { white-space: nowrap; font-size: 12px; }
+.skip-reveal { position: absolute; top: 124px; right: 22px; z-index: 4; }
+.route-option { transition: border-color 180ms ease, background-color 180ms ease; }
+#planning-heading { margin: 0 0 8px; font-size: 16px; }
+@media (max-width: 650px) {
+  .skip-reveal { top: 184px; right: 16px; }
+  .directions-panel .panel-header { gap: 3px; }
+  .directions-panel .panel-header h1 { font-size: 18px; }
+  .jezero-feature { margin-top: 12px; }
+}
+@media (max-width: 350px) {
+  .result-jump { white-space: normal; min-width: 48px; line-height: 1.2; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .route-option { transition: none; }
+}

@@ -25,6 +25,7 @@ import {
   HelpCircle,
   Layers,
   Minus,
+  Mountain,
   Plus,
   Route,
   Search,
@@ -41,6 +42,8 @@ import {
   type Placement,
 } from "@/lib/planner";
 import { useRouteEngine } from "@/lib/useRouteEngine";
+import { groupRoutes } from "@/lib/routePresentation";
+import { useResultsReveal } from "@/lib/useResultsReveal";
 import type { MapHandle, MapRoute } from "./MarsMap";
 import RoutePlanner, { terrainMetadata } from "./RoutePlanner";
 import regions from "@/data/regions.json";
@@ -65,7 +68,7 @@ const CoordinateReadout = memo(
 );
 export default function Atlas() {
   const map = useRef<MapHandle>(null),
-    pendingFocus = useRef<{ point: LonLat; zoom: number } | null>(null),
+    pendingFocus = useRef<((target: MapHandle) => void) | null>(null),
     readout = useRef<{ set: (s: string) => void }>(null),
     panelRef = useRef<HTMLElement>(null),
     searchRef = useRef<HTMLInputElement>(null),
@@ -77,7 +80,9 @@ export default function Atlas() {
     [settings, setSettings] = useState(defaultSettings),
     [placement, setPlacement] = useState<Placement>(null),
     [revision, setRevision] = useState(0),
-    [active, setActive] = useState<number | null>(null);
+    [active, setActive] = useState<{ generation?: number; id: string } | null>(null),
+    [drawing, setDrawing] = useState(false),
+    [hideFeatured, setHideFeatured] = useState(false);
   const [query, setQuery] = useState(""),
     [tag, setTag] = useState("All"),
     [basemap, setBasemap] = useState("optical"),
@@ -89,11 +94,7 @@ export default function Atlas() {
     [scale, setScale] = useState(""),
     [tileState, setTileState] = useState<boolean | null>(null),
     [padding, setPadding] = useState<number[]>([80, 24, 48, 24]);
-  const [profileState, setProfileState] = useState<{
-      point: LonLat | null;
-      key: string;
-    }>({ point: null, key: "" }),
-    [shortcuts, setShortcuts] = useState(true),
+  const [shortcuts, setShortcuts] = useState(true),
     [onboarding, setOnboarding] = useState(false),
     [restored, setRestored] = useState(false);
   const [layerId, setLayerId] = useState<LayerId | null>(null),
@@ -103,11 +104,13 @@ export default function Atlas() {
   const layer = scientificLayers.find((l) => l.id === layerId) ?? null,
     inspection = useLayerData(layer, inspectPoint);
   const engine = useRouteEngine(draft, settings, revision);
-  const profileKey = JSON.stringify([draft, settings, revision, active]);
-  const setProfilePoint = useCallback(
-    (point: LonLat | null) => setProfileState({ point, key: profileKey }),
-    [profileKey],
-  );
+  const result = useMemo(() => engine.result && groupRoutes(engine.result), [engine.result]);
+  const setProfilePoint = useCallback((point: LonLat | null) => map.current?.showProfilePoint(point), []);
+  const expandResults = useCallback(() => setSheet((old) => old === "peek" ? "half" : old), []);
+  const [attachScroll, collapsed, interruptScroll, viewResults, editRoute, openEditors] = useResultsReveal({
+    pending: engine.pending, generation: engine.generation,
+    directions: panel === "directions", placement: !!placement, expand: expandResults,
+  });
   const location = locations.find((l) => l.id === selected);
   const filtered = locations.filter(
     (l) =>
@@ -200,7 +203,7 @@ export default function Atlas() {
     const focus = pendingFocus.current;
     if (focus) {
       pendingFocus.current = null;
-      map.current?.focus(focus.point, focus.zoom);
+      if (map.current) focus(map.current);
     }
   }, []);
   const movePoint = useCallback(
@@ -231,7 +234,7 @@ export default function Atlas() {
       const point = asLonLat(l.coordinates);
       const zoom = id === "valles" ? 4 : 6;
       if (mapReady) map.current?.focus(point, zoom);
-      else pendingFocus.current = { point, zoom };
+      else pendingFocus.current = (target) => target.focus(point, zoom);
     },
     [mapReady, placement, place],
   );
@@ -250,13 +253,26 @@ export default function Atlas() {
     setSheet("half");
     map.current?.focus([77.44, 18.46], 11);
   }, []);
+  const featureJezero = useCallback((directions: boolean) => {
+    open(directions ? "directions" : "location");
+    setSelected("jezero");
+    const [west, south, east, north] = terrainMetadata.bounds;
+    const focus = (target: MapHandle) => target.fitRoute([[west, south], [east, north]]);
+    // Let the new panel report its padding before starting the camera move.
+    if (map.current) requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (map.current) focus(map.current);
+    }));
+    else pendingFocus.current = focus;
+  }, [open]);
   const comparison = useMemo(() => {
-    const candidates = engine.result?.routes ?? [];
-    const scores = engine.result?.scores ?? routeScore(candidates, settings);
+    const candidates = result?.routes ?? [];
+    const scores = result?.scores ?? routeScore(candidates, settings);
     const recommended = scores.indexOf(Math.min(...scores));
+    const manual = active && active.generation === engine.generation
+      ? candidates.findIndex((route) => route.id === active.id) : -1;
     const selectedIndex =
-      active !== null && active < candidates.length
-        ? active
+      manual >= 0
+        ? manual
         : Math.max(0, recommended);
     const routes: MapRoute[] = candidates.map((route, index) => ({
       id: route.id,
@@ -266,7 +282,10 @@ export default function Atlas() {
       connectors: route.connectors,
     }));
     return { routes, selectedIndex, recommended };
-  }, [engine.result, settings, active]);
+  }, [result, settings, active, engine.generation]);
+  useEffect(() => {
+    map.current?.showProfilePoint(null);
+  }, [engine.generation, comparison.selectedIndex, panel]);
   useLayoutEffect(() => {
     const update = () => {
       const box = panelRef.current?.getBoundingClientRect(),
@@ -438,11 +457,11 @@ export default function Atlas() {
           onPlace={place}
           onMovePoint={movePoint}
           routes={comparison.routes}
+          routeGeneration={engine.generation}
+          recommendedRoute={comparison.routes[comparison.recommended]?.id}
+          onRevealState={setDrawing}
           terrainBounds={terrainMetadata.bounds}
           padding={padding}
-          profilePoint={
-            profileState.key === profileKey ? profileState.point : null
-          }
           layer={layer}
           layerOpacity={layerOpacity}
           onLayerState={setLayerStatus}
@@ -450,6 +469,7 @@ export default function Atlas() {
           showScience={panel === "directions" || settings.objectives.length > 0}
           onScienceSelect={(id) => {
             openDirections();
+            openEditors();
             requestAnimationFrame(() => {
               const target = document.getElementById(id);
               let details = target?.closest("details") ?? null;
@@ -461,6 +481,14 @@ export default function Atlas() {
             });
           }}
         />
+        {drawing && (
+          <button className="secondary-button skip-reveal" onClick={() => {
+            map.current?.finishReveal();
+            document.getElementById("interactive-mars-map")?.focus({ preventScroll: true });
+          }}>
+            Skip reveal
+          </button>
+        )}
         <div className="imagery-label">
           <span className="status-dot" />
           {imagery}
@@ -591,6 +619,7 @@ export default function Atlas() {
           <div
             className="sheet-grip"
             onPointerDown={(e) => {
+              interruptScroll();
               dragStart.current = e.clientY;
               e.currentTarget.setPointerCapture(e.pointerId);
             }}
@@ -623,13 +652,19 @@ export default function Atlas() {
             <h1 id="workflow-title" tabIndex={-1}>
               {title}
             </h1>
+            {panel === "directions" && result?.routes.length ? (
+              <button className="text-button result-jump" onClick={viewResults}>View results</button>
+            ) : null}
             <div className="sheet-buttons">
               <button
                 className="icon-button"
                 aria-label={
                   sheet === "peek" ? "Expand panel" : "Collapse panel"
                 }
-                onClick={() => setSheet(sheet === "peek" ? "half" : "peek")}
+                onClick={() => {
+                  interruptScroll();
+                  setSheet(sheet === "peek" ? "half" : "peek");
+                }}
               >
                 {sheet === "peek" ? (
                   <ChevronUp size={19} />
@@ -642,7 +677,10 @@ export default function Atlas() {
                 aria-label={
                   sheet === "full" ? "Reduce panel" : "Expand panel fully"
                 }
-                onClick={() => setSheet(sheet === "full" ? "half" : "full")}
+                onClick={() => {
+                  interruptScroll();
+                  setSheet(sheet === "full" ? "half" : "full");
+                }}
               >
                 <ChevronUp size={19} />
               </button>
@@ -659,7 +697,17 @@ export default function Atlas() {
               <X size={20} />
             </button>
           </div>
-          <div className="panel-scroll">
+          <div className="panel-scroll" ref={attachScroll}
+            onWheel={interruptScroll}
+            onTouchMove={interruptScroll}
+            onKeyDown={(e) => {
+              if (["PageDown", "PageUp", "Home", "End", "ArrowDown", "ArrowUp", "Tab"].includes(e.key))
+                interruptScroll();
+            }}
+            onPointerDown={(e) => {
+              if (e.target === e.currentTarget) interruptScroll();
+            }}
+          >
             {panel === "places" && (
               <>
                 <label className="search">
@@ -681,6 +729,29 @@ export default function Atlas() {
                     </button>
                   )}
                 </label>
+                {hideFeatured ? (
+                  <button className="text-button" onClick={() => setHideFeatured(false)}>Show featured Jezero</button>
+                ) : (
+                  <section className="jezero-feature" aria-labelledby="featured-jezero">
+                    <div className="feature-kicker">
+                      <Mountain size={16} aria-hidden="true" />
+                      Highest-detail terrain planning
+                      <button className="icon-button" aria-label="Hide featured Jezero" onClick={() => setHideFeatured(true)}><X size={16} /></button>
+                    </div>
+                    <h2 id="featured-jezero">Jezero Crater</h2>
+                    <p>Trace ancient water through a crater delta using detailed terrain and published outcrops.</p>
+                    <dl className="feature-data">
+                      <div><dt>20 m</dt><dd>Terrain grid</dd></div>
+                      <div><dt>6 m</dt><dd>CTX imagery</dd></div>
+                      <div><dt>0.25 m</dt><dd>Selected HiRISE</dd></div>
+                    </dl>
+                    <div className="feature-actions">
+                      <button className="primary-button" onClick={() => featureJezero(true)}>Plan detailed route</button>
+                      <button className="secondary-button" onClick={() => featureJezero(false)}>Explore Jezero</button>
+                    </div>
+                    <a className="text-link feature-source" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7116714/#Tab2" target="_blank" rel="noreferrer">Published delta outcrops <ArrowUpRight size={14} /></a>
+                  </section>
+                )}
                 <details className="place-filters">
                   <summary>
                     Science themes{" "}
@@ -827,17 +898,22 @@ export default function Atlas() {
                 onSettings={setSettings}
                 placement={placement}
                 onPlacement={pick}
-                result={engine.result}
+                result={result}
+                collapsed={collapsed}
+                onEdit={editRoute}
                 pending={engine.pending}
                 error={engine.error}
                 active={comparison.selectedIndex}
                 recommended={comparison.recommended}
-                onActive={setActive}
+                onActive={(index) => {
+                  const route = result?.routes[index];
+                  if (route) setActive({ generation: engine.generation, id: route.id });
+                }}
                 onRecalculate={() => setRevision((n) => n + 1)}
                 onExample={example}
                 onFit={() =>
                   map.current?.fitRoute(
-                    engine.result?.routes[comparison.selectedIndex]
+                    result?.routes[comparison.selectedIndex]
                       ?.coordinates ?? [],
                   )
                 }

@@ -15,7 +15,7 @@ import Feature from "ol/Feature";
 import Point from "ol/geom/Point";
 import MultiLineString from "ol/geom/MultiLineString";
 import Polygon from "ol/geom/Polygon";
-import { Circle, Fill, Stroke, Style, Text } from "ol/style";
+import { Circle, Fill, RegularShape, Stroke, Style, Text } from "ol/style";
 import { defaults as defaultControls } from "ol/control";
 import Translate from "ol/interaction/Translate";
 import { defaults as defaultInteractions } from "ol/interaction/defaults";
@@ -40,6 +40,10 @@ import {
 } from "@/lib/planner";
 import type { LayerDataset } from "@/lib/layers";
 import { scienceTargets } from "@/lib/science";
+import { prepareReveal, revealPrefix } from "@/lib/routePresentation";
+
+const featuredLabels = new Set(["jezero", "gale", "valles", "oxia", "eridania"]);
+const revealTiming = { shortest: 740, longest: 1330, alternative: 270, stagger: 120 };
 
 export interface MapHandle {
   focus: (point: LonLat, zoom?: number) => void;
@@ -47,6 +51,8 @@ export interface MapHandle {
   zoomBy: (delta: number) => void;
   centre: () => LonLat | null;
   fitRoute: (points: LonLat[]) => void;
+  finishReveal: () => void;
+  showProfilePoint: (point: LonLat | null) => void;
 }
 export interface MapRoute {
   id: string;
@@ -73,6 +79,9 @@ interface Props {
   onPlace: (point: LonLat) => void;
   onMovePoint: (kind: "start" | "end" | number, point: LonLat) => void;
   routes: MapRoute[];
+  routeGeneration?: number;
+  recommendedRoute?: string;
+  onRevealState: (drawing: boolean) => void;
   terrainBounds: number[];
   padding: number[];
   profilePoint?: LonLat | null;
@@ -89,7 +98,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     handlers = useRef(props),
     syncMetadata = useRef<() => void>(() => {});
   const bases = useRef<TileLayer<WMTS>[]>([]),
-    markers = useRef<VectorLayer<VectorSource> | null>(null);
+    markers = useRef<VectorLayer<VectorSource>[]>([]);
   const scalar = useRef<TileLayer<XYZ> | null>(null),
     scalarSources = useRef(new globalThis.Map<string, XYZ>());
   const scienceLayer = useRef<VectorLayer<VectorSource> | null>(null);
@@ -97,6 +106,13 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     endpointSource = useRef(new VectorSource()),
     boundsSource = useRef(new VectorSource()),
     profileSource = useRef(new VectorSource());
+  const profileMarker = useRef<Feature<Point> | null>(null);
+  const reveal = useRef<{
+    generation?: number;
+    frame: number;
+    finish?: () => void;
+  }>({ frame: 0 });
+  const { routes, routeGeneration, recommendedRoute } = props;
   const routeFeatures = useRef(
     new globalThis.Map<
       string,
@@ -164,11 +180,26 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
         if (host.current)
           host.current.dataset.animating = String(view.getAnimating());
       },
+      finishReveal: () => reveal.current.finish?.(),
+      showProfilePoint: (point) => {
+        if (!point) {
+          if (profileMarker.current) {
+            profileSource.current.removeFeature(profileMarker.current);
+            profileMarker.current = null;
+          }
+        } else if (profileMarker.current) {
+          profileMarker.current.getGeometry()?.setCoordinates(point);
+        } else {
+          profileMarker.current = new Feature(new Point(point));
+          profileSource.current.addFeature(profileMarker.current);
+        }
+      },
     }),
     [],
   );
   useEffect(() => {
     if (!host.current) return;
+    const revealController = reveal.current;
     const projection = new Projection({
       code: "MARSPATH:2000",
       units: "degrees",
@@ -219,6 +250,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     });
     bases.current = tiles;
     const markerStyles = new globalThis.Map<string, Style>();
+    let hovered: string | undefined;
     const markerSource = new VectorSource({
       features: locations.map(
         (l) =>
@@ -232,32 +264,58 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     });
     const markerLayer = new VectorLayer({
       source: markerSource,
-      declutter: true,
       style: (f) => {
-        const active = f.get("locationId") === handlers.current.selected,
-          key = String(f.get("locationId")) + active;
-        if (!markerStyles.has(key))
+        const id = f.get("locationId"),
+          active = id === handlers.current.selected,
+          featured = id === "jezero",
+          hot = hovered === id;
+        const key = [active, featured, hot].join(":");
+        if (!markerStyles.has(key)) {
+          const fill = new Fill({ color: active || hot ? "#fff0d8" : featured ? "#f9b37b" : "#efc29d" });
+          const stroke = new Stroke({ color: "#231e1b", width: active ? 2.6 : 2 });
           markerStyles.set(
             key,
             new Style({
-              image: new Circle({
-                radius: active ? 8 : 6,
-                fill: new Fill({ color: active ? "#ffd2a9" : "#edaa79" }),
-                stroke: new Stroke({ color: "#171b1e", width: 2 }),
-              }),
-              text: new Text({
-                text: String(f.get("name")),
-                offsetY: -20,
-                font: (active ? "600" : "500") + " 13px sans-serif",
-                fill: new Fill({ color: "#fff7ed" }),
-                stroke: new Stroke({ color: "#171b1e", width: 4 }),
-              }),
+              zIndex: active ? 2 : featured ? 1 : 0,
+              image: featured
+                ? new RegularShape({ points: 4, radius: active || hot ? 10 : 8, fill, stroke })
+                : new Circle({ radius: active || hot ? 7.5 : 5.5, fill, stroke }),
             }),
           );
+        }
         return markerStyles.get(key);
       },
     });
-    markers.current = markerLayer;
+    const labelSource = new VectorSource({ wrapX: false });
+    for (const l of locations)
+      labelSource.addFeature(new Feature({
+        geometry: new Point(asLonLat(l.coordinates)), locationId: l.id, name: l.name,
+      }));
+    const labelStyles = new globalThis.Map<string, Style>();
+    let labelZoom = 1;
+    const labelLayer = new VectorLayer({
+      source: labelSource,
+      declutter: true,
+      style: (f) => {
+        const id = String(f.get("locationId")), active = id === handlers.current.selected;
+        if (!active && labelZoom < 4 && !featuredLabels.has(id)) return;
+        const key = id + active;
+        if (!labelStyles.has(key))
+          labelStyles.set(key, new Style({
+            zIndex: active ? 3 : id === "jezero" ? 2 : 1,
+            text: new Text({
+              text: String(f.get("name")), offsetY: -18,
+              font: "550 13px " + (getComputedStyle(host.current!).getPropertyValue("--font-sans").trim() || "sans-serif"),
+              fill: new Fill({ color: active ? "#ffe2c2" : "#fff5e7" }),
+              backgroundFill: new Fill({ color: "#211c19f2" }),
+              backgroundStroke: new Stroke({ color: active ? "#f9b37b" : "#735947", width: 1 }),
+              padding: [3, 6, 3, 6],
+            }),
+          }));
+        return labelStyles.get(key);
+      },
+    });
+    markers.current = [markerLayer, labelLayer];
     const boundsLayer = new VectorLayer({
       source: boundsSource.current,
       style: new Style({
@@ -283,6 +341,8 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
                 color: "#121b1d",
                 width: connector ? 4 : selected ? 8 : 6,
                 lineDash: dash,
+                lineCap: "round",
+                lineJoin: "round",
               }),
             }),
             new Style({
@@ -291,6 +351,8 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
                 color,
                 width: connector ? 2 : selected ? 4 : 3,
                 lineDash: dash,
+                lineCap: "round",
+                lineJoin: "round",
               }),
             }),
           ]);
@@ -399,6 +461,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
         scalarLayer,
         boundsLayer,
         markerLayer,
+        labelLayer,
         targets,
         routeLayer,
         endpointLayer,
@@ -446,7 +509,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
             science = f.get("scienceId") as string | undefined;
           return location || science ? { location, science } : undefined;
         },
-        { hitTolerance: 10 },
+        { hitTolerance: 15, layerFilter: (l) => [markerLayer, labelLayer, targets].some((source) => source === l) },
       );
       if (handlers.current.placement) {
         const target = hit?.location
@@ -468,12 +531,29 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
             ? coordinateLabel([e.coordinate[0], e.coordinate[1]])
             : "Outside Mars extent",
         );
+        const id = !e.dragging && !handlers.current.placement
+          ? instance.forEachFeatureAtPixel(e.pixel, (f) => f.get("locationId") as string, {
+              layerFilter: (l) => l === markerLayer || l === labelLayer, hitTolerance: 5,
+            })
+          : undefined;
+        if (id !== hovered) {
+          hovered = id;
+          markerLayer.changed();
+        }
       }
     });
     const syncView = () => {
       const v = instance.getView(),
         c = v.getCenter()!,
         z = v.getZoom() ?? 0;
+      labelZoom = z;
+      for (const label of labelSource.getFeatures()) {
+        const geometry = label.getGeometry() as Point;
+        const [x, y] = geometry.getCoordinates(), origin = normalizeLon(x);
+        const nearest = origin + 360 * Math.round((c[0] - origin) / 360);
+        if (Math.abs(nearest - x) > 1e-7) geometry.setCoordinates([nearest, y]);
+      }
+      labelLayer.changed();
       // View metadata changes only on completed moves; no JSON work each frame.
       if (host.current) {
         host.current.dataset.center = JSON.stringify(c);
@@ -535,6 +615,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const stop = () => {
       instance.getView().cancelAnimations();
+      if (motion.matches) reveal.current.finish?.();
       for (const interaction of instance.getInteractions().getArray().slice())
         instance.removeInteraction(interaction);
       for (const interaction of navigation().getArray())
@@ -543,6 +624,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     };
     motion.addEventListener("change", stop);
     return () => {
+      cancelAnimationFrame(revealController.frame);
       observer.disconnect();
       motion.removeEventListener("change", stop);
       instance.setTarget(undefined);
@@ -557,8 +639,10 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     b[1].setOpacity(props.basemap === "relief" ? 1 : props.opacity);
     b[2].setVisible(props.basemap === "optical");
     b[3].setVisible(props.basemap === "optical");
-    markers.current?.setVisible(props.showLocations);
-    markers.current?.changed();
+    for (const marker of markers.current) {
+      marker.setVisible(props.showLocations);
+      marker.changed();
+    }
     syncMetadata.current();
   }, [
     props.basemap,
@@ -568,6 +652,15 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     props.selected,
   ]);
   useEffect(() => {
+    const hostElement = host.current;
+    const controller = reveal.current;
+    const replay = controller.generation !== routeGeneration && routeGeneration !== undefined;
+    const wasDrawing = !!controller.finish;
+    if (wasDrawing && !replay && routeGeneration !== undefined) controller.finish?.();
+    cancelAnimationFrame(controller.frame);
+    controller.finish = undefined;
+    controller.generation = routeGeneration;
+    const toDraw: { id: string; path: ReturnType<typeof prepareReveal>; geometry: MultiLineString }[] = [];
     const keep = new Set<string>();
     function update(
       id: string,
@@ -595,7 +688,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       routeSource.current.addFeature(feature);
       routeFeatures.current.set(id, { points, feature });
     }
-    for (const route of props.routes) {
+    for (const route of routes) {
       update(
         route.id,
         route.coordinates,
@@ -614,13 +707,63 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
             true,
           );
         });
+      if (replay && duration()) {
+        const geometry = routeFeatures.current.get(route.id)?.feature.getGeometry();
+        if (geometry) {
+          geometry.setCoordinates([]);
+          toDraw.push({ id: route.id, path: prepareReveal(route.coordinates), geometry });
+        }
+      }
     }
     for (const [id, { feature }] of routeFeatures.current) {
       if (keep.has(id)) continue;
       routeSource.current.removeFeature(feature);
       routeFeatures.current.delete(id);
     }
-  }, [props.routes]);
+    const mark = (state: "drawing" | "complete" | "idle", progress: number) => {
+      if (!hostElement) return;
+      hostElement.dataset.reveal = state;
+      hostElement.dataset.revealProgress = progress.toFixed(3);
+    };
+    if (!toDraw.length) {
+      mark(routes.length ? "complete" : "idle", routes.length ? 1 : 0);
+      handlers.current.onRevealState(false);
+      return;
+    }
+    toDraw.sort((a, b) => Number(b.id === recommendedRoute) - Number(a.id === recommendedRoute));
+    const mainTime = Math.min(
+      revealTiming.longest,
+      revealTiming.shortest + Math.log2(1 + toDraw[0].path.parts.reduce((n, p) => n + p.points.length, 0)) * 30,
+    );
+    const start = performance.now();
+    const finish = () => {
+      cancelAnimationFrame(controller.frame);
+      for (const { geometry, path } of toDraw) geometry.setCoordinates(path.full);
+      controller.finish = undefined;
+      mark("complete", 1);
+      handlers.current.onRevealState(false);
+    };
+    controller.finish = finish;
+    mark("drawing", 0);
+    handlers.current.onRevealState(true);
+    const complete = new Set<string>();
+    const frame = (now: number) => {
+      for (const [index, { id, geometry, path }] of toDraw.entries()) {
+        if (complete.has(id)) continue;
+        const offset = index ? mainTime + (index - 1) * revealTiming.stagger : 0;
+        const progress = Math.min(1, (now - start - offset) / (index ? revealTiming.alternative : mainTime));
+        if (progress <= 0) continue;
+        // Mostly linear, with short easing at each end; distance stays monotonic.
+        const eased = progress * 0.72 + (progress * progress * (3 - 2 * progress)) * 0.28;
+        geometry.setCoordinates(revealPrefix(path, eased));
+        if (!index) mark("drawing", eased);
+        if (progress === 1) complete.add(id);
+      }
+      if (complete.size === toDraw.length) finish();
+      else controller.frame = requestAnimationFrame(frame);
+    };
+    controller.frame = requestAnimationFrame(frame);
+  }, [routes, routeGeneration, recommendedRoute]);
   useEffect(() => {
     endpointSource.current.clear();
     const { start, end, waypoints } = props.draft;

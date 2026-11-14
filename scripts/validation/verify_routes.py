@@ -53,4 +53,5 @@ for case in cases['cases']:
                 row,col=divmod(i,w);raw=float(src.read(1,window=rasterio.windows.Window(col,row,1,1))[0,0]);assert raw==float(elevation[i])
         report={'case':case['id'],'route':route['id'],'distanceM':route['distance'],'ascentM':route['ascent'],'descentM':route['descent'],'maxSlopeDegrees':route['maxSlope'],'typescriptCost':route['cost'],'independentPythonCost':cost,'absoluteCostDifference':difference,'expandedDijkstra':expanded,'seconds':round(time.monotonic()-begin,3),'sourceSamplesMatch':True}
         reports.append(report);print(json.dumps(report),flush=True)
-(ROOT/'data/validation/independent.json').write_text(json.dumps({'terrainSha256':meta['sha256'],'method':'Independent Python Dijkstra (no heuristic), exact spherical edge distances, original GeoTIFF spot checks','results':reports,'limitations':'Numerical consistency validation only; no ground-truth astronaut safety or obstacle validation.'},indent=2))
+if __import__('sys').argv[1:] == ['--write']:
+    (ROOT/'data/validation/independent.json').write_text(json.dumps({'terrainSha256':meta['sha256'],'method':'Independent Python Dijkstra (no heuristic), exact spherical edge distances, original GeoTIFF spot checks','results':reports,'limitations':'Numerical consistency validation only; no ground-truth astronaut safety or obstacle validation.'},indent=2))

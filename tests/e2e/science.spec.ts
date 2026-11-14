@@ -3,7 +3,8 @@ async function coordinates(page:import('@playwright/test').Page,label:string,lat
 test('coarse global routing crosses the date line with truthful resolution',async({page})=>{
   await page.goto('/');await page.getByRole('button',{name:'Directions',exact:true}).click();
   await coordinates(page,'A','0','179');await coordinates(page,'B','0','-179');
-  await expect(page.locator('.route-option')).toHaveCount(3,{timeout:45000});await expect(page.locator('.route-status')).toContainText('0.25°');
+  await expect(page.locator('.route-option')).toHaveCount(1,{timeout:45000});await expect(page.locator('.route-status')).toContainText('0.25°');
+  await expect(page.locator('.route-option')).toContainText('found the same path');
   await page.getByRole('button',{name:'Fit on map',exact:true}).click();
   const map=page.getByRole('region',{name:'Interactive Mars map'});
   await expect.poll(async()=>{

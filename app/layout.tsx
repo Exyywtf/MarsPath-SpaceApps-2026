@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
+import './atlas-experience.css';
 import 'ol/ol.css';
 export const metadata: Metadata={title:'MarsPath — Planetary atlas & mission planning',description:'Explore authentic Mars orbital imagery, 13 scientific destinations, and Jezero terrain routing, global planning and numerical climate overlays.'};
 const sans=localFont({src:'./fonts/geist-sans.woff2',variable:'--font-sans',display:'swap',weight:'100 900'});

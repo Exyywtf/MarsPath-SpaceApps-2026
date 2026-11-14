@@ -74,3 +74,8 @@ Inspected the supplied 31 files and live NASA service metadata during planning. 
 - The homepage, sources, methods, worker and scientific assets are served statically. Verified the public retained MCD ASCII checksum against the processed manifest.
 - The 18-test Vitest suite, type checking, ESLint and the production build passed. The production dependency audit reported zero vulnerabilities. The previously documented seven moderate development-tool findings remain.
 - Saved before-and-after screenshots at four viewport sizes in `tmp/v2-review`. The automated accessibility checks apply to the tested Chromium states. Desktop profiling and independent numerical checks are linked from the validation record.
+
+## 2026-11-14 — V3 interaction milestone
+
+- Route results, export and editing stay available while the map draws the accepted paths. Exact duplicates are grouped by ordered geometry and stops. The Directions panel reveals the comparison once and yields to manual scrolling and active editing. Jezero has a featured route-planning entry that preserves the draft, and the world map declutters labels without removing destinations.
+- Local static build, type checking, lint, 20 Vitest checks and 19 Chromium journeys passed. Independent Python also reproduced 12 V2 route calculations and nine climate nodes. The independent validation scripts now only write their committed records when invoked with `--write`.

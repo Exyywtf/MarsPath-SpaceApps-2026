@@ -34,6 +34,7 @@ export const defaultSettings: PlannerSettings = {
 export interface PlannedRoute {
   id: string;
   name: string;
+  strategies?: { id: string; name: string; lambda?: number }[];
   tier: RoutingTier;
   coordinates: LonLat[];
   distance: number;
@@ -204,7 +205,9 @@ export function routeAppearance(
     recommended >= 0 && index > recommended ? index - 1 : index;
   return alternative === 0
     ? { color: "#f3c084", pattern: "dashed" as const, dash: [10, 7] }
-    : { color: "#becbff", pattern: "dotted" as const, dash: [2, 7] };
+    : alternative === 1
+      ? { color: "#becbff", pattern: "dotted" as const, dash: [2, 7] }
+      : { color: "#f6b6a7", pattern: "dashed" as const, dash: [12, 5, 3, 5] };
 }
 export function formatDistance(m: number) {
   return m >= 1000

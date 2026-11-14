@@ -37,6 +37,8 @@ interface Props {
   placement: Placement;
   onPlacement: (p: Placement) => void;
   result?: PlannerResult;
+  collapsed: boolean;
+  onEdit: () => void;
   pending: boolean;
   error?: string;
   active: number;
@@ -377,8 +379,8 @@ export default memo(function RoutePlanner(p: Props) {
   const terrainComparison = useMemo(
     () =>
       compareTerrainCandidates(
-        routes.find((route) => route.id === "shortest"),
-        routes.find((route) => route.id === "terrain"),
+        routes.find((route) => route.strategies?.some((s) => s.id === "shortest")),
+        routes.find((route) => route.strategies?.some((s) => s.id === "terrain")),
       ),
     [routes],
   );
@@ -402,6 +404,7 @@ export default memo(function RoutePlanner(p: Props) {
                 derivedElevationSha256: p.result?.meta?.derivedSha256,
                 terrainDataset: p.result?.meta?.id,
                 name: current.name,
+                strategies: current.strategies,
                 lambda: terrain?.lambda,
                 modelCost: terrain?.cost,
                 terrainPenalty: terrain?.riskIntegral,
@@ -436,6 +439,14 @@ export default memo(function RoutePlanner(p: Props) {
   }
   return (
     <div className="directions-content">
+      {p.collapsed && (
+        <div className="plan-summary">
+          <span><strong>A → B</strong><small>{p.draft.waypoints.length ? p.draft.waypoints.length + " waypoints" : "Direct plan"}</small></span>
+          <button className="text-button" onClick={p.onEdit}>Edit route</button>
+        </div>
+      )}
+      <div id="route-planning" hidden={p.collapsed}>
+      <h2 id="planning-heading" tabIndex={-1}>Plan route</h2>
       <p className="panel-intro">
         Choose anywhere on Mars. We’ll show what the available terrain can
         support.
@@ -516,7 +527,7 @@ export default memo(function RoutePlanner(p: Props) {
         disabled={!p.mapReady}
         onClick={p.onExample}
       >
-        Try Jezero terrain example
+        {p.draft.start || p.draft.end ? "Replace draft with Jezero example" : "Try Jezero terrain example"}
       </button>
       <ScienceObjectives
         draft={p.draft}
@@ -525,13 +536,14 @@ export default memo(function RoutePlanner(p: Props) {
         onDraft={p.onDraft}
         onExploreGoal={p.onExploreGoal}
       />
+      </div>
       <div className="route-status" role="status" aria-live="polite">
         {p.pending
           ? "Calculating route candidates…"
           : p.error
             ? "No terrain route calculated"
             : p.result
-              ? p.result.reason
+              ? "Routes ready · " + p.result.reason
               : "Choose A and B to begin."}
         {p.result && (
           <small>
@@ -564,11 +576,16 @@ export default memo(function RoutePlanner(p: Props) {
       ))}
       {routes.length > 0 && (
         <>
-          <div className="section-title">
-            <h3>Compare routes</h3>
+          <div className="section-title route-result-title">
+            <h2 id="compare-routes">Compare routes</h2>
+            <div className="result-actions">
+            <button className="icon-button" aria-label="Export route & provenance" title="Export route & provenance" onClick={exportRoute}>
+              <Download size={18} />
+            </button>
             <button className="text-button" onClick={p.onFit}>
               Fit on map
             </button>
+            </div>
           </div>
           <div className="route-options">
             {routes.map((r, i) => (
@@ -597,6 +614,9 @@ export default memo(function RoutePlanner(p: Props) {
                 />
                 <span>
                   <strong>{r.name}</strong>
+                  {r.strategies && r.strategies.length > 1 && (
+                    <small>{r.strategies.slice(1).map((s) => s.name).join(" · ")} found the same path</small>
+                  )}
                   {r.tier !== "geographic" && i === recommended && (
                     <small>Recommended by your preferences</small>
                   )}
@@ -799,10 +819,6 @@ export default memo(function RoutePlanner(p: Props) {
               </details>
             </>
           )}
-          <button className="secondary-button full-width" onClick={exportRoute}>
-            <Download size={16} />
-            Export route & provenance
-          </button>
         </>
       )}
       <details className="advanced-settings">

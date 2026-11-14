@@ -87,5 +87,6 @@ for key,rows in zip(['temperature','pressure','wind'],sections):
  for ix,iy in [(13,31),(30,20),(50,12)]:
   assert climate['fields'][key]['values'][(47-iy)*64+ix]==rows[ix][iy]
 report={'status':'passed','checkedAt':datetime.datetime.now(datetime.timezone.utc).isoformat(),'method':'Independent Python Dijkstra without heuristic, exact spherical edge distances, full-path metric recalculation, original GeoTIFF samples and numerical climate-node identity.','checks':reports,'climateSourceSha256':climate['sha256'],'climateInteriorNodesCompared':9,'globalSourceSampleToleranceM':1,'limitations':'Numerical consistency only. Coarse average MOLA source cells can differ by up to 1 m from native-window means due to stored int16 overviews/rounding; no positional ground-truth or astronaut safety validation.'}
-(ROOT/'data/validation/v2-independent.json').write_text(json.dumps(report,indent=2))
+if __import__('sys').argv[1:] == ['--write']:
+ (ROOT/'data/validation/v2-independent.json').write_text(json.dumps(report,indent=2))
 print('PASSED',len(reports),'route calculations and 9 climate node comparisons',flush=True)
