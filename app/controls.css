@@ -25,7 +25,7 @@ html::-webkit-scrollbar, .scroll-viewport::-webkit-scrollbar { display: none; }
 .scroll-track[data-visible="true"][data-overflow="true"] {
   opacity: 1;
   pointer-events: auto;
-  transition: opacity var(--motion-content) var(--ease-out);
+  transition: opacity var(--motion-content) ease-out;
 }
 .scroll-thumb { position: absolute; }
 .scroll-track[data-axis="vertical"] .scroll-thumb { width: 24px; top: 0; min-height: 44px; }

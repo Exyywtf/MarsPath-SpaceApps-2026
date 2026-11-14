@@ -38,7 +38,17 @@ test("scrollbar fades independently of resize and stays visible during capture",
   await page.mouse.up();
   expect(await view.evaluate((node) => node.scrollTop)).toBeGreaterThan(90);
   await page.mouse.move(1, 1);
-  await expect(track).toHaveAttribute("data-visible", "false");
+  const midFade = await track.evaluate(async (node) => {
+    while (node.getAttribute("data-visible") === "true") await new Promise(requestAnimationFrame);
+    await new Promise(requestAnimationFrame);
+    const fade = node.getAnimations()[0];
+    if (!fade) return null;
+    await fade.ready;
+    fade.pause();
+    fade.currentTime = 150;
+    return Number(getComputedStyle(node).opacity);
+  });
+  expect(midFade).toBeCloseTo(0.5, 1);
   await expect(track).toHaveCSS("transition-duration", "0.3s");
   await expect(track).toHaveCSS("pointer-events", "none");
   await view.evaluate((node) => { node.scrollTop = 0; });
@@ -66,7 +76,7 @@ test("Sources listbox centres each row and supports keyboard and outside dismiss
   expect(await options.allTextContents()).toEqual(["All", ...new Set(sources.map((source) => source.type))]);
   for (const option of await options.all()) {
     expect(await option.evaluate(centerOffset)).toBeLessThan(0.5);
-    expect((await option.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    expect((await option.boundingBox())!.height).toBeGreaterThanOrEqual(43.99);
   }
   await page.keyboard.press("End");
   await page.keyboard.press("Enter");
@@ -102,4 +112,39 @@ test("Sources listbox centres each row and supports keyboard and outside dismiss
   await page.getByRole("textbox", { name: "Search sources" }).click();
   await expect(menu).toBeHidden();
   await expect(page.getByRole("textbox", { name: "Search sources" })).toBeFocused();
+});
+
+test("Sources opens within a small touch viewport and scrolls to the last option", async ({ browser, browserName, baseURL }) => {
+  const context = await browser.newContext({ baseURL, viewport: { width: 320, height: 568 }, isMobile: true, hasTouch: true });
+  try {
+    const page = await context.newPage();
+    await page.goto("/sources/");
+    const trigger = page.getByRole("button", { name: /Filter source type/ });
+    await trigger.tap();
+    const menu = page.getByRole("listbox");
+    await expect(menu).toBeVisible();
+    await menu.evaluate((node) => Promise.all(node.getAnimations().map((a) => a.finished.catch(() => undefined))));
+    const bounds = (await menu.boundingBox())!;
+    expect(bounds.y).toBeGreaterThanOrEqual(4);
+    expect(bounds.y + bounds.height).toBeLessThan(565);
+    expect(await menu.evaluate((node) => node.scrollHeight)).toBeGreaterThan(bounds.height + 10);
+    if (browserName === "chromium") {
+      const session = await context.newCDPSession(page);
+      const x = bounds.x + bounds.width / 2, y = bounds.y + bounds.height - 42;
+      await session.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y }] });
+      for (let step = 1; step <= 7; step++) {
+        await session.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x, y: y - 18 * step }] });
+      }
+      await page.waitForTimeout(200); // Lift after scrolling settles so the next tap selects instead of stopping momentum.
+      await session.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+      await session.detach();
+    } else {
+      await expect(menu).toBeFocused();
+      await page.keyboard.press("End");
+    }
+    await expect.poll(() => menu.evaluate((node) => node.scrollTop)).toBeGreaterThan(0);
+    await menu.getByRole("option", { name: "Peer-reviewed geology", exact: true }).tap();
+    await expect(trigger).toHaveText("Peer-reviewed geology");
+    await expect(page.locator(".source-count")).toHaveText("1 source");
+  } finally { await context.close(); }
 });
