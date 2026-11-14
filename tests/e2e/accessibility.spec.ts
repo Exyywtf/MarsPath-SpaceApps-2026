@@ -28,6 +28,7 @@ test("accessible explore, directions, layers and modal states", async ({
   await check();
   await page.getByRole("button", { name: "Layers", exact: true }).click();
   await page.getByRole("button", { name: /^Atmospheric pressure/ }).click();
+  await expect(page.locator("#interactive-mars-map")).toHaveAttribute("data-overlay", "pressure");
   await check();
   await page
     .getByRole("button", { name: "Help and keyboard shortcuts" })

@@ -22,6 +22,16 @@ test("registered geology, mineral markers and thermal cells retain the map view"
   const polygon = page.getByRole("button", { name: /^Global geology/ });
   await polygon.click();
   await expect(map).toHaveAttribute("data-overlay", "geology");
+  const initialOpacity = await page.locator(".layer-details").evaluate((node) => {
+    const animation = node.getAnimations()[0];
+    if (!animation) return getComputedStyle(node).opacity;
+    const time = animation.currentTime;
+    animation.currentTime = 0;
+    const opacity = getComputedStyle(node).opacity;
+    animation.currentTime = time;
+    return opacity;
+  });
+  expect(initialOpacity).toBe("1");
   await page.getByRole("button", { name: "Geologic unit legend" }).click();
   await expect(page.getByRole("list", { name: "Global geology legend" }).getByRole("listitem")).toHaveCount(44);
   await expect(page.locator(".layer-information")).toContainText("1:20,000,000");

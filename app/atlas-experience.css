@@ -243,8 +243,15 @@
   pointer-events: none;
 }
 .workflow-panel[data-open="true"] { visibility: visible; transition-delay: 0s; }
-.workflow-view[data-active="true"], .layer-details, .map-legend {
+.workflow-view[data-active="true"] {
   animation: workflow-content-in var(--motion-content) var(--ease-out) both;
+}
+.workflow-view.layer-content[data-active="true"], .layer-details, .map-legend {
+  animation: layer-details-in var(--motion-content) var(--ease-out) both;
+}
+@keyframes layer-details-in {
+  from { translate: 0 4px; }
+  to { translate: 0 0; }
 }
 .layer-information, .map-legend { transition: opacity var(--motion-content) ease; }
 :is(.layer-information, .map-legend)[data-hiding="true"] { opacity: 0; }
