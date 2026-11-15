@@ -18,6 +18,8 @@ The source verification commands are explicit. Run `scripts/validation/verify_v5
 
 The [V4/V5 timing record](../data/validation/v5-performance.json) uses five warm recalculations per build, cached NASA image bodies and 48 pointer moves per trial on one Windows desktop. Geometry medians were 16.3 ms for V4 and 13.9 ms for V5. Frame-interval p95 was 17.6 and 17.7 ms. Each build recorded one interval above 32 ms and one long task. The main browser heap readings exclude worker and GPU memory. Device coverage uses Chromium and WebKit emulation across nine viewport sizes. The captured Science first report has three A4 pages. Physical mobile devices and hardware screen readers remain untested.
 
+Production `2c15d6a` passed 63 browser journeys in each engine on the public Vercel alias, together with 44 local numerical and unit checks, TypeScript, ESLint and static export. Seventy-five public assets matched the tested output byte for byte. Production captures cover the nine viewport sizes in both engines. The [release record](../data/validation/v5-release.json) retains the application commit, deployment ID, asset checksums, live NASA request timings, device coverage and remaining limits.
+
 ## MarsPath V4
 
 - [Dataset checks](../data/validation/v4-datasets.json) independently matched 608 USGS polygon cell centres, all 777 original mineral catalogue records, all 1,855 PDS hydrated mineral rows and 605 TES cells, including 317 masked cells. The PDS derivative retains 1,851 distinct records and all source row numbers. The verifier checks output hashes and the relationship between raster colours and their source-derived lookup.

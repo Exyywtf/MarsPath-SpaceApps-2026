@@ -20,6 +20,19 @@
 
 See [the validation record](VALIDATION.md) for counts and limitations. The public methods page describes how to interpret each calculation.
 
+## V5 handoff
+
+The verified production application is `2c15d6a`, deployment `dpl_3WNTw9HioHSosjZtTH7Qc37EbqEQ`. [Open MarsPath](https://marspath-spaceapps-2026.vercel.app/) · [Release checks](../data/validation/v5-release.json).
+
+1. Open [Jezero Mission Planner](https://marspath-spaceapps-2026.vercel.app/?mission=jezero).
+2. Choose **Try validated mission example** and wait for **Compare routes** and the **Return · B to A** result.
+3. Open **What changes this recommendation?** and select **Shortest**, then **Science first**. The accepted candidates stay fixed. Science first chooses the published curvilinear delta outcrop.
+4. Use **Fit on map** and the route-profile selector and inspection slider to review the selected geometry and samples.
+5. Choose **Generate Mission Brief**. In its new tab, choose **Print / Save as PDF** and select the browser’s PDF destination. The inspected Science first case is three A4 pages.
+6. Use **Export mission GeoJSON** for both full legs, stops, assumptions and current analysis status. Pending analyses are identified in the file.
+
+The GitHub header link awaits owner publication and a successful unauthenticated check. The repository remains private. Physical device tests, terrain shadows and radio propagation remain outside the verified capabilities.
+
 ## Limits
 
 - The coarse grid smooths local slopes and obstacles. Data coverage and test agreement do not establish physical alignment accuracy or astronaut safety.

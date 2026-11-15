@@ -1,0 +1,552 @@
+{
+  "verifiedAtUtc": "2026-11-15T09:39:42.151992+00:00",
+  "productionUrl": "https://marspath-spaceapps-2026.vercel.app/",
+  "missionDeepLink": "https://marspath-spaceapps-2026.vercel.app/?mission=jezero",
+  "applicationCommit": "2c15d6ac3e05972db780307bc2d0cd4c273f0dcb",
+  "deploymentId": "dpl_3WNTw9HioHSosjZtTH7Qc37EbqEQ",
+  "deploymentUrl": "https://marspath-spaceapps-2026-5j6webioc-exyys-projects.vercel.app",
+  "rollback": {
+    "commit": "0195601",
+    "deploymentId": "dpl_FfxJfKMnW4YEbBtWPio16V5AutgY",
+    "url": "https://marspath-spaceapps-2026-9c4v3sz25-exyys-projects.vercel.app"
+  },
+  "milestones": [
+    {
+      "phase": "P1",
+      "commit": "61d902716209c71bead002d386160ded46d67998"
+    },
+    {
+      "phase": "P2",
+      "commit": "0195601f0ed77d1c11b220f31d39d30faa7cf4c5"
+    },
+    {
+      "phase": "P3",
+      "commit": "2c15d6ac3e05972db780307bc2d0cd4c273f0dcb"
+    }
+  ],
+  "checks": {
+    "typecheck": "passed",
+    "lint": "passed",
+    "staticExport": "passed",
+    "numericalAndUnitTests": 44,
+    "localBrowserTests": {
+      "chromium": 63,
+      "webkit": 63
+    },
+    "productionBrowserTests": {
+      "chromium": {
+        "passed": 63,
+        "durationMinutes": 2.9
+      },
+      "webkit": {
+        "passed": 63,
+        "durationMinutes": 3.8
+      }
+    },
+    "independentRecords": [
+      "v5-jezero.json",
+      "v5-oxia.json",
+      "v5-oxia-registration.json",
+      "v5-meda.json"
+    ],
+    "printedBrief": {
+      "pages": 3,
+      "paper": "A4",
+      "case": "Science first, Jezero example"
+    },
+    "publicAssetCount": 75
+  },
+  "viewports": [
+    [
+      320,
+      568
+    ],
+    [
+      375,
+      667
+    ],
+    [
+      390,
+      844
+    ],
+    [
+      834,
+      1194
+    ],
+    [
+      844,
+      390
+    ],
+    [
+      1024,
+      768
+    ],
+    [
+      1194,
+      834
+    ],
+    [
+      1440,
+      900
+    ],
+    [
+      1920,
+      1080
+    ]
+  ],
+  "browserEngines": [
+    "Chromium",
+    "WebKit"
+  ],
+  "deviceCoverage": "Browser emulation on a Windows desktop. Physical mobile devices and hardware screen readers remain untested.",
+  "nasaLiveLoading": {
+    "count": 67,
+    "median": 792.253,
+    "p95": 1857.6770000000001
+  },
+  "overlayLoads": [
+    {
+      "engine": "chromium",
+      "id": "geology",
+      "readyMs": 120.28429999999935
+    },
+    {
+      "engine": "chromium",
+      "id": "minerals",
+      "readyMs": 91.42139999999927
+    },
+    {
+      "engine": "chromium",
+      "id": "thermal-inertia",
+      "readyMs": 169.5113999999994
+    },
+    {
+      "engine": "webkit",
+      "id": "geology",
+      "readyMs": 297.0156999999999
+    },
+    {
+      "engine": "webkit",
+      "id": "minerals",
+      "readyMs": 240.31330000000162
+    },
+    {
+      "engine": "webkit",
+      "id": "thermal-inertia",
+      "readyMs": 216.05349999999817
+    }
+  ],
+  "settledJezeroImagery": [
+    {
+      "engine": "Chromium",
+      "successfulTileResponses": 32,
+      "failedTileResponses": 0
+    },
+    {
+      "engine": "WebKit",
+      "successfulTileResponses": 32,
+      "failedTileResponses": 0
+    }
+  ],
+  "scienceFirstCase": {
+    "outboundDistanceM": 6585.6709365577035,
+    "returnDistanceM": 2876.345064610542,
+    "roundTripDistanceM": 9462.016001168246,
+    "illustrativeSpeedKmh": 2,
+    "dwellSeconds": 600,
+    "durationEarthSeconds": 17631.62880210284,
+    "reachedTargets": [
+      "jezero-d-tcl"
+    ]
+  },
+  "github": {
+    "url": "https://github.com/Exyywtf/marspath-spaceapps-2026",
+    "visibility": "private",
+    "unauthenticatedHttpStatus": 404,
+    "headerLink": "pending public access"
+  },
+  "limits": [
+    "Terrain shadows require separate horizon validation.",
+    "Radio propagation and equipment reliability remain unassessed.",
+    "Absolute terrain alignment accuracy is unknown.",
+    "MEDA calibrated temperatures retain rover thermal influences and provide no quality flag fields.",
+    "The UTC leap-second table supports 1972 through 2026."
+  ],
+  "publicAssets": [
+    {
+      "url": "/",
+      "bytes": 30366,
+      "sha256": "1ad1a1950a3b7145a838db6a34d1543a5d0a411aa1f2a9eb2c49fc46a3d48720"
+    },
+    {
+      "url": "/favicon.ico",
+      "bytes": 33609,
+      "sha256": "a46f7de279f88a9a68a734d8fefefa091ab3758c92c2e270c839f9cb0f2c0178"
+    },
+    {
+      "url": "/icon.svg",
+      "bytes": 297,
+      "sha256": "98611e2d3eb90167aee277b8aaa3bdad607b4e06472b196750043a6a88d449d9"
+    },
+    {
+      "url": "/images/gallery/aram-pia01327.webp",
+      "bytes": 85956,
+      "sha256": "20a342117158ba4652379620dc8595f45a0401d8840bf7f80c5b2e4be80a97fa"
+    },
+    {
+      "url": "/images/gallery/aram-pia04485.webp",
+      "bytes": 86416,
+      "sha256": "c8f7a9a1d9666465b25b6c078682e662b11e1ab8a5a3543c7a5739246af67e50"
+    },
+    {
+      "url": "/images/gallery/aram-pia25358.webp",
+      "bytes": 262060,
+      "sha256": "ab2e36242863fd15ebb9110e26209d56a4440280ef0defb08536ad3315b8cb23"
+    },
+    {
+      "url": "/images/gallery/eberswalde-ctx-stereo.webp",
+      "bytes": 174740,
+      "sha256": "b0891a2e105eb885555761f36f2901eee69031ba3ba3379fca3957c7aec01117"
+    },
+    {
+      "url": "/images/gallery/eberswalde-pia09375.webp",
+      "bytes": 115692,
+      "sha256": "66ab650ad3aaee1a542fdcc6e3635534b60020ab85ec22e6c29bbcabbcb7b356"
+    },
+    {
+      "url": "/images/gallery/eberswalde-pia25607.webp",
+      "bytes": 88796,
+      "sha256": "b0755367264c049e4bc7423afba1c5fb5fd7a71d8cc193998133b527a9fd67dc"
+    },
+    {
+      "url": "/images/gallery/eridania-pia22058.webp",
+      "bytes": 352488,
+      "sha256": "58093431dbfeb5e4239e82e5a97c67466cd2fdefeffb4c7be1246110a035c257"
+    },
+    {
+      "url": "/images/gallery/eridania-pia22059.webp",
+      "bytes": 161594,
+      "sha256": "59631f0fca69511f9b43fa8ca5888688f0312d74f9c3e10007b86c2c122e94fc"
+    },
+    {
+      "url": "/images/gallery/eridania-pia22588.webp",
+      "bytes": 173796,
+      "sha256": "aabc6f859ee3691b58e5ceeb13ca3f46b752fca7c0e59252b76a2b06ff64d2a6"
+    },
+    {
+      "url": "/images/gallery/gale-pia14292.webp",
+      "bytes": 59904,
+      "sha256": "5df7fe781fbc17578651dc685398ff995f3d6eec042c913ed64584f30002e0c7"
+    },
+    {
+      "url": "/images/gallery/gale-pia19674.webp",
+      "bytes": 544630,
+      "sha256": "570a9bc5b5545d10cff66570819c5f884f4a0547fb559bceaf70617594ba1781"
+    },
+    {
+      "url": "/images/gallery/gale-pia26781.webp",
+      "bytes": 87754,
+      "sha256": "e1aff6fa08d83715af67776330064d61b9830833ec75fb22a856c2e27564cb0e"
+    },
+    {
+      "url": "/images/gallery/gusev-pia01879.webp",
+      "bytes": 293866,
+      "sha256": "5e819bed2b64ab63674ce7484e317eaf579c060b4d3e502f3859925cec603948"
+    },
+    {
+      "url": "/images/gallery/gusev-pia04184.webp",
+      "bytes": 52430,
+      "sha256": "8ca9d717fc37e1792740809f2ccc07e5cf09bb2ea68face5b3bea295e0760762"
+    },
+    {
+      "url": "/images/gallery/gusev-pia11746.webp",
+      "bytes": 27912,
+      "sha256": "2a72d2ad997256eb0ea8e514dff1409157d2755675c476e7a87c64e93620abae"
+    },
+    {
+      "url": "/images/gallery/holden-pia13533.webp",
+      "bytes": 256978,
+      "sha256": "842d000c60d3e53c102f1f7d702651f3e5746df8116b95d8a651c83a5fecb044"
+    },
+    {
+      "url": "/images/gallery/holden-pia21561.webp",
+      "bytes": 152328,
+      "sha256": "435dc6eb88f298099bded2d80b46d931dec0c5de6de70ac0ee7426a4798ea95d"
+    },
+    {
+      "url": "/images/gallery/holden-pia21587.webp",
+      "bytes": 244824,
+      "sha256": "36bb8e971ab173684860919430eb8375db74fedb91d556a4f183ff1adb11eada"
+    },
+    {
+      "url": "/images/gallery/jezero-pia23386.webp",
+      "bytes": 48758,
+      "sha256": "8755fdcd63ca24a6a01cf9e79d75a82a7471af4c8c56c57623add6a1d9dd129f"
+    },
+    {
+      "url": "/images/gallery/jezero-pia24485.webp",
+      "bytes": 191060,
+      "sha256": "ad1617cf6ceaf47844d3c6253ef6df66ae4f5825707b4b847397b068af006ebc"
+    },
+    {
+      "url": "/images/gallery/jezero-pia24814.webp",
+      "bytes": 86608,
+      "sha256": "54ad8c21bd4fff41725dee5b7e928133578d17fef6e81e910917c75e958d330c"
+    },
+    {
+      "url": "/images/gallery/mawrth-pia09405.webp",
+      "bytes": 278088,
+      "sha256": "a7eff7004ffca9a7fe710eb7631e655876634fdc8d03626f3d2cb113031bd995"
+    },
+    {
+      "url": "/images/gallery/mawrth-pia10944.webp",
+      "bytes": 226258,
+      "sha256": "d42b5cf4114339fb37a8e5de7d06d04e6882d37e5a5e54597ba94bd5d3ce42b7"
+    },
+    {
+      "url": "/images/gallery/mawrth-pia11011.webp",
+      "bytes": 78532,
+      "sha256": "2c248d8e6a3a4627c95a3ebdae3c6b88896ee16d8ece3e101ff178e4e752ba50"
+    },
+    {
+      "url": "/images/gallery/meridiani-pia05153.webp",
+      "bytes": 34708,
+      "sha256": "c0770fa2b42035fdf990530b684d538fbe8c81534146788e8ff845cf181dd732"
+    },
+    {
+      "url": "/images/gallery/meridiani-pia05755.webp",
+      "bytes": 16448,
+      "sha256": "b1e8d654d3c4e0b5f2f4fb371a830a8ea8c691f3e5718129b02d1bb2ce679535"
+    },
+    {
+      "url": "/images/gallery/meridiani-pia25457.webp",
+      "bytes": 79054,
+      "sha256": "d3cd19b64f879694e2b936eb19316f2460fa9d23c801f3df640fd227fd144b47"
+    },
+    {
+      "url": "/images/gallery/nili-pia07993.webp",
+      "bytes": 350570,
+      "sha256": "91b679e16a0f77e9cf735681dbadebcb54ae24741273fda4d629b3ec321dab11"
+    },
+    {
+      "url": "/images/gallery/nili-pia11728.webp",
+      "bytes": 33318,
+      "sha256": "6c5cd3d4cd72ba18668bef4e6f7cd578ed0927c4bd98a033058b93d47cb65953"
+    },
+    {
+      "url": "/images/gallery/nili-pia13724.webp",
+      "bytes": 236818,
+      "sha256": "3302f9252410c08f3dab73adc28412d9bb71eeed516f5aaab8f94d8d004e1f9f"
+    },
+    {
+      "url": "/images/gallery/olympus-pia00300.webp",
+      "bytes": 175988,
+      "sha256": "1e40ddc174cf87ad34b263e88f4a57082ec9200857103822f13644931dce1cc7"
+    },
+    {
+      "url": "/images/gallery/olympus-pia02984.webp",
+      "bytes": 102778,
+      "sha256": "2d0439b132457743d768f1dd06ebac158a8202e16bde49bfa18726897db44edb"
+    },
+    {
+      "url": "/images/gallery/olympus-pia09714.webp",
+      "bytes": 62774,
+      "sha256": "ee0cca9035973687adfec19c6ec1a3cd5811b173927eee62b32d4b1f9475c5d8"
+    },
+    {
+      "url": "/images/gallery/oxia-pia18817.webp",
+      "bytes": 199150,
+      "sha256": "17377fde6558cd04ca927180f2b36278324d55d88a61f678295b4ef1049b5e8a"
+    },
+    {
+      "url": "/images/gallery/oxia-pia19851.webp",
+      "bytes": 404684,
+      "sha256": "92a53e799e4f2c1c908d3df2c30edf23dfb88b215c8807efd8ce1bb1e0943aee"
+    },
+    {
+      "url": "/images/gallery/oxia-pia23289.webp",
+      "bytes": 322478,
+      "sha256": "3904d496c85fce9c793623704392c86768683450005adf4d9847722638e14a0e"
+    },
+    {
+      "url": "/images/gallery/sirenum-pia10247.webp",
+      "bytes": 102702,
+      "sha256": "879fc285f5868a4f6a2389346d7ad3a9867dc9f87512a6cafb21580f527bbbe7"
+    },
+    {
+      "url": "/images/gallery/sirenum-pia10248.webp",
+      "bytes": 271208,
+      "sha256": "2540c00a908108c97a1199d3f02732ba46b5a58b6e91e91c49c339e9fe0100da"
+    },
+    {
+      "url": "/images/gallery/sirenum-pia22867.webp",
+      "bytes": 261042,
+      "sha256": "40d556e4ca6e2d99754a456a197663d1108aaa91cbbc7ed3989ec1b9eacdda62"
+    },
+    {
+      "url": "/images/gallery/valles-pia06926.webp",
+      "bytes": 229654,
+      "sha256": "67b40a1bd314e178c0f7c3408b945401f1212c09f7c1431b60c3e4d94b37483a"
+    },
+    {
+      "url": "/images/gallery/valles-pia09651.webp",
+      "bytes": 49102,
+      "sha256": "18893444c3ed7c51dd3c2c81dbe72ef323f566f5a25160c6692d9c3753f0ff0b"
+    },
+    {
+      "url": "/images/gallery/valles-pia21102.webp",
+      "bytes": 331390,
+      "sha256": "bf45ffcd1a482e3cd8a4d75b412d0579b47111070d22fccee12c180fd216ead6"
+    },
+    {
+      "url": "/methodology/",
+      "bytes": 60054,
+      "sha256": "17fddf3bcb34117a0b74187f2076ddf7c0ac60461f4448d440f6169228becb64"
+    },
+    {
+      "url": "/processed/coverage-v1/jezero-ctx-20m.png",
+      "bytes": 1296,
+      "sha256": "bada61d56486218e9fd3187678520bbaa35e99ff684d88c12cc15cf4183fd8e1"
+    },
+    {
+      "url": "/processed/coverage-v1/mola-quarter-degree.png",
+      "bytes": 608,
+      "sha256": "5ced896fae8a4834166fb57ed90a04662d0b6b2df8a35f8020e336154607a0bc"
+    },
+    {
+      "url": "/processed/coverage-v1/oxia-ctx-native.png",
+      "bytes": 1193,
+      "sha256": "ec3ed61d19edfd74baaa8c13bdee520ff84ffa0f96b6736fd7bc5a86a694f2df"
+    },
+    {
+      "url": "/processed/jezero-elevation.f32",
+      "bytes": 9652608,
+      "sha256": "95e0f863c03c7bfd27d5a9e1a1592770e0e94de6b3e807d03e79c23d01f359fa"
+    },
+    {
+      "url": "/processed/jezero-slope.f32",
+      "bytes": 9652608,
+      "sha256": "63f103dda7826fbf4a01e26cfc3f4c770aa2425fadbc4d0f08b7e7b0c24f76ec"
+    },
+    {
+      "url": "/processed/jezero-valid.u8",
+      "bytes": 2413152,
+      "sha256": "8c3d18e027550734541868c71a13479d220754cf6d06c3eb130c491aa0fc8925"
+    },
+    {
+      "url": "/processed/jezero.json",
+      "bytes": 2618,
+      "sha256": "876d28db5ec38b16b7d7c6b0ec0601fdfdc2a31628474edc29d0168a5bea69d0"
+    },
+    {
+      "url": "/processed/mcd-v62.json",
+      "bytes": 75000,
+      "sha256": "4404c793dbc7eef088fd0c798650cf700ed00773495445e4caad4ba29454cb58"
+    },
+    {
+      "url": "/processed/meda-sols-30-32-v1.json",
+      "bytes": 169847,
+      "sha256": "c66fb6a2ab6cddae1709832122b170e29e05942bcbd883e08786da74ed517c72"
+    },
+    {
+      "url": "/processed/mola-quarter-elevation.f32",
+      "bytes": 4147200,
+      "sha256": "37256f0f380b9e1a6ea7dc54b67ec79720e9e8e6402b16dc1fea58ec117467f1"
+    },
+    {
+      "url": "/processed/mola-quarter-slope.f32",
+      "bytes": 4147200,
+      "sha256": "594b928278fdcbb9b0318c625243c60c7650a3a7e502b9f6bdd4af13a2f01eda"
+    },
+    {
+      "url": "/processed/mola-quarter-valid.u8",
+      "bytes": 1036800,
+      "sha256": "6a8a3fc7b68b39acaf18397b7172353f61bc4990d6e942ba5c421c1b398d1d3c"
+    },
+    {
+      "url": "/processed/mola-quarter.json",
+      "bytes": 1988,
+      "sha256": "254ff949741cf01a6d3812e915f5f9ad34f8318006b451642e9758b04531141a"
+    },
+    {
+      "url": "/processed/oxia-elevation.f32",
+      "bytes": 8797156,
+      "sha256": "5444cda5c4bdb43ac2f043a3c7b3a4e4ed4d9901cfd03b081f0520db41d0dd93"
+    },
+    {
+      "url": "/processed/oxia-slope.f32",
+      "bytes": 8797156,
+      "sha256": "e4e7f061ff75099e0b07c77d77651d80a2ebc145c47754744a95b6263ba8fa47"
+    },
+    {
+      "url": "/processed/oxia-valid.u8",
+      "bytes": 2199289,
+      "sha256": "50ecc24c3fb66107ba5a705af26e35bce51fa2c8a3f15e0a16b2af1d75b4243c"
+    },
+    {
+      "url": "/processed/oxia.json",
+      "bytes": 3499,
+      "sha256": "4ae2134ce0492a0e462ec47af3748d18146d9fe8b8769455db3f2430f4a9c323"
+    },
+    {
+      "url": "/processed/radiation-atris-v1.png",
+      "bytes": 516193,
+      "sha256": "28e43c10c73050993641ab11cd8e09458e5547c27bd3a51c2934eea660783b97"
+    },
+    {
+      "url": "/processed/radiation-pia03480-v1.webp",
+      "bytes": 1358264,
+      "sha256": "56536da69cd478f1f360eb08f41cff2235317826006da0dcb68be9afc1978b44"
+    },
+    {
+      "url": "/processed/science-v1/geology-catalog.json",
+      "bytes": 15963,
+      "sha256": "4aeb126b4805be73c1ba5cb559fc21f7a03d1aa3d2e8b6754dce02f425e55b20"
+    },
+    {
+      "url": "/processed/science-v1/geology.bin.gz",
+      "bytes": 176215,
+      "sha256": "6d3555154abc2a4930771631aae83fac057b56020236efcde7077f5c06377cf5"
+    },
+    {
+      "url": "/processed/science-v1/geology.png",
+      "bytes": 240248,
+      "sha256": "5f4cfaa83d3f2ab505d7226548f6e4e5bfcc6c4216c1a3ef10c9a1c59911a777"
+    },
+    {
+      "url": "/processed/science-v1/mineral-observations.json",
+      "bytes": 69155,
+      "sha256": "1a41900f0f6471b9573dbead083007a069d364f5f9cd378df7373d6f77ea31e6"
+    },
+    {
+      "url": "/processed/science-v1/thermal-inertia.bin.gz",
+      "bytes": 783661,
+      "sha256": "cb76a0286770c3eee8c058556e78d4a72bed3a52a9e5873834ae8ab49ee53565"
+    },
+    {
+      "url": "/processed/science-v1/thermal-inertia.png",
+      "bytes": 1043781,
+      "sha256": "56cefba9d44fc3b874e601232e892091c6f641388fada2c6efc679fabd0b24f4"
+    },
+    {
+      "url": "/processed/science-v2/hydrated-sites.json",
+      "bytes": 202787,
+      "sha256": "ed5a296bd3ce3c727174aa263ea5ca41bef025527eea07cd0245732e74446b88"
+    },
+    {
+      "url": "/route-worker.js",
+      "bytes": 122746,
+      "sha256": "83d68d7003f1929dcbaeab88e22bb6854c17d60076fe2ec98f6b2547811f73da"
+    },
+    {
+      "url": "/sources/",
+      "bytes": 210523,
+      "sha256": "4956c484e48cba0aac8896c0e156e188b109df1c98ee69ceb106b424c018129e"
+    },
+    {
+      "url": "/sources/__next.sources.__PAGE__.txt",
+      "bytes": 4130,
+      "sha256": "0db23b4d13bd65eb62f3f0966583bcf932b3752a203d792ed468c2b8b2db36be"
+    }
+  ]
+}
