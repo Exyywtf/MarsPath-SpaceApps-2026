@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { solarClock, solarProvenance } from "@/lib/marsSolar";
 import { coordinateLabel, type LonLat } from "@/lib/mars";
 import type { MissionAssumptions } from "@/lib/missionPlan";
@@ -13,17 +13,21 @@ export const visibilityColors = { clear: "#8cdfbd", obstructed: "#f2bb90", unkno
 const statusNames = { clear: "Clear", obstructed: "Obstructed", unknown: "Unknown" } as const;
 const earthHours = (seconds: number) => (seconds / 3600).toLocaleString(undefined, { maximumFractionDigits: 2 }) + " Earth h";
 
-export function CommunicationsSetup({ mission, start, mapReady, onChange, onPlace }: {
+export function CommunicationsSetup({ mission, start, mapReady, onChange, onPlace, onRemove }: {
   mission: MissionAssumptions; start: LonLat | null; mapReady: boolean;
-  onChange: (patch: Partial<MissionAssumptions>) => void; onPlace: () => void;
+  onChange: (patch: Partial<MissionAssumptions>) => void; onPlace: () => void; onRemove: () => void;
 }) {
+  const placeButton = useRef<HTMLButtonElement>(null);
   return <Accordion title="Communications assumptions" className="quality-details">
     <p className="small-note">{mission.station ? coordinateLabel(mission.station) : "Choose a hypothetical station."}</p>
     <div className="mission-presets">
       <button className="secondary-button" disabled={!start} onClick={() => onChange({ station: start })}>Use A as station</button>
-      <button className="secondary-button" disabled={!mapReady} onClick={onPlace}>Place station on map</button>
+      <button ref={placeButton} className="secondary-button" disabled={!mapReady} onClick={onPlace}>Place station on map</button>
     </div>
-    {mission.station && <button className="text-button" onClick={() => onChange({ station: null })}>Clear station</button>}
+    {mission.station && <button className="text-button" onClick={() => {
+      placeButton.current?.focus({ preventScroll: true });
+      onRemove();
+    }}>Clear station</button>}
     <div className="mission-fields">
       {(["stationHeightM", "observerHeightM"] as const).map((id) => <label key={id}>
         {id === "stationHeightM" ? "Station antenna height (m)" : "Observer antenna height (m)"}

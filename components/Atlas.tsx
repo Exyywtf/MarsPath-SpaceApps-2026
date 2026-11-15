@@ -45,6 +45,7 @@ import {
   type Placement,
 } from "@/lib/planner";
 import { useRouteEngine } from "@/lib/useRouteEngine";
+import type { RemovablePointKind } from "@/lib/endpointGestures";
 import { emptyMission, jezeroMissionExample, type MissionAssumptions, type MissionObjective } from "@/lib/missionPlan";
 import { rankAcceptedCandidates } from "@/lib/routeRanking";
 import { useMapLayout } from "@/lib/useMapLayout";
@@ -128,7 +129,7 @@ export default function Atlas() {
     [placement, setPlacement] = useState<Placement>(null),
     [revision, setRevision] = useState(0),
     [removalRevision, setRemovalRevision] = useState(0),
-    [removedEndpoint, setRemovedEndpoint] = useState<EndpointKind | null>(null),
+    [removedPoint, setRemovedPoint] = useState<RemovablePointKind | null>(null),
     [active, setActive] = useState<{ geometryKey: string; id: string } | null>(null),
     [drawing, setDrawing] = useState(false),
     [hideFeatured, setHideFeatured] = useState(false);
@@ -298,7 +299,11 @@ export default function Atlas() {
   }, []);
   useEffect(() => () => cancelAnimationFrame(focusFrame.current), []);
   const movePoint = useCallback(
-    (kind: EndpointKind | number, point: LonLat) =>
+    (kind: RemovablePointKind | number, point: LonLat) => {
+      if (kind === "station") {
+        updateMission({ station: point });
+        return;
+      }
       setDraft((old) =>
         typeof kind === "number"
           ? {
@@ -306,20 +311,26 @@ export default function Atlas() {
               waypoints: old.waypoints.map((p, i) => (i === kind ? point : p)),
             }
           : old[kind] ? { ...old, [kind]: point } : old,
-      ),
-    [],
+      );
+    },
+    [updateMission],
   );
   const removeEndpoint = useCallback((kind: EndpointKind) => {
     if (!draft[kind]) return;
     interruptScroll();
     setDraft((old) => ({ ...old, [kind]: null }));
     setRemovalRevision((old) => old + 1);
-    setRemovedEndpoint(kind);
+    setRemovedPoint(kind);
     setPlacement(null);
     setDrawing(false);
     setDismissedError(undefined);
     setProfilePoint(null);
   }, [draft, interruptScroll, setProfilePoint]);
+  const removeStation = useCallback(() => {
+    updateMission({ station: null });
+    setRemovedPoint("station");
+    setPlacement((current) => current === "station" ? null : current);
+  }, [updateMission]);
   const select = useCallback(
     (id: string) => {
       const l = locations.find((l) => l.id === id);
@@ -428,13 +439,11 @@ export default function Atlas() {
   }, [candidates, inbound, missionContext, panel, recommended, selectedIndex, showTerminator, updating]);
   const missionMarkers = useMemo<MapMissionMarker[]>(() => {
     if (panel !== "mission") return [];
-    const dots: MapMissionMarker[] = showVisibility
+    return showVisibility
       ? [missionContext?.visibility?.outbound, missionContext?.visibility?.return].flatMap((record) =>
           record?.samples.map(({ point, status }) => ({ point, status })) ?? [])
       : [];
-    if (station) dots.push({ point: station, status: "station" });
-    return dots;
-  }, [missionContext, panel, showVisibility, station]);
+  }, [missionContext, panel, showVisibility]);
   function makeBrief(): MissionBrief | undefined {
     if (generation === undefined || !selectedRoute || !engine.result) return;
     const analysis = engine.analysis?.[selectedRoute.id], evidence = engine.evidence?.[selectedRoute.id];
@@ -619,7 +628,8 @@ export default function Atlas() {
         } />
       </header>
       <span className="sr-only" role="status" aria-atomic="true">
-        {removedEndpoint && !draft[removedEndpoint] ? `Point ${removedEndpoint === "start" ? "A" : "B"} removed.` : ""}
+        {removedPoint === "station" ? !station && "Communications station removed."
+          : removedPoint && !draft[removedPoint] && `Point ${removedPoint === "start" ? "A" : "B"} removed.`}
       </span>
       <section className="map-area" id="mars-map">
         <MarsMap
@@ -640,6 +650,8 @@ export default function Atlas() {
           onPlace={place}
           onMovePoint={movePoint}
           onRemoveEndpoint={removeEndpoint}
+          station={panel === "mission" ? station : null}
+          onRemoveStation={removeStation}
           routes={mapRoutes}
           missionMarkers={missionMarkers}
           routeGeneration={engine.generation}
@@ -1145,7 +1157,7 @@ export default function Atlas() {
               {visiblePanel === "mission" && <MissionSetup mission={mission} draft={draft} onChange={updateMission}
                 onDraft={setDraft} onObjective={changeObjective} onExample={missionExample} showStudy={showStudy} onStudy={setShowStudy}
                 communications={<CommunicationsSetup mission={mission} start={draft.start} mapReady={mapReady} onChange={updateMission}
-                  onPlace={() => pick("station")} />} />}
+                  onPlace={() => pick("station")} onRemove={removeStation} />} />}
               <RoutePlanner
                 draft={draft}
                 mapReady={mapReady}

@@ -113,6 +113,63 @@ test("keyboard removal invalidates exports through late replies and exact coordi
   await expect(exportRoute(page)).toBeEnabled();
 });
 
+test("dragging and removing a communications station preserves the Jezero route", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.addInitScript(() => {
+    document.addEventListener("contextmenu", (event) => {
+      document.documentElement.dataset.contextPrevented = String(event.defaultPrevented);
+      event.preventDefault();
+    });
+    const post = Worker.prototype.postMessage;
+    Worker.prototype.postMessage = function (message, ...args) {
+      if (message?.kind === "calculate") document.documentElement.dataset.searches =
+        String(1 + Number(document.documentElement.dataset.searches || 0));
+      return Reflect.apply(post, this, [message, ...args]);
+    };
+  });
+  await page.goto("/?mission=jezero");
+  await page.getByRole("button", { name: "Try validated mission example" }).click();
+  await expect(page.getByText("Return · B to A", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Communications assumptions" }).click();
+  const clear = page.getByRole("button", { name: "Clear station", exact: true });
+  const place = page.getByRole("button", { name: "Place station on map", exact: true });
+  const useA = page.getByRole("button", { name: "Use A as station", exact: true });
+  const a = await pixel(page, start);
+  const startPixel = await mars(page).getAttribute("data-start-pixel");
+  await place.click();
+  await page.mouse.click(a.x, a.y + 46);
+  await expect(clear).toBeVisible();
+  await page.mouse.click(a.x, a.y + 75, { button: "right" });
+  await expect(page.locator("html")).toHaveAttribute("data-context-prevented", "false");
+  await expect(clear).toBeVisible();
+  await page.mouse.click(a.x, a.y + 46, { button: "right" });
+  await expect(clear).toHaveCount(0);
+  await useA.click();
+  await expect(clear).toBeVisible();
+  await page.mouse.move(a.x, a.y);
+  await page.mouse.down();
+  await page.mouse.move(a.x, a.y + 46, { steps: 5 });
+  await page.mouse.up();
+  await page.mouse.click(a.x, a.y + 46, { button: "right" });
+  await expect(clear).toHaveCount(0);
+  await expect(mars(page)).toHaveAttribute("data-start-pixel", startPixel!);
+  await useA.click();
+  await expect(clear).toBeVisible();
+  await page.mouse.click(a.x, a.y, { button: "right" });
+  await expect(page.locator("html")).toHaveAttribute("data-context-prevented", "true");
+  await expect(page.getByText("Communications station removed.", { exact: true })).toHaveAttribute("role", "status");
+  await expect(clear).toHaveCount(0);
+  await expect(useA).toBeEnabled();
+  await expect(page.getByText("Return · B to A", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Export mission GeoJSON" })).toBeEnabled();
+  await expect(page.locator("html")).toHaveAttribute("data-searches", "1");
+  await useA.click();
+  await clear.focus();
+  await page.keyboard.press("Enter");
+  await expect(place).toBeFocused();
+  await expect(clear).toHaveCount(0);
+});
+
 for (const viewport of [{ width: 390, height: 844 }, { width: 834, height: 1194 }]) {
   test(`endpoint touch removal keeps empty-map zoom at ${viewport.width}px`, async ({ browser, browserName, baseURL }) => {
     const context = await browser.newContext({ baseURL, viewport, isMobile: true, hasTouch: true, reducedMotion: "reduce" });

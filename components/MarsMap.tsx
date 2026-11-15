@@ -46,7 +46,7 @@ import type { LayerDataset } from "@/lib/layers";
 import { createObservationLayer, createScientificOverlay, type OverlayState } from "@/lib/scientificOverlay";
 import { scienceTargets } from "@/lib/science";
 import { prepareReveal, revealPrefix } from "@/lib/routePresentation";
-import { installEndpointGestures } from "@/lib/endpointGestures";
+import { installEndpointGestures, type RemovablePointKind } from "@/lib/endpointGestures";
 import { labelRect, selectMapLabels, type LabelInput, type LabelPlacement } from "@/lib/mapLabels";
 import type { MapInsets, MapLayout } from "@/lib/mapLayout";
 export type { MapInsets } from "@/lib/mapLayout";
@@ -54,17 +54,22 @@ export type { MapInsets } from "@/lib/mapLayout";
 const featuredLabels = new Set(["jezero", "gale", "valles", "oxia", "eridania"]);
 const revealTiming = { shortest: 740, longest: 1330, alternative: 270, stagger: 120 };
 const marsExtent = [-180, -90, 180, 90];
-type MarkerKind = EndpointKind | number;
+type MarkerKind = RemovablePointKind | number;
 
 function endpointStyle(kind: MarkerKind, label: string) {
-  const fill = new Fill({ color: kind === "start" ? "#ace5d0" : kind === "end" ? "#ffcb99" : "#e2e9e1" });
+  const fill = new Fill({ color: kind === "start" ? "#ace5d0" : kind === "end" ? "#ffcb99" : kind === "station" ? "#8fd6fa" : "#e2e9e1" });
   const stroke = new Stroke({ color: "#111d22", width: 2.5 });
   return new Style({
-    image: kind === "end"
+    zIndex: kind === "station" ? 3 : 0,
+    image: kind === "station"
+      ? new RegularShape({ points: 6, radius: 15, fill, stroke })
+      : kind === "end"
       ? new RegularShape({ points: 4, radius: 17, angle: Math.PI / 4, fill, stroke })
       : new Circle({ radius: kind === "start" ? 13 : 11, fill, stroke }),
     text: new Text({
       text: label, font: "700 12px sans-serif", fill: new Fill({ color: "#111d22" }),
+      textAlign: "center", textBaseline: "middle",
+      offsetY: kind === "station" ? 2 : 0,
     }),
   });
 }
@@ -106,12 +111,11 @@ export interface MapRoute {
   selected: boolean;
   connectors?: LonLat[][];
 }
-export type MapMissionMarker = { point: LonLat; status: "clear" | "obstructed" | "unknown" | "station" };
+export type MapMissionMarker = { point: LonLat; status: "clear" | "obstructed" | "unknown" };
 const missionMarkerStyles = Object.fromEntries(Object.entries({
-  clear: "#8cdfbd", obstructed: "#f2bb90", unknown: "#b4afdc", station: "#f8dab9",
+  clear: "#8cdfbd", obstructed: "#f2bb90", unknown: "#b4afdc",
 }).map(([status, color]) => [status, new Style({
-  image: new Circle({ radius: status === "station" ? 8 : 3.25, fill: new Fill({ color }), stroke: new Stroke({ color: "#121c20", width: 1.4 }) }),
-  text: status === "station" ? new Text({ text: "S", font: "700 10px sans-serif", fill: new Fill({ color: "#121c20" }) }) : undefined,
+  image: new Circle({ radius: 3.25, fill: new Fill({ color }), stroke: new Stroke({ color: "#121c20", width: 1.4 }) }),
 })]));
 interface Props {
   selected: string | null;
@@ -130,6 +134,8 @@ interface Props {
   onPlace: (point: LonLat) => void;
   onMovePoint: (kind: MarkerKind, point: LonLat) => void;
   onRemoveEndpoint: (kind: EndpointKind) => void;
+  station: LonLat | null;
+  onRemoveStation: () => void;
   routes: MapRoute[];
   missionMarkers?: MapMissionMarker[];
   routeGeneration?: number;
@@ -176,7 +182,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
   const endpointMotion = useRef({
     frame: 0,
     arriving: new globalThis.Map<Feature<Point>, number>(),
-    exiting: new globalThis.Map<EndpointKind, { feature: Feature<Point>; from: number; scale: number }>(),
+    exiting: new globalThis.Map<RemovablePointKind, { feature: Feature<Point>; from: number; scale: number }>(),
   });
   const reveal = useRef<{
     generation?: number;
@@ -462,9 +468,16 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     });
     const endpointLayer = new VectorLayer({
       source: endpointSource.current,
+      zIndex: 4,
     });
+    const exitingSource = exitingEndpointSource.current;
+    // A separate canvas keeps the fading markers from being blended into the basemap.
+    const exitingLayer = new VectorLayer({ source: exitingSource, zIndex: 4, className: "ol-layer marker-exit-layer", visible: false });
+    const syncExitingLayer = () => exitingLayer.setVisible(!exitingSource.isEmpty());
+    exitingSource.on("change", syncExitingLayer);
     const profileLayer = new VectorLayer({
       source: profileSource.current,
+      zIndex: 4,
       style: new Style({
         image: new Circle({
           radius: 7,
@@ -549,7 +562,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
         targets,
         routeLayer,
         new VectorLayer({ source: missionSource.current, zIndex: 3 }),
-        new VectorLayer({ source: exitingEndpointSource.current }),
+        exitingLayer,
         endpointLayer,
         profileLayer,
       ],
@@ -581,8 +594,8 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       translated = false;
       e.features.forEach((f) => {
         const kind = f.get("kind") as MarkerKind;
-        const { draft } = handlers.current;
-        const previous = typeof kind === "number" ? draft.waypoints[kind] : draft[kind];
+        const { draft, station } = handlers.current;
+        const previous = typeof kind === "number" ? draft.waypoints[kind] : kind === "station" ? station : draft[kind];
         if (!previous) return;
         const geometry = f.getGeometry() as Point;
         if (e.mapBrowserEvent.originalEvent.type === "pointercancel") {
@@ -629,8 +642,9 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
         layerFilter: (layer) => layer === endpointLayer,
       });
       const kind = feature?.get("kind") as MarkerKind | undefined;
+      if (kind === "station") return handlers.current.station ? kind : undefined;
       return (kind === "start" || kind === "end") && handlers.current.draft[kind] ? kind : undefined;
-    }, () => handlers.current, (kind) => handlers.current.onRemoveEndpoint(kind), mapTap);
+    }, () => handlers.current, (kind) => kind === "station" ? handlers.current.onRemoveStation() : handlers.current.onRemoveEndpoint(kind), mapTap);
     let lastPointer = 0;
     instance.on("pointermove", (e) => {
       if (Date.now() - lastPointer >= 100) {
@@ -843,6 +857,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       refreshLabels.current = () => {};
       observer.disconnect();
       motion.removeEventListener("change", stop);
+      exitingSource.un("change", syncExitingLayer);
       disposeEndpointGestures();
       overlay.dispose();
       scalar.current = null;
@@ -992,6 +1007,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     const points = [
       [start, "start", "A"],
       [end, "end", "B"],
+      [props.station, "station", "S"],
       ...waypoints.map((p, i) => [p, i, String(i + 1)]),
     ] as [LonLat | null, MarkerKind, string][];
     const remaining = new Set(source.getFeatures() as Feature<Point>[]);
@@ -1027,7 +1043,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       motion.arriving.delete(unused);
       source.removeFeature(unused);
       const kind = unused.getId();
-      if ((kind === "start" || kind === "end") && duration()) {
+      if ((kind === "start" || kind === "end" || kind === "station") && duration()) {
         const style = unused.getStyle() as Style;
         motion.exiting.set(kind, { feature: unused, from: performance.now(), scale: style.getImage()!.getScaleArray()[0] });
         exiting.addFeature(unused);
@@ -1045,7 +1061,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
         if (progress >= 1) motion.arriving.delete(feature);
       }
       for (const [kind, { feature, from, scale }] of motion.exiting) {
-        const progress = reduced ? 1 : Math.min(1, (now - from) / 140);
+        const progress = reduced ? 1 : Math.max(0, Math.min(1, (now - from) / 140));
         if (progress === 1) {
           exiting.removeFeature(feature);
           motion.exiting.delete(kind);
@@ -1066,7 +1082,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       map.current.once("postrender", syncMetadata.current);
       map.current.render();
     }
-  }, [props.draft]);
+  }, [props.draft, props.station]);
   useEffect(() => {
     const motion = endpointMotion.current;
     const exiting = exitingEndpointSource.current;

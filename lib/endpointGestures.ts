@@ -6,6 +6,9 @@ import type { ListenerFunction } from "ol/events";
 import { unByKey } from "ol/Observable";
 import type { Pixel } from "ol/pixel";
 import type { EndpointKind, Placement, PlannerDraft } from "./planner";
+import type { LonLat } from "./mars";
+
+export type RemovablePointKind = EndpointKind | "station";
 
 const doubleTapWindow = 300;
 const tapHoldLimit = 250;
@@ -15,10 +18,11 @@ const doubleTapTravelLimit = 18;
 interface Session {
   draft: PlannerDraft;
   placement: Placement;
+  station?: LonLat | null;
 }
 
 interface Tap {
-  kind: EndpointKind;
+  kind: RemovablePointKind;
   pixel: Pixel;
   time: number;
   session: Session;
@@ -30,9 +34,9 @@ function distance(a: Pixel, b: Pixel) {
 
 export function installEndpointGestures(
   map: Map,
-  hitEndpoint: (pixel: Pixel) => EndpointKind | undefined,
+  hitEndpoint: (pixel: Pixel) => RemovablePointKind | undefined,
   readSession: () => Session,
-  removeEndpoint: (kind: EndpointKind) => void,
+  removeEndpoint: (kind: RemovablePointKind) => void,
   singleTap: (pixel: Pixel, coordinate: Coordinate) => void,
 ) {
   const viewport = map.getViewport();
@@ -44,7 +48,7 @@ export function installEndpointGestures(
 
   function inSession(session: Session) {
     const current = readSession();
-    return session.draft === current.draft && session.placement === current.placement;
+    return session.draft === current.draft && session.placement === current.placement && session.station === current.station;
   }
   function clearTap() {
     window.clearTimeout(timer);
