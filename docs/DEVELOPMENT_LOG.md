@@ -256,3 +256,4 @@ Inspected the supplied 31 files and live NASA service metadata during planning. 
 ## 2026-11-15 — Direct-plan spacing correction
 
 - Balanced the collapsed Mission Planner A → B summary to 16 px above and below, replacing the previous 24/12 px spacing. A regression measures the actual gaps to the setup divider and route-status divider across all nine viewport sizes in Chromium and WebKit. Both focused browser tests passed per engine. Visually inspected the populated 1440×900, 834×1194 and 390×844 layouts. TypeScript, ESLint, 44 numerical/unit tests and the static build passed.
+- Promoted `3648ee7` as Vercel deployment `dpl_3cGUchZJQnKLXzq8otCQvNPwv46d`. Both focused production journeys passed per engine (31.8 seconds Chromium, 40.9 seconds WebKit), including measured equal summary gaps at all nine sizes.
