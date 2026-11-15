@@ -2,10 +2,11 @@ import records from "../data/layers.json";
 import { normalizeLon, type LonLat } from "./mars";
 import { radiationManifest as rad, radiationProduct } from "./radiation";
 import { explorationScience, scienceSources, thermalUnit } from "./explorationScience";
+import coverage from "../data/terrain-coverage.json";
 export type ClimateId = "temperature" | "pressure" | "wind";
 export type RadiationId = "radiation" | "radiation-historical" | "radiation-column";
 export type ExplorationLayerId = "geology" | "minerals" | "thermal-inertia";
-export type LayerId = "topography" | ClimateId | RadiationId | ExplorationLayerId;
+export type LayerId = "topography" | "coverage" | ClimateId | RadiationId | ExplorationLayerId;
 interface LayerMetadata {
   id: LayerId;
   name: string;
@@ -30,7 +31,7 @@ interface ScalarDataset extends RasterDataset {
   palette: string[];
 }
 interface NumericalDataset extends ScalarDataset {
-  id: Exclude<LayerId, "radiation-historical" | "geology" | "minerals">;
+  id: Exclude<LayerId, "radiation-historical" | "geology" | "minerals" | "coverage">;
   dataUrl: string;
   presentation: "numerical";
 }
@@ -46,7 +47,11 @@ interface ObservationsDataset extends LayerMetadata {
   id: "minerals";
   presentation: "observations";
 }
-export type LayerDataset = NumericalDataset | ReferenceDataset | CategoricalDataset | ObservationsDataset;
+interface CoverageDataset extends RasterDataset {
+  id: "coverage";
+  presentation: "coverage";
+}
+export type LayerDataset = NumericalDataset | ReferenceDataset | CategoricalDataset | ObservationsDataset | CoverageDataset;
 export interface ClimateData {
   width: number;
   height: number;
@@ -118,11 +123,21 @@ const thermal: NumericalDataset = {
   sha256: explorationScience.thermal.data.sha256, terms: scienceSources.thermal.terms,
   context: "MGS TES nightside bolometer temperatures from 1999–2004, modelled as apparent thermal inertia. Only cells fully supported by the PDS observation mask are shown. High values share the top legend colour.",
 };
+const quality: CoverageDataset = {
+  ...coverage.global,
+  id: "coverage", presentation: "coverage", name: "Data Quality & Coverage", unit: "",
+  interpolate: false, sha256: coverage.global.maskSha256,
+  sampling: "Valid cell masks from the route grids",
+  nativeResolution: "20 m regional terrain · 0.25° global route grid",
+  kind: "Terrain data availability", sourcePage: "https://astrogeology.usgs.gov/search/map/mars_mgs_mola_dem_463m",
+  context: "Inspect which terrain grid supports a point. Regional and coarse masks describe data availability. Alignment accuracy and rock-scale hazards remain unresolved.",
+  terms: "USGS / NASA numerical terrain and credited regional sources.",
+};
 export const scientificLayers: LayerDataset[] = [
   ...records.map((record) => ({ ...record, presentation: "numerical" } as NumericalDataset)),
   radiationProduct === "radiation" ? cosmicRays : column,
   historical,
-  geology, minerals, thermal,
+  geology, minerals, thermal, quality,
 ];
 
 export function isRadiation(id: LayerId | null): id is RadiationId {
@@ -130,6 +145,7 @@ export function isRadiation(id: LayerId | null): id is RadiationId {
 }
 
 export function sourceAnchor(id: LayerId) {
+  if (id === "coverage") return "ctx-dtm";
   if (id === "geology" || id === "minerals" || id === "thermal-inertia") return id;
   return id === "topography" ? "mola" : isRadiation(id)
     ? id === "radiation-historical" ? "pia03480" : "atris-radiation"

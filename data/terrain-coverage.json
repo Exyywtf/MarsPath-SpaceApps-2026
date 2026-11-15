@@ -1,0 +1,42 @@
+{
+  "version": "coverage-v1",
+  "colors": {
+    "regional": "#62bca7",
+    "coarse": "#58678d",
+    "missing": "#aa8269"
+  },
+  "global": {
+    "id": "mola-quarter-degree",
+    "imageUrl": "/processed/coverage-v1/mola-quarter-degree.png",
+    "imageSize": [
+      1440,
+      720
+    ],
+    "bounds": [
+      -180,
+      -90,
+      180,
+      90
+    ],
+    "maskSha256": "6a8a3fc7b68b39acaf18397b7172353f61bc4990d6e942ba5c421c1b398d1d3c",
+    "imageSha256": "5ced896fae8a4834166fb57ed90a04662d0b6b2df8a35f8020e336154607a0bc"
+  },
+  "regions": [
+    {
+      "id": "jezero-ctx-20m",
+      "imageUrl": "/processed/coverage-v1/jezero-ctx-20m.png",
+      "imageSize": [
+        1596,
+        1512
+      ],
+      "bounds": [
+        77.16046545922367,
+        18.2110273909634,
+        77.69897516629472,
+        18.721194481872804
+      ],
+      "maskSha256": "8c3d18e027550734541868c71a13479d220754cf6d06c3eb130c491aa0fc8925",
+      "imageSha256": "bada61d56486218e9fd3187678520bbaa35e99ff684d88c12cc15cf4183fd8e1"
+    }
+  ]
+}

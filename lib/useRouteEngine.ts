@@ -5,6 +5,7 @@ import type { ClimatePreferences, RouteAnalysis } from "./routeAnalysis";
 import type { ComparisonRequest, ComparisonResult, WorkerReply, WorkerRequest } from "./routeProtocol";
 import { matchingRouteAnalyses, matchingRouteEvidence } from "./routeSnapshot";
 import type { RouteEvidence } from "./routeEvidence";
+import type { MissionReturn, ReturnMode } from "./missionPlan";
 
 type State = {
   geometryKey: string;
@@ -27,6 +28,7 @@ export function useRouteEngine(
   revision: number,
   climate: ClimatePreferences,
   removalRevision: number,
+  returnMode: ReturnMode = null,
 ) {
   const worker = useRef<Worker | null>(null);
   const requestId = useRef(0);
@@ -42,6 +44,9 @@ export function useRouteEngine(
   const input = useRef({ geometryKey, requestKey, comparison });
   const requestedKey = useRef("");
   const [state, setState] = useState<State>({ geometryKey: "", requestKey: "" });
+  const [inbound, setInbound] = useState<{ key: string; result: MissionReturn }>();
+  const returnKey = JSON.stringify([requestKey, returnMode]);
+  const returnRequested = useRef("");
   useLayoutEffect(() => { input.current = { geometryKey, requestKey, comparison }; }, [geometryKey, requestKey, comparison]);
 
   useEffect(() => {
@@ -50,6 +55,10 @@ export function useRouteEngine(
     w.onmessage = ({ data }: MessageEvent<WorkerReply>) => {
       const { geometryKey, requestKey, comparison } = input.current;
       if (data.id !== requestId.current || requestKey !== requestedKey.current) return;
+      if (data.kind === "return") {
+        if (data.key === returnRequested.current) setInbound({ key: data.key, result: data.result });
+        return;
+      }
       if (data.kind !== "route-error" && data.key !== comparison.key) return;
       if (data.kind === "routes") {
         setState((old) => {
@@ -130,12 +139,21 @@ export function useRouteEngine(
   }, [compareKey, hasEndpoints]);
 
   const complete = hasEndpoints && state.requestKey === requestKey;
+  const generation = complete && state.result ? state.generation : undefined;
+  useEffect(() => {
+    const previous = returnRequested.current;
+    returnRequested.current = returnMode ? returnKey : "";
+    if (generation !== undefined && (returnMode || previous)) {
+      worker.current?.postMessage({ kind: "return", id: generation, key: returnKey, mode: returnMode } satisfies WorkerRequest);
+    }
+  }, [generation, returnKey, returnMode]);
   const previous = hasEndpoints && !complete && state.geometryKey === geometryKey && state.result ? state : undefined;
   return {
     geometryKey,
     previous,
     result: complete ? state.result : undefined,
-    generation: complete && state.result ? state.generation : undefined,
+    generation,
+    inbound: returnMode && generation !== undefined && inbound?.key === returnKey ? inbound.result : undefined,
     error: complete ? state.error : undefined,
     analysis: complete ? state.analysis : undefined,
     displayAnalysis: complete ? state.analysis ?? state.previousAnalysis : previous?.analysis ?? previous?.previousAnalysis,

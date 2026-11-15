@@ -15,6 +15,7 @@ import { radiationManifest as rad, radiationProduct } from "@/lib/radiation";
 import { explorationScience, mineralStyles, scienceSources } from "@/lib/explorationScience";
 import type { OverlayState } from "@/lib/scientificOverlay";
 import AtlasDialog, { type DialogHandle } from "./AtlasDialog";
+import { terrainCoverage } from "@/lib/terrainCoverage";
 const icons = {
   topography: Mountain,
   temperature: Thermometer,
@@ -26,8 +27,14 @@ const icons = {
   geology: Layers3,
   minerals: Gem,
   "thermal-inertia": Thermometer,
+  coverage: Layers3,
 };
 export function LayerLegend({ layer, compact = false }: { layer: LayerDataset; compact?: boolean }) {
+  if (layer.presentation === "coverage") return <ul className="categorical-legend" aria-label="Terrain coverage legend">
+    <li><i style={{ backgroundColor: terrainCoverage.colors.regional }} />Regional terrain</li>
+    <li><i style={{ backgroundColor: terrainCoverage.colors.coarse }} />Coarse MOLA terrain</li>
+    <li><i style={{ backgroundColor: terrainCoverage.colors.missing }} />Missing numerical terrain</li>
+  </ul>;
   if (layer.presentation === "observations") return (
     <ul className="categorical-legend" aria-label="Mineral observations legend">
       {Object.entries(mineralStyles).map(([type, item]) =>
@@ -71,7 +78,7 @@ export function LayerLegend({ layer, compact = false }: { layer: LayerDataset; c
   );
 }
 const layerGroups = [
-  { label: "Terrain", ids: ["topography"] },
+  { label: "Terrain", ids: ["topography", "coverage"] },
   { label: "Atmosphere", ids: ["temperature", "pressure", "wind"] },
   { label: "Radiation", ids: ["radiation", "radiation-column"] },
   { label: "Geology & minerals", ids: ["geology", "minerals"] },
@@ -182,7 +189,8 @@ export default function LayerManager({
                 <span
                   className="layer-preview"
                   style={{
-                    background: l.presentation === "categorical" ? "#c5aa75"
+                    background: l.presentation === "coverage" ? terrainCoverage.colors.regional
+                      : l.presentation === "categorical" ? "#c5aa75"
                       : l.presentation === "observations" ? mineralStyles.crism.color
                         : "linear-gradient(to top," + l.palette.join(",") + ")",
                   }}
@@ -251,7 +259,8 @@ function LayerDetails({ layer, radiation }: { layer: LayerDataset; radiation: bo
                   : layer.id === "radiation-column" ? "This shows how much atmosphere sits above a point."
                     : layer.id === "thermal-inertia" ? "Apparent thermal inertia describes a modelled thermal response and depends on surface heterogeneity. Local traction is unassessed."
                       : layer.presentation === "categorical" ? "Source polygons rasterized at cell centres. Unit membership and boundaries describe regional mapped geology."
-                        : layer.presentation === "observations" ? "Markers locate catalogue records. Mineral interpretation and observation footprints are distinct."
+                        : layer.presentation === "coverage" ? "A valid elevation cell may still be unusable under the selected slope limit."
+                          : layer.presentation === "observations" ? "Markers locate catalogue records. Mineral interpretation and observation footprints are distinct."
                           : "Model means, not current weather or extreme conditions. Export sampling is not the native climate-model resolution."}
           </p>
           <EvidenceLink

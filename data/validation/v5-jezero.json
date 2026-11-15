@@ -1,0 +1,164 @@
+{
+  "terrain": "jezero-ctx-20m",
+  "sourceSha256": "16a1aa66c3f48c1bca252795827db7b417876217aff0f5e1aff18027fab2327b",
+  "arrayChecksums": {
+    "elevationUrl": "95e0f863c03c7bfd27d5a9e1a1592770e0e94de6b3e807d03e79c23d01f359fa",
+    "slopeUrl": "63f103dda7826fbf4a01e26cfc3f4c770aa2425fadbc4d0f08b7e7b0c24f76ec",
+    "validUrl": "8c3d18e027550734541868c71a13479d220754cf6d06c3eb130c491aa0fc8925"
+  },
+  "width": 1596,
+  "height": 1512,
+  "pixelSizeM": 20,
+  "draft": {
+    "start": [
+      77.41909183169858,
+      18.46594223036952
+    ],
+    "end": [
+      77.46194316803819,
+      18.455819867454654
+    ],
+    "waypoints": []
+  },
+  "settings": {
+    "maxSlope": 20,
+    "riskWeight": 4,
+    "objectives": [
+      "ancient-water"
+    ],
+    "distanceWeight": 35,
+    "terrainWeight": 45,
+    "scienceWeight": 20,
+    "geographicOnly": false
+  },
+  "outbound": [
+    {
+      "id": "shortest",
+      "name": "Shortest feasible",
+      "distanceM": 2804.0103690232413,
+      "assessedDistanceM": 2804.0103690226756,
+      "ascentM": 20.461669921875,
+      "descentM": 103.79541015625,
+      "maximumSlopeDegrees": 19.33070945739746,
+      "riskIntegralM": 259.4941147743825,
+      "costErrorM": 3.698378350236453e-07,
+      "distanceErrorM": 4.0264922063215636e-07,
+      "targetsReached": [],
+      "seconds": 0.562
+    },
+    {
+      "id": "terrain",
+      "name": "Lower modelled terrain risk",
+      "distanceM": 2876.3450646105352,
+      "assessedDistanceM": 2876.3450646099695,
+      "ascentM": 19.308837890625,
+      "descentM": 102.642578125,
+      "maximumSlopeDegrees": 13.356027603149414,
+      "riskIntegralM": 139.9566096014467,
+      "costErrorM": 4.197272573946975e-07,
+      "distanceErrorM": 4.0461509343003854e-07,
+      "targetsReached": [],
+      "seconds": 0.625
+    },
+    {
+      "id": "balanced",
+      "name": "Balanced terrain",
+      "distanceM": 2842.0049155566603,
+      "assessedDistanceM": 2842.0049155560946,
+      "ascentM": 27.92919921875,
+      "descentM": 111.262939453125,
+      "maximumSlopeDegrees": 13.356027603149414,
+      "riskIntegralM": 156.5941163394275,
+      "costErrorM": 4.0327813621843234e-07,
+      "distanceErrorM": 4.0622717278893106e-07,
+      "targetsReached": [],
+      "seconds": 0.672
+    },
+    {
+      "id": "science-jezero-d-tcl-1",
+      "name": "Science-aware route",
+      "distanceM": 6585.6709365577035,
+      "assessedDistanceM": 6581.045559606813,
+      "ascentM": 106.671142578125,
+      "descentM": 190.0048828125,
+      "maximumSlopeDegrees": 9.045453071594238,
+      "riskIntegralM": 283.07154663045185,
+      "costErrorM": 9.70092514762655e-07,
+      "distanceErrorM": 9.865143510978669e-07,
+      "targetsReached": [
+        "jezero-d-tcl"
+      ],
+      "seconds": 2.281
+    }
+  ],
+  "return": {
+    "id": "return-terrain",
+    "name": "Lower modelled terrain risk",
+    "distanceM": 2876.345064610542,
+    "assessedDistanceM": 2876.3450646099764,
+    "ascentM": 102.642578125,
+    "descentM": 19.308837890625,
+    "maximumSlopeDegrees": 13.356027603149414,
+    "riskIntegralM": 139.95660960144653,
+    "costErrorM": 4.1972907638410106e-07,
+    "distanceErrorM": 4.0461782191414386e-07,
+    "targetsReached": [],
+    "seconds": 0.782
+  },
+  "rankings": [
+    {
+      "weights": [
+        35,
+        45,
+        20
+      ],
+      "winner": "terrain",
+      "scores": [
+        0.5758648708828982,
+        0.20669471598612008,
+        0.25583021174889015,
+        0.8
+      ]
+    },
+    {
+      "weights": [
+        100,
+        0,
+        0
+      ],
+      "winner": "shortest",
+      "scores": [
+        0.0,
+        0.01912775996034307,
+        0.01004705363024963,
+        1.0
+      ]
+    },
+    {
+      "weights": [
+        0,
+        0,
+        100
+      ],
+      "winner": "science-jezero-d-tcl-1",
+      "scores": [
+        1.0,
+        1.0,
+        1.0,
+        0.0
+      ]
+    }
+  ],
+  "timing": {
+    "roundTripDistanceM": 5680.355433633784,
+    "elapsedEarthSeconds": 10224.63978054081,
+    "dwellSeconds": 0
+  },
+  "tolerances": {
+    "distanceM": 0.0001,
+    "terrainCostM": 0.0001,
+    "ascentM": 1e-06,
+    "slopeDegrees": 1e-06,
+    "rankingScore": 1e-08
+  }
+}

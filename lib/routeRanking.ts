@@ -5,7 +5,7 @@ import type { ClimateId } from "./layers";
 
 export type Ranking = {
   weights: { distance: number; terrain: number; science: number; climate: number };
-  climate: Partial<Record<ClimateId, { reason: string; bounds?: [number, number][] }>>;
+  climate: Partial<Record<ClimateId, { reason: string; bounds?: [number, number][]; applied?: true }>>;
 };
 
 export function chooseCandidates(base: PlannerResult, pool: PlannedRoute[], settings: PlannerSettings) {
@@ -49,14 +49,7 @@ export function rankCandidates(
   routes: PlannedRoute[], settings: PlannerSettings, preferences: ClimatePreferences,
   analysis?: Record<string,RouteAnalysis>, grid?: CellBounds,
 ) {
-  const weights = {
-    distance: settings.distanceWeight,
-    terrain: routes.every((r) => !!r.terrain) ? settings.terrainWeight : 0,
-    science: settings.objectives.length && routes.some((r) => r.reached.length) ? settings.scienceWeight : 0,
-    climate: 0,
-  };
-  const sum = weights.distance+weights.terrain+weights.science;
-  const climate: Ranking["climate"] = {}, eligible: [number,number][][] = [];
+  const climate: Ranking["climate"] = {};
   if (preferences.enabled) for (const id of climateIds) {
     const band = preferences.bands[id];
     if (!band) continue;
@@ -87,9 +80,24 @@ export function rankCandidates(
       climate[id] = { reason: "The climate grid cannot distinguish these alternatives under this preference.", bounds };
       continue;
     }
-    climate[id] = { reason: "Used in ranking. The compared routes have separable model bounds.", bounds };
-    eligible.push(bounds);
+    climate[id] = { reason: "Used in ranking. The compared routes have separable model bounds.", bounds, applied: true };
   }
+  return rankAcceptedCandidates(routes, settings, preferences, climate);
+}
+
+export function rankAcceptedCandidates(
+  routes: PlannedRoute[], settings: PlannerSettings, preferences: ClimatePreferences, climate: Ranking["climate"] = {},
+) {
+  const weights = {
+    distance: settings.distanceWeight,
+    terrain: routes.every((route) => !!route.terrain) ? settings.terrainWeight : 0,
+    science: settings.objectives.length && routes.some((route) => route.reached.length > 0) ? settings.scienceWeight : 0,
+    climate: 0,
+  };
+  const sum = weights.distance + weights.terrain + weights.science;
+  const eligible = preferences.enabled ? Object.values(climate).flatMap((field) =>
+    field.applied && field.bounds?.length === routes.length ? [field.bounds] : []
+  ) : [];
   if (eligible.length) weights.climate = sum ? preferences.weight/100 : 1;
   const rest = 1-weights.climate;
   if (sum) {

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import HeaderLinks from "./HeaderLinks";
 
 export default function DocumentNav({ current }: { current: "sources" | "methodology" }) {
   return (
@@ -8,8 +9,7 @@ export default function DocumentNav({ current }: { current: "sources" | "methodo
         MarsPath
       </Link>
       <Link href="/">Explorer</Link>
-      <Link href="/sources/" aria-current={current === "sources" ? "page" : undefined}>Sources</Link>
-      <Link href="/methodology/" aria-current={current === "methodology" ? "page" : undefined}>Methodology</Link>
+      <HeaderLinks current={current} />
     </nav>
   );
 }

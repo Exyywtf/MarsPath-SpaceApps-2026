@@ -5,6 +5,7 @@ import View from "ol/View";
 import Projection from "ol/proj/Projection";
 import { addProjection } from "ol/proj";
 import TileLayer from "ol/layer/Tile";
+import LayerGroup from "ol/layer/Group";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import WMTS from "ol/source/WMTS";
@@ -493,8 +494,9 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     ];
     const pointLayers: [ReturnType<typeof createObservationLayer>, ReturnType<typeof createObservationLayer>] =
       [createObservationLayer(), createObservationLayer()];
+    const coverageLayers: [LayerGroup, LayerGroup] = [new LayerGroup({ visible: false }), new LayerGroup({ visible: false })];
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const overlay = createScientificOverlay(scalarLayers, pointLayers, projection, motion, (state) => {
+    const overlay = createScientificOverlay(scalarLayers, pointLayers, coverageLayers, projection, motion, (state) => {
       if (host.current) host.current.dataset.overlay = state.active ?? "none";
       handlers.current.onLayerState?.(state);
     });
@@ -521,6 +523,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
       layers: [
         ...tiles,
         ...scalarLayers,
+        ...coverageLayers,
         ...pointLayers,
         boundsLayer,
         markerLayer,

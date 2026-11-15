@@ -1,5 +1,11 @@
 # Validation record
 
+## MarsPath V5 Jezero case
+
+The [Jezero case record](../data/validation/v5-jezero.json) includes the original DTM hash, derivative array hashes, inputs, effective weight scenarios and independent results. Four accepted outbound candidates and the direct B-to-A return matched a Python Dijkstra solver within 0.0001 m of model cost. The checker also compared each retained raster elevation with the source, independently projected the stops and verified route metrics, target cell membership, duration and ranking. These checks measure agreement on the sampled terrain grid.
+
+Bundle `scripts/validation/record_v5_case.ts` with esbuild for Node, run it from the repository root and save stdout as the fixture. Run `scripts/validation/verify_v5_case.py <fixture> <original-tif>` with NumPy, rasterio and pyproj. The verifier writes only when given `--write <record>`.
+
 ## MarsPath V4
 
 - [Dataset checks](../data/validation/v4-datasets.json) independently matched 608 USGS polygon cell centres, all 777 original mineral catalogue records, all 1,855 PDS hydrated mineral rows and 605 TES cells, including 317 masked cells. The PDS derivative retains 1,851 distinct records and all source row numbers. The verifier checks output hashes and the relationship between raster colours and their source-derived lookup.

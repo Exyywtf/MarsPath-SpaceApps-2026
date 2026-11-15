@@ -19,7 +19,6 @@ import {
 import {
   ArrowLeft,
   ArrowUpRight,
-  BookOpen,
   Check,
   ChevronDown,
   ChevronUp,
@@ -28,7 +27,6 @@ import {
   HelpCircle,
   Layers,
   LoaderCircle,
-  Microscope,
   Minus,
   Mountain,
   Plus,
@@ -47,6 +45,8 @@ import {
   type Placement,
 } from "@/lib/planner";
 import { useRouteEngine } from "@/lib/useRouteEngine";
+import { emptyMission, jezeroMissionExample, type MissionAssumptions, type MissionObjective } from "@/lib/missionPlan";
+import { rankAcceptedCandidates } from "@/lib/routeRanking";
 import { useMapLayout } from "@/lib/useMapLayout";
 import { useResultsReveal } from "@/lib/useResultsReveal";
 import { defaultClimatePreferences } from "@/lib/routeAnalysis";
@@ -61,6 +61,8 @@ import LayerManager, { LayerLegend } from "./LayerManager";
 import AtlasHelp from "./AtlasHelp";
 import ScrollArea from "./ScrollArea";
 import type { DialogHandle } from "./AtlasDialog";
+import HeaderLinks from "./HeaderLinks";
+import { MissionJourney, MissionSensitivity, MissionSetup, missionPresets, type MissionPreset } from "./MissionPlanner";
 const MarsMap = dynamic(() => import("./MarsMap"), {
   ssr: false,
   loading: () => (
@@ -69,7 +71,7 @@ const MarsMap = dynamic(() => import("./MarsMap"), {
     </div>
   ),
 });
-type Workflow = "places" | "layers" | "directions" | "location";
+type Workflow = "places" | "layers" | "directions" | "mission" | "location";
 type Panel = Workflow | null;
 const noMapRoutes: MapRoute[] = [];
 const CoordinateReadout = memo(
@@ -125,6 +127,14 @@ export default function Atlas() {
     [drawing, setDrawing] = useState(false),
     [hideFeatured, setHideFeatured] = useState(false);
   const [climatePreferences, setClimatePreferences] = useState(defaultClimatePreferences);
+  const [mission, setMission] = useState<MissionAssumptions>(emptyMission);
+  const [preset, setPreset] = useState<MissionPreset>();
+  const [showStudy, setShowStudy] = useState(false);
+  const updateMission = useCallback((patch: Partial<MissionAssumptions>) => setMission((old) => ({ ...old, ...patch })), []);
+  const changeObjective = useCallback((objective: MissionObjective) => {
+    updateMission({ objective });
+    setSettings((old) => ({ ...old, objectives: objective === "ancient-water" || objective === "sedimentary" ? [objective] : [] }));
+  }, [updateMission]);
   const [query, setQuery] = useState(""),
     [tag, setTag] = useState("All"),
     [basemap, setBasemap] = useState("optical"),
@@ -149,8 +159,12 @@ export default function Atlas() {
   const requestedLayer = scientificLayers.find((l) => l.id === layerId) ?? null;
   const layer = scientificLayers.find((l) => l.id === overlay.active) ?? null,
     inspection = useLayerData(layer, inspectPoint, inspectionAnchor?.observationIds);
-  const engine = useRouteEngine(draft, settings, revision, climatePreferences, removalRevision);
-  const result = engine.result ?? engine.previous?.result;
+  const engine = useRouteEngine(draft, settings, revision, climatePreferences, removalRevision, mission.returnMode);
+  const baseResult = engine.result ?? engine.previous?.result;
+  const result = useMemo(() => panel === "mission" && preset && baseResult
+    ? { ...baseResult, ...rankAcceptedCandidates(baseResult.routes, { ...settings, ...missionPresets[preset] },
+        climatePreferences, baseResult.ranking.climate) }
+    : baseResult, [panel, preset, baseResult, settings, climatePreferences]);
   const updating = !!engine.previous;
   const [calculationSlow, setCalculationSlow] = useState(false);
   const [dismissedError, setDismissedError] = useState<string>();
@@ -171,7 +185,7 @@ export default function Atlas() {
   const [attachScroll, collapsed, interruptScroll, viewResults, editRoute, openEditors] = useResultsReveal({
     pending: engine.pending, generation: engine.generation,
     draftKey: engine.geometryKey,
-    directions: panel === "directions", placement, expand: expandResults,
+    directions: panel === "directions" || panel === "mission", placement, expand: expandResults,
   });
   const location = locations.find((l) => l.id === selected);
   const filtered = locations.filter(
@@ -186,14 +200,20 @@ export default function Atlas() {
     Promise.resolve().then(() => {
       if (!alive) return;
       const linked = locationFromSearch(window.location.search);
-      if (linked) {
+      const params = new URLSearchParams(window.location.search);
+      const linkedMission = params.get("mission") === "jezero";
+      const linkedHelp = params.get("help") === "1";
+      if (linkedMission) {
+        setWorkflow((old) => ({ panel: "mission", lastPanel: "mission", visited: new Set([...old.visited, "mission"]), leaving: null }));
+      } else if (linked) {
         setSelected(linked.id);
         setWorkflow((old) => ({ panel: "location", lastPanel: "location", visited: new Set([...old.visited, "location"]), leaving: null }));
       }
       try {
         setShortcuts(localStorage.getItem("marspath-shortcuts") !== "off");
-        setOnboarding(!linked && !localStorage.getItem("marspath-onboarded"));
+        setOnboarding(!linked && !linkedMission && !linkedHelp && !localStorage.getItem("marspath-onboarded"));
       } catch {}
+      if (linkedHelp) help.current?.open(helpButton.current);
       setPreferencesReady(true);
     });
     return () => {
@@ -236,7 +256,7 @@ export default function Atlas() {
     (p: Placement) => {
       if (p && !mapReady) return;
       setPlacement(p);
-      switchPanel("directions");
+      switchPanel(panel === "mission" ? "mission" : "directions");
       setSheet(p ? "peek" : "half");
       setOnboarding(false);
       if (p)
@@ -244,7 +264,7 @@ export default function Atlas() {
           .getElementById("interactive-mars-map")
           ?.focus({ preventScroll: true });
     },
-    [mapReady, switchPanel],
+    [mapReady, panel, switchPanel],
   );
   const mapDidInitialize = useCallback(() => {
     setMapReady(true);
@@ -292,7 +312,7 @@ export default function Atlas() {
       setOnboarding(false);
       if (placement) {
         place(asLonLat(l.coordinates));
-        switchPanel("directions");
+        switchPanel(panel === "mission" ? "mission" : "directions");
         return;
       }
       switchPanel("location");
@@ -302,7 +322,7 @@ export default function Atlas() {
       const zoom = destinationZoom(id);
       moveCamera((target) => target.focus(point, zoom));
     },
-    [moveCamera, placement, place, switchPanel],
+    [moveCamera, panel, placement, place, switchPanel],
   );
   const setCoordinate = useCallback(
     (label: string) => readout.current?.set(label),
@@ -319,6 +339,16 @@ export default function Atlas() {
     setSheet("half");
     moveCamera((target) => target.focus([77.44, 18.46], 11));
   }, [moveCamera]);
+  const missionExample = useCallback(() => {
+    open("mission");
+    setMission(jezeroMissionExample);
+    setSettings({ ...defaultSettings, objectives: ["ancient-water"] });
+    setClimatePreferences(defaultClimatePreferences);
+    setDraft({ start: asLonLat(terrainMetadata.examples[0][0]), end: asLonLat(terrainMetadata.examples[0][1]), waypoints: [] });
+    setPreset(undefined);
+    setActive(null);
+    moveCamera((target) => target.focus([77.44, 18.46], 11));
+  }, [open, moveCamera]);
   const featureJezero = useCallback((directions: boolean) => {
     open(directions ? "directions" : "location");
     setSelected("jezero");
@@ -332,14 +362,21 @@ export default function Atlas() {
   const manual = active && active.geometryKey === engine.geometryKey && candidates
     ? candidates.findIndex((route) => route.id === active.id) : -1;
   const selectedIndex = manual >= 0 ? manual : Math.max(0, recommended);
-  const mapRoutes = useMemo<MapRoute[]>(() =>
-    !updating && candidates ? candidates.map((route, index) => ({
+  const inbound = engine.inbound?.status === "ready" ? engine.inbound.route : undefined;
+  const mapRoutes = useMemo<MapRoute[]>(() => {
+    if (updating || !candidates) return noMapRoutes;
+    const routes: MapRoute[] = candidates.map((route, index) => ({
       id: route.id,
       coordinates: route.coordinates,
       ...routeAppearance(index, recommended, route.tier === "geographic"),
       selected: index === selectedIndex,
       connectors: route.connectors,
-    })) : noMapRoutes, [candidates, recommended, selectedIndex, updating]);
+    }));
+    if (panel === "mission" && inbound)
+      routes.push({ id: inbound.id, coordinates: inbound.coordinates, color: "#75d4c4", dash: [8, 7],
+        selected: true, connectors: inbound.connectors });
+    return routes;
+  }, [candidates, inbound, panel, recommended, selectedIndex, updating]);
   const endMapFeedback = () => {
     if (routeFeedback === "drawing") map.current?.finishReveal();
     if (routeFeedback === "error") setDismissedError(engine.error);
@@ -431,11 +468,12 @@ export default function Atlas() {
     return () => observer.disconnect();
   }, [panel]);
   function workflowState(id: Workflow) {
-    const exiting = leaving?.id === id;
+    const active = visiblePanel === id || id === "directions" && visiblePanel === "mission";
+    const exiting = !active && (leaving?.id === id || id === "directions" && leaving?.id === "mission");
     return {
-      "data-active": visiblePanel === id,
-      inert: visiblePanel !== id,
-      "aria-hidden": visiblePanel !== id || undefined,
+      "data-active": active,
+      inert: !active,
+      "aria-hidden": !active || undefined,
       "data-leaving": exiting,
     };
   }
@@ -447,7 +485,7 @@ export default function Atlas() {
         ? "Map layers"
         : visiblePanel === "directions"
           ? "Directions"
-          : (location?.name ?? "Destination");
+          : visiblePanel === "mission" ? "Mission Planner" : (location?.name ?? "Destination");
   return (
     <main className="atlas page-view" ref={atlasRef}>
       <a className="skip-link" href="#workflow-panel">
@@ -488,16 +526,13 @@ export default function Atlas() {
             <Layers size={18} />
             <span>Layers</span>
           </button>
+          <button className={panel === "mission" ? "nav-active mission-tab" : "mission-tab"}
+            aria-label="Mission Planner" aria-pressed={panel === "mission"} onClick={() => open("mission")}>
+            <Compass size={18} aria-hidden="true" /><span className="mission-tab-full">Mission Planner</span>
+            <span className="mission-tab-compact">Mission</span>
+          </button>
         </nav>
-        <div className="header-links">
-          <Link href="/sources/" aria-label="Scientific sources" title="Scientific sources">
-            <BookOpen size={18} />
-            <span>Sources</span>
-          </Link>
-          <Link href="/methodology/" aria-label="Methodology" title="Methodology">
-            <Microscope size={18} aria-hidden="true" />
-            <span>Methodology</span>
-          </Link>
+        <HeaderLinks help={
           <button
             ref={helpButton}
             aria-label="Help and keyboard shortcuts"
@@ -510,7 +545,7 @@ export default function Atlas() {
             <HelpCircle size={19} />
             <span>Help</span>
           </button>
-        </div>
+        } />
       </header>
       <span className="sr-only" role="status" aria-atomic="true">
         {removedEndpoint && !draft[removedEndpoint] ? `Point ${removedEndpoint === "start" ? "A" : "B"} removed.` : ""}
@@ -546,7 +581,7 @@ export default function Atlas() {
           layerRetry={layerRetry}
           onLayerState={setOverlay}
           onInspect={inspect}
-          showScience={panel === "directions" || settings.objectives.length > 0}
+          showScience={panel === "directions" || panel === "mission" || settings.objectives.length > 0}
           onScienceSelect={(id) => {
             openDirections();
             openEditors();
@@ -642,7 +677,7 @@ export default function Atlas() {
         {layer && inspectPoint && !placement && overlay.phase !== "hiding" && (
           <aside
             className="inspection-card"
-            data-categorical={layer.presentation === "categorical" || layer.presentation === "observations"}
+            data-categorical={layer.presentation === "categorical" || layer.presentation === "observations" || layer.presentation === "coverage"}
             aria-label="Scientific value inspection"
           >
             <button
@@ -660,6 +695,8 @@ export default function Atlas() {
                   ? inspection.covered ? "Historical image coverage" : "Outside historical image coverage"
                   : layer.presentation === "categorical"
                   ? inspection.unit ? `${inspection.unit.code} · ${inspection.unit.name}` : "No mapped unit"
+                  : layer.presentation === "coverage"
+                  ? inspection.coverage?.tier === "regional" ? "Regional terrain" : inspection.coverage?.tier === "coarse" ? "Coarse MOLA terrain" : "Numerical terrain unavailable"
                   : layer.presentation === "observations"
                   ? inspection.observations.length
                     ? `${inspection.observations.length} published record${inspection.observations.length === 1 ? "" : "s"}`
@@ -675,11 +712,22 @@ export default function Atlas() {
                 : layer.presentation === "historical" ? "NASA 2002 illustration; no point dose values"
                   : layer.presentation === "categorical" ? inspection.unit ? `USGS polygon ${inspection.unit.featureId} · 0.125° derivative cell` : layer.sampling
                     : layer.presentation === "observations" ? "Catalogue locations · overlap varies with zoom"
+                      : layer.presentation === "coverage" ? "Grid validity · alignment accuracy is unknown"
                       : layer.id === "thermal-inertia" ? "TES nightside estimate · 0.25° area-weighted cell"
                   : layer.id === "radiation" ? "Modelled effective dose rate · 700 MV research scenario"
                     : layer.id === "radiation-column" ? "Vertical atmospheric column mass, not a dose estimate"
                       : "Interpolated modelled climatology"}
             </small>
+            {inspection.coverage && <ul className="inspection-records">
+              {inspection.coverage.meta && <li>
+                <span>{inspection.coverage.meta.name} · {inspection.coverage.meta.angularStep ? `${inspection.coverage.meta.angularStep}°` : `${inspection.coverage.meta.pixelSize} m projected`}</span>
+                <EvidenceLink href={inspection.coverage.meta.sourcePage} target="_blank" rel="noreferrer">Terrain source</EvidenceLink>
+              </li>}
+              <li><span>MCD scenario · {inspection.coverage.climate ? "available" : "unavailable"}</span>
+                <span>Radiation model · {inspection.coverage.radiation ? "available" : "unavailable"}</span>
+                <span>{inspection.coverage.targets.length ? inspection.coverage.targets.join(", ") : "Published outcrop cell · none here"}</span>
+              </li>
+            </ul>}
             {!!inspection.observations.length && <ul className="inspection-records">
               {inspection.observations.map((item) => (
                 <li key={`${item.kind}:${item.id}`}>
@@ -787,7 +835,7 @@ export default function Atlas() {
               <h1 id="workflow-title" tabIndex={-1}>
                 {title}
               </h1>
-              {visiblePanel === "directions" && result?.routes.length ? (
+              {(visiblePanel === "directions" || visiblePanel === "mission") && result?.routes.length ? (
                 <button className="text-button result-jump" onClick={viewResults}>View results</button>
               ) : null}
 
@@ -1002,9 +1050,10 @@ export default function Atlas() {
                   Dataset sources & limitations</EvidenceLink>
               </ScrollArea>
             )}
-            {visited.has("directions") && (
+            {(visited.has("directions") || visited.has("mission")) && (
               <ScrollArea className="workflow-view" viewportClassName="panel-scroll" viewportRef={attachScroll}
-                label="Directions planner" active={panel === "directions"} {...workflowState("directions")}
+                label={visiblePanel === "mission" ? "Mission planner" : "Directions planner"}
+                active={panel === "directions" || panel === "mission"} {...workflowState("directions")}
                 onPointerDownCapture={(event) => {
                   if ((event.target as Element).closest(".scroll-track")) interruptScroll();
                 }}
@@ -1020,6 +1069,8 @@ export default function Atlas() {
                     if (target === event.currentTarget || target.closest("#route-planning")) interruptScroll();
                   },
                 }}>
+              {visiblePanel === "mission" && <MissionSetup mission={mission} draft={draft} onChange={updateMission}
+                onDraft={setDraft} onObjective={changeObjective} onExample={missionExample} showStudy={showStudy} onStudy={setShowStudy} />}
               <RoutePlanner
                 draft={draft}
                 mapReady={mapReady}
@@ -1046,6 +1097,13 @@ export default function Atlas() {
                 analysisError={engine.analysisError}
                 rankingPending={engine.rankingPending}
                 climatePreferences={climatePreferences}
+                mission={visiblePanel === "mission"}
+                missionResults={visiblePanel === "mission" && candidates?.[selectedIndex] && result && <>
+                  <MissionJourney mission={mission} outbound={candidates[selectedIndex]} inbound={engine.inbound}
+                    onChange={updateMission} revision={engine.geometryKey} />
+                  <MissionSensitivity routes={candidates} baseline={baseResult?.scores} ranking={result.ranking}
+                    scores={result.scores ?? []} preset={preset} onPreset={(value) => { setPreset(value); setActive(null); }} />
+                </>}
                 onClimatePreferences={setClimatePreferences}
                 onActive={(index) => {
                   const route = engine.result?.routes[index];
@@ -1107,6 +1165,10 @@ export default function Atlas() {
                       Route here <Route size={17} />
                     </button>
                   </div>
+                  {location.id === "jezero" && <div className="mission-card-links">
+                    <button className="secondary-button" onClick={missionExample}>Try validated mission example</button>
+                    <button className="text-button" onClick={() => { setShowStudy(true); open("mission"); }}>Validated Case Study</button>
+                  </div>}
                   <button
                     className="text-button"
                     disabled={!mapReady}

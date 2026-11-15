@@ -5,8 +5,10 @@ import type { LonLat } from "./mars";
 import { historicalCoverage, loadRadiationPressure, sampleColumn, sampleRadiation } from "./radiation";
 import { sampleClimate } from "./routeAnalysis";
 import { loadGeology, loadMineralObservations, loadThermalInertia, sampleGeology, scienceCellValue, type MineralObservation } from "./explorationScience";
+import { loadCoverageMasks, type inspectTerrainCoverage } from "./terrainCoverage";
 
-type InspectionValue = number | NonNullable<ReturnType<typeof sampleGeology>> | MineralObservation[] | null;
+type CoverageValue = ReturnType<typeof inspectTerrainCoverage> & { climate: boolean; radiation: boolean };
+type InspectionValue = number | NonNullable<ReturnType<typeof sampleGeology>> | CoverageValue | MineralObservation[] | null;
 type Sampler = (point: LonLat, observations: readonly string[]) => InspectionValue;
 const samplers = new Map<string, Promise<Sampler>>();
 function load(layer: Exclude<LayerDataset, { presentation: "historical" }>): Promise<Sampler> {
@@ -21,6 +23,13 @@ function load(layer: Exclude<LayerDataset, { presentation: "historical" }>): Pro
 function createSampler(layer: Exclude<LayerDataset, { presentation: "historical" }>): Promise<Sampler> {
   const id = layer.id;
   switch (id) {
+    case "coverage":
+      return Promise.all([loadCoverageMasks(), loadClimate().catch(() => null), loadRadiationPressure().catch(() => null)])
+        .then(([terrain, climate, pressure]) => (point) => ({
+          ...terrain(point),
+          climate: !!climate && sampleClimate(climate, "pressure", point) !== null,
+          radiation: !!pressure && sampleRadiation(pressure, point) !== null,
+        }));
     case "geology":
       return loadGeology().then((grid) => (point) => sampleGeology(grid, point));
     case "minerals":
@@ -75,7 +84,8 @@ export function useLayerData(layer: LayerDataset | null, point: LonLat | null, o
     loading: layer && layer.presentation !== "historical" && !sample && !error,
     error,
     value: typeof value === "number" ? value : null,
-    unit: typeof value === "object" && !Array.isArray(value) ? value : null,
+    unit: value && typeof value === "object" && "code" in value ? value : null,
+    coverage: value && typeof value === "object" && "tier" in value ? value : null,
     observations: Array.isArray(value) ? value : [],
     covered: layer?.presentation === "historical" && point ? historicalCoverage(point) : undefined,
   };

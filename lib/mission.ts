@@ -1,5 +1,4 @@
-import regional from "../public/processed/jezero.json";
-import global from "../public/processed/mola-quarter.json";
+import { jezeroTerrain, molaTerrain, regionalTerrains } from "./terrainRegistry";
 import {
   cellCoordinate,
   coordinateCell,
@@ -23,6 +22,7 @@ import {
 } from "./planner";
 import { scienceTargets } from "./science";
 import { marsDistance, type LonLat } from "./mars";
+import type { MissionReturn } from "./missionPlan";
 export function resolveCapability(request: PlannerRequest): {
   tier: RoutingTier;
   meta?: TerrainMeta;
@@ -40,9 +40,8 @@ export function resolveCapability(request: PlannerRequest): {
       reason:
         "An exact pole is unresolved by this cell-centre terrain grid. Geographic distance only.",
     };
-  const meta: TerrainMeta = points.every((p) => within(regional, p))
-    ? regional
-    : global;
+  const regional = regionalTerrains.find((terrain) => points.every((p) => within(terrain, p)));
+  const meta = regional ?? molaTerrain;
   const ids = points.map((p) => coordinateCell(meta, p));
   if (ids.some((id, i) => i > 0 && id === ids[i - 1]))
     return {
@@ -51,11 +50,11 @@ export function resolveCapability(request: PlannerRequest): {
         "At least one leg is smaller than the available terrain grid can resolve. Geographic distance only.",
     };
   return {
-    tier: meta.id === regional.id ? "regional" : "coarse",
+    tier: regional ? "regional" : "coarse",
     meta,
     reason:
-      meta.id === regional.id
-        ? "Jezero CTX terrain · 20 m projected grid"
+      regional
+        ? `${meta.name} · ${meta.pixelSize} m projected grid`
         : "Global MOLA · 0.25° derived cells (~14.8 km north–south)",
   };
 }
@@ -167,7 +166,7 @@ export async function calculateMission(
         marsDistance(p, cellCoordinate(terrain.meta, ids[i])),
       );
     const pathSet = new Set(cells),
-      reachedTargets = tier === "regional"
+      reachedTargets = meta!.id === jezeroTerrain.id
         ? scienceTargets.filter((target) => pathSet.has(coordinateCell(terrain.meta, target.coordinates)))
         : [],
       reached =
@@ -270,7 +269,7 @@ export async function calculateMission(
     }
   }
   const science =
-    tier === "regional"
+    meta!.id === jezeroTerrain.id
       ? scienceTargets
           .filter((t) =>
             t.objectives.some((o) => request.settings.objectives.includes(o)),
@@ -319,7 +318,7 @@ export async function calculateMission(
           : ": no feasible insertion with the current constraints."),
       );
   }
-  if (request.settings.objectives.length && tier !== "regional")
+  if (request.settings.objectives.length && meta!.id !== jezeroTerrain.id)
     warnings.push(
       "Local science-stop optimization is supported only by the verified Jezero targets. Regional destination themes are available in Explore.",
     );
@@ -356,4 +355,25 @@ export async function calculateMission(
 }
 function jId(route: PlannedRoute) {
   return route.id.startsWith("science-") ? "balanced" : route.id;
+}
+
+export async function calculateReturn(
+  request: PlannerRequest, geographic: boolean,
+  load: (meta: TerrainMeta) => Promise<Terrain>, cancelled: () => boolean, legs: LegCache,
+): Promise<MissionReturn> {
+  const draft = { start: request.draft.end, end: request.draft.start, waypoints: [] };
+  const settings = { ...request.settings, objectives: [], geographicOnly: geographic };
+  try {
+    const result = await calculateMission({ ...request, draft, settings }, load, cancelled, legs);
+    if (result.tier === "geographic" && !geographic) return { status: "unavailable", reason: result.reason };
+    const selected = result.routes.find((route) => route.id === "terrain") ?? result.routes[0];
+    if (!selected) return { status: "unavailable", reason: "A return route could not be calculated." };
+    return {
+      status: "ready", route: { ...selected, id: "return-" + selected.id }, terrain: result.meta,
+      reason: result.reason,
+    };
+  } catch (error) {
+    if (cancelled()) throw error;
+    return { status: "unavailable", reason: (error as Error).message };
+  }
 }

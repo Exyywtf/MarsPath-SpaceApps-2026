@@ -1,7 +1,7 @@
 "use client";
 import EvidenceLink from "./EvidenceLink";
 import Accordion from "./Accordion";
-import { memo, useMemo, useRef, useState } from "react";
+import { memo, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   ArrowDownUp,
   Crosshair,
@@ -64,6 +64,8 @@ interface Props {
   onActive: (index: number) => void;
   onRecalculate: () => void;
   onExample: () => void;
+  mission?: boolean;
+  missionResults?: ReactNode;
   onFit: () => void;
   onProfile: (point: LonLat | null) => void;
   onExploreGoal: (tag: string) => void;
@@ -429,13 +431,13 @@ export default memo(function RoutePlanner(p: Props) {
           Clear
         </button>
       </div>
-      <button
+      {!p.mission && <button
         className="example-button secondary-button"
         disabled={!p.mapReady}
         onClick={p.onExample}
       >
         {p.draft.start || p.draft.end ? "Replace draft with Jezero example" : "Try Jezero terrain example"}
-      </button>
+      </button>}
       <div className="planning-settings">
       <ScienceObjectives
         draft={p.draft}
@@ -620,6 +622,7 @@ export default memo(function RoutePlanner(p: Props) {
               </button>
             ))}
           </div>
+          {p.missionResults}
           {current?.tier === "geographic" ? (
             <div className="data-note">
               <strong>Geographic distance</strong>
@@ -817,14 +820,14 @@ export default memo(function RoutePlanner(p: Props) {
               pending={!exportEvidence && !p.evidenceError} error={p.evidenceError} unit={mappedUnit} onUnit={setMappedUnit} />
             <RouteProfile key={current.id + "-" + current.distance} route={current} analysis={analysis}
               color={routeAppearance(p.active, recommended, current.tier === "geographic").color} onPoint={p.onProfile} />
-            <Accordion className="quality-details trip-duration" title={<>Travel time estimate</>}>
+            {!p.mission && <Accordion className="quality-details trip-duration" title={<>Travel time estimate</>}>
               <label>Assumed constant speed (km/h)
                 <input type="number" min="0" step="any" value={assumedSpeed} onChange={(e) => setAssumedSpeed(e.target.value)} />
               </label>
               <p className="small-note">{duration === undefined
                 ? "Enter a positive speed to estimate time from total distance."
                 : duration.toLocaleString(undefined, { maximumSignificantDigits: 3 }) + " hours at this constant speed. Stops and terrain conditions are excluded."}</p>
-            </Accordion>
+            </Accordion>}
           </>}
         </>
       )}

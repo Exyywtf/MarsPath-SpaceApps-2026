@@ -3,6 +3,7 @@ import ScrollArea from "@/components/ScrollArea";
 import PageTransition from "@/components/PageTransition";
 import validation from "@/data/validation/v2-independent.json";
 import DocumentNav from "@/components/DocumentNav";
+import { JezeroCaseEvidence } from "@/components/MissionPlanner";
 export default function Methodology() {
   return (
     <PageTransition page="methodology"><main className="document-page methodology-page page-view">
@@ -14,6 +15,9 @@ export default function Methodology() {
         model result; neither a fine image nor a precise coordinate establishes
         safe access.
       </p>
+      <h2 id="mission-validation">Jezero mission case</h2>
+      <JezeroCaseEvidence />
+      <EvidenceLink className="text-link" href="/?mission=jezero">Open the Jezero Mission Planner</EvidenceLink>
       <h2>Coordinates and imagery</h2>
       <p className="lede">
         Positions use planetocentric latitude and east-positive longitude,

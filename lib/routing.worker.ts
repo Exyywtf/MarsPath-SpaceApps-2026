@@ -1,6 +1,6 @@
 import { type Terrain, type TerrainMeta } from "./routing";
-import type { PlannedRoute, PlannerResult } from "./planner";
-import { calculateMission, LegCache } from "./mission";
+import type { PlannedRoute, PlannerRequest, PlannerResult } from "./planner";
+import { calculateMission, calculateReturn, LegCache } from "./mission";
 import { chooseCandidates, rankCandidates } from "./routeRanking";
 import { analyseRoute, climateBounds, type RouteAnalysis } from "./routeAnalysis";
 import { loadClimate } from "./layers";
@@ -67,6 +67,7 @@ async function load(meta: TerrainMeta) {
 let desired: ComparisonRequest | undefined;
 let accepted: {
   id: number;
+  request: PlannerRequest;
   base: PlannerResult;
   pool: PlannedRoute[];
   analyses: Map<string, Promise<RouteAnalysis>>;
@@ -75,6 +76,7 @@ let accepted: {
 } | undefined;
 const post = (message: WorkerReply) => self.postMessage(message);
 let activeComparison = 0;
+let activeReturn = 0;
 async function compare() {
   const job = accepted, request = desired;
   if (!job || !request || job.id !== latest) return;
@@ -142,6 +144,20 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
     return;
   }
   if (input.id !== latest) return;
+  if (input.kind === "return") {
+    const revision = ++activeReturn;
+    const job = accepted;
+    if (!input.mode || !job) return;
+    const cancelled = () => latest !== input.id || revision !== activeReturn;
+    try {
+      const result = await calculateReturn(job.request, input.mode === "geographic", load, cancelled, legs);
+      if (!cancelled()) post({ kind: "return", id: input.id, key: input.key, result });
+    } catch (error) {
+      if (!cancelled()) post({ kind: "return", id: input.id, key: input.key,
+        result: { status: "unavailable", reason: (error as Error).message } });
+    }
+    return;
+  }
   desired = input.comparison;
   if (input.kind === "compare") {
     if (accepted?.ranked?.key === desired.key) return;
@@ -155,7 +171,7 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
     const { pool, ...base } = await calculateMission(input, load, cancelled, legs);
     base.elapsedMs = performance.now() - started;
     if (!cancelled()) {
-      accepted = { id: input.id, base, pool: pool ?? base.routes, analyses: new Map(), evidence: new Map(), ranked: desired };
+      accepted = { id: input.id, request: input, base, pool: pool ?? base.routes, analyses: new Map(), evidence: new Map(), ranked: desired };
       await compare();
     }
   } catch (error) {

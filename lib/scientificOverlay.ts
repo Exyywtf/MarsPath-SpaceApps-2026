@@ -1,5 +1,8 @@
 import type ImageTile from "ol/ImageTile";
 import type TileLayer from "ol/layer/Tile";
+import type LayerGroup from "ol/layer/Group";
+import ImageLayer from "ol/layer/Image";
+import ImageStatic from "ol/source/ImageStatic";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import Feature from "ol/Feature";
@@ -11,6 +14,7 @@ import TileGrid from "ol/tilegrid/TileGrid";
 import type { LayerDataset, LayerId } from "./layers";
 import { prepareLayerInspection } from "./useLayerData";
 import { loadMineralObservations, mineralStyles } from "./explorationScience";
+import { terrainCoverage } from "./terrainCoverage";
 
 export type OverlayState = {
   active: LayerId | null;
@@ -20,7 +24,7 @@ export type OverlayState = {
 
 const fadeMs = 260;
 type PointLayer = VectorLayer<VectorSource<Feature<Point>>>;
-type OverlayAsset = { raster: XYZ } | { points: VectorSource<Feature<Point>> };
+type OverlayAsset = { raster: XYZ; regional?: ImageLayer<ImageStatic>[] } | { points: VectorSource<Feature<Point>> };
 const pointStyle = {
   crism: new Style({ image: new Circle({ radius: 5, fill: new Fill({ color: mineralStyles.crism.color }),
     stroke: new Stroke({ color: "#131b1c", width: 1.5 }) }) }),
@@ -37,11 +41,12 @@ export function createObservationLayer(): PointLayer {
 export function createScientificOverlay(
   rasters: [TileLayer<XYZ>, TileLayer<XYZ>],
   points: [PointLayer, PointLayer],
+  regions: [LayerGroup, LayerGroup],
   projection: Projection,
   reduced: MediaQueryList,
   report: (state: OverlayState) => void,
 ) {
-  const slots = rasters.map((raster, i) => ({ raster, points: points[i], id: null as LayerId | null, weight: 0 }));
+  const slots = rasters.map((raster, i) => ({ raster, points: points[i], regions: regions[i], id: null as LayerId | null, weight: 0 }));
   const assets = new Map<LayerId, Promise<OverlayAsset>>();
   let active: LayerId | null = null;
   let opacity = 0.75, request = 0, frame = 0, onTop = -1;
@@ -76,6 +81,20 @@ export function createScientificOverlay(
       interpolate: dataset.interpolate,
     });
     source.setTileUrlFunction(() => dataset.imageUrl, dataset.imageUrl);
+    if (dataset.presentation === "coverage") {
+      const regional = await Promise.all(terrainCoverage.regions.map(async (record) => {
+        const image = new Image();
+        image.src = record.imageUrl;
+        await image.decode();
+        if (image.naturalWidth !== record.imageSize[0] || image.naturalHeight !== record.imageSize[1])
+          throw new Error("Regional coverage image dimensions differ.");
+        return new ImageLayer({ source: new ImageStatic({
+          url: record.imageUrl, imageExtent: record.bounds, projection, interpolate: false,
+          imageLoadFunction(wrapper) { wrapper.setImage(image); },
+        }) });
+      }));
+      return { raster: source, regional };
+    }
     return { raster: source };
   }
 
@@ -97,6 +116,7 @@ export function createScientificOverlay(
       const adjusted = i === onTop || topAlpha === 1 || slots[onTop]?.points.getVisible() ? alpha : alpha / (1 - topAlpha);
       slot.raster.setOpacity(adjusted);
       slot.points.setOpacity(alpha);
+      slot.regions.setOpacity(alpha);
     });
   }
 
@@ -119,6 +139,8 @@ export function createScientificOverlay(
             layer.setVisible(false);
             layer.setSource(null);
           }
+          slot.regions.setVisible(false);
+          slot.regions.getLayers().clear();
           slot.id = null;
         }
         const next = queued;
@@ -167,11 +189,16 @@ export function createScientificOverlay(
         const next = slots[index];
         onTop = index;
         next.id = dataset.id;
-        for (const layer of [slots[1 - index].raster, slots[1 - index].points]) layer.setZIndex(-1);
-        for (const layer of [next.raster, next.points]) layer.setZIndex(0);
+        const previous = slots[1 - index];
+        for (const layer of [previous.raster, previous.points, previous.regions]) layer.setZIndex(-1);
+        for (const layer of [next.raster, next.points, next.regions]) layer.setZIndex(0);
         if ("raster" in source) {
           next.raster.setSource(source.raster);
           next.raster.setVisible(true);
+          if (source.regional) {
+            next.regions.getLayers().extend(source.regional);
+            next.regions.setVisible(true);
+          }
         } else {
           next.points.setSource(source.points);
           next.points.setVisible(true);

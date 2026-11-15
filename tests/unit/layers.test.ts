@@ -19,7 +19,7 @@ it('uses bilinear numerical interpolation and blocks invalid neighbours',()=>{
 });
 it('has traceable metadata for numerical fields and the visual reference',()=>{
   expect(scientificLayers.map(({ id }) => id)).toEqual([
-    "topography", "temperature", "pressure", "wind", "radiation", "radiation-historical", "geology", "minerals", "thermal-inertia",
+    "topography", "temperature", "pressure", "wind", "radiation", "radiation-historical", "geology", "minerals", "thermal-inertia", "coverage",
   ]);
   for (const layer of scientificLayers) {
     expect(layer.sha256).toMatch(/^[a-f0-9]{64}$/);

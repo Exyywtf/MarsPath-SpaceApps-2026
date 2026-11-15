@@ -4,6 +4,7 @@ import './globals.css';
 import './atlas-experience.css';
 import './documents.css';
 import './controls.css';
+import './mission.css';
 import 'ol/ol.css';
 import { DocumentScrollbars } from '@/components/ScrollArea';
 export const metadata: Metadata={title:'MarsPath — Planetary atlas & mission planning',description:'Explore sourced imagery of Mars, plan terrain routes and compare geologic, climate and radiation evidence.'};

@@ -1,4 +1,4 @@
-# MarsPath V4 status
+# MarsPath status
 
 ## Delivered
 
@@ -13,6 +13,7 @@
 - A persistent route worker with distinct candidates, progressive route drawing and immediate results and export. Verified Jezero delta outcrops, map-linked elevation and environmental profiles, and opt-in climate preference scoring.
 - Two geographic radiation views. One shows a modelled cosmic-ray scenario derived from published numerical tables. The other reprojects NASA’s historical PIA03480 and includes the original illustration.
 - USGS global geology, 2,628 records from three published mineral catalogues and masked TES apparent thermal inertia. The worker reports mapped-unit lengths, supported thermal summaries and distances to published catalogue points for the accepted route geometry.
+- Mission Planner shares the Directions draft and calculates an independent B-to-A return. The Jezero case compares four validated outbound candidates and a direct return. Ranking presets reuse the accepted paths. Data Quality & Coverage displays the validity masks used by the terrain planner.
 - Separate data and software terms. The original software is MIT licensed. GitHub is private and deployments use the Vercel CLI.
 
 See [the validation record](VALIDATION.md) for counts and limitations. The public methods page describes how to interpret each calculation.
