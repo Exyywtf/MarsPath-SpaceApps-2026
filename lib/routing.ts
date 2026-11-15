@@ -57,6 +57,9 @@ export interface RouteRequest {
   riskWeight: number;
   waypoints?: LonLat[];
 }
+export function terrainProjected(meta: TerrainMeta, point: LonLat): LonLat {
+  return meta.grid === "geographic" ? [((point[0] + 180) % 360 + 360) % 360 - 180, point[1]] : lonLatToProjected(point);
+}
 export function cellCoordinate(meta: TerrainMeta, index: number): LonLat {
   const x = index % meta.width,
     y = Math.floor(index / meta.width);
@@ -84,7 +87,7 @@ export function coordinateCell(meta: TerrainMeta, point: LonLat): number {
     );
     return x >= 0 && x < meta.width ? y * meta.width + x : -1;
   }
-  const [px, py] = lonLatToProjected(point);
+  const [px, py] = terrainProjected(meta, point);
   const x = Math.floor((px - meta.transform[2]) / meta.transform[0]),
     y = Math.floor((py - meta.transform[5]) / meta.transform[4]);
   if (x < 0 || x >= meta.width || y < 0 || y >= meta.height) return -1;

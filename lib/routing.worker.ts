@@ -5,7 +5,10 @@ import { chooseCandidates, rankCandidates } from "./routeRanking";
 import { analyseRoute, climateBounds, type RouteAnalysis } from "./routeAnalysis";
 import { loadClimate } from "./layers";
 import { loadRadiationPressure, radiationProduct } from "./radiation";
-import type { ComparisonRequest, WorkerReply, WorkerRequest } from "./routeProtocol";
+import type { ComparisonRequest, MissionContext, WorkerReply, WorkerRequest } from "./routeProtocol";
+import type { MissionReturn } from "./missionPlan";
+import { analyseDaylight } from "./missionEnvironment";
+import { routeVisibility } from "./terrainVisibility";
 import { analyseEvidence, type RouteEvidence } from "./routeEvidence";
 import { loadGeology, loadMineralObservations, loadThermalInertia } from "./explorationScience";
 const legs = new LegCache();
@@ -73,10 +76,13 @@ let accepted: {
   analyses: Map<string, Promise<RouteAnalysis>>;
   evidence: Map<string, Promise<RouteEvidence>>;
   ranked?: ComparisonRequest;
+  returned?: { key: string; result: MissionReturn };
+  returnAnalysis?: { key: string; result: RouteAnalysis };
 } | undefined;
 const post = (message: WorkerReply) => self.postMessage(message);
 let activeComparison = 0;
 let activeReturn = 0;
+let activeMission = 0;
 async function compare() {
   const job = accepted, request = desired;
   if (!job || !request || job.id !== latest) return;
@@ -144,6 +150,49 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
     return;
   }
   if (input.id !== latest) return;
+  if (input.kind === "mission-context") {
+    const revision = ++activeMission;
+    const job = accepted, parameters = input.parameters;
+    const route = job?.pool.find((candidate) => candidate.id === input.routeId);
+    if (!job || !route || !parameters) return;
+    const inbound = job.returned?.key === input.returnKey && job.returned?.result.status === "ready"
+      ? job.returned.result : undefined;
+    const cancelled = () => latest !== input.id || revision !== activeMission;
+    const started = performance.now();
+    const { station, stationHeightM, observerHeightM } = parameters;
+    try {
+      const result: MissionContext = { elapsedMs: 0 };
+      result.daylight = await analyseDaylight(route, inbound?.route, parameters, cancelled);
+      if (cancelled()) return;
+      if (!station || stationHeightM === null || observerHeightM === null ||
+        ![stationHeightM, observerHeightM].every((height) => Number.isFinite(height) && height >= 0)) {
+        result.visibility = { reason: "Choose a station and provide two nonnegative antenna heights." };
+      } else if (route.tier !== "regional" || !job.base.meta) {
+        result.visibility = { reason: "Local visibility requires a regional terrain grid." };
+      } else {
+        const terrain = await load(job.base.meta);
+        result.visibility = { outbound: await routeVisibility(terrain, route, station, stationHeightM, observerHeightM, cancelled) };
+        if (inbound?.route.tier === "regional" && inbound.terrain?.id === terrain.meta.id && !cancelled())
+          result.visibility.return = await routeVisibility(terrain, inbound.route, station, stationHeightM, observerHeightM, cancelled);
+      }
+      if (inbound && input.returnKey && !cancelled()) {
+        const cached = job.returnAnalysis;
+        if (cached?.key === input.returnKey) result.returnAnalysis = cached.result;
+        else {
+          const [climate, pressure] = await Promise.all([loadClimate().catch(() => null), loadRadiationPressure().catch(() => null)]);
+          const report = await analyseRoute(inbound.route, climate, pressure, cancelled);
+          job.returnAnalysis = { key: input.returnKey, result: report };
+          result.returnAnalysis = report;
+        }
+      }
+      result.elapsedMs = performance.now() - started;
+      if (!cancelled()) post({ kind: "mission-context", id: input.id, key: input.key, result });
+    } catch (error) {
+      if (!cancelled()) post({ kind: "mission-context", id: input.id, key: input.key,
+        result: { error: (error as Error).message, elapsedMs: performance.now() - started } });
+    }
+    return;
+  }
   if (input.kind === "return") {
     const revision = ++activeReturn;
     const job = accepted;
@@ -151,7 +200,10 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
     const cancelled = () => latest !== input.id || revision !== activeReturn;
     try {
       const result = await calculateReturn(job.request, input.mode === "geographic", load, cancelled, legs);
-      if (!cancelled()) post({ kind: "return", id: input.id, key: input.key, result });
+      if (!cancelled()) {
+        job.returned = { key: input.key, result };
+        post({ kind: "return", id: input.id, key: input.key, result });
+      }
     } catch (error) {
       if (!cancelled()) post({ kind: "return", id: input.id, key: input.key,
         result: { status: "unavailable", reason: (error as Error).message } });

@@ -28,6 +28,7 @@ export type MissionAssumptions = {
   stationHeightM: number | null;
   observerHeightM: number | null;
 };
+export type MissionParameters = Omit<MissionAssumptions, "name" | "objective" | "customObjective">;
 
 export const emptyMission: MissionAssumptions = {
   name: "", objective: "", customObjective: "", speedKmh: null, dwellMinutes: null,
@@ -43,7 +44,7 @@ export type MissionReturn =
   | { status: "ready"; route: PlannedRoute; terrain?: TerrainMeta; reason: string }
   | { status: "unavailable"; reason: string };
 
-export function missionTiming(outbound: PlannedRoute, inbound: PlannedRoute | undefined, mission: MissionAssumptions) {
+export function missionTiming(outbound: PlannedRoute, inbound: PlannedRoute | undefined, mission: MissionParameters) {
   const stopCount = Math.max(0, (outbound.stops?.length ?? 2) - 2);
   const dwellSeconds = stopCount * (mission.dwellMinutes ?? 0) * 60;
   const distanceM = outbound.distance + (inbound?.distance ?? 0);

@@ -6,6 +6,8 @@ The [Jezero case record](../data/validation/v5-jezero.json) includes the origina
 
 Bundle `scripts/validation/record_v5_case.ts` with esbuild for Node, run it from the repository root and save stdout as the fixture. Run `scripts/validation/verify_v5_case.py <fixture> <original-tif>` with NumPy, rasterio and pyproj. The verifier writes only when given `--write <record>`.
 
+The mission conditions tests reproduce two [NASA Mars24 worked examples](https://www.giss.nasa.gov/tools/mars24/help/algorithm.html). Computed solar elevations differ by 0.000063° for 2000-01-06 00:00:00 UTC at the prime meridian and equator, and 0.000650° for 2004-01-03 13:46:31 UTC at Spirit’s planned landing point. The test allows 0.001°. The largest local true solar time difference is 0.180 Mars seconds. The Spirit test allows 0.5 Mars seconds for that value. Tests also cover the 2016 leap second, horizon latitude conversion, both polar cases and a timed crossing with dwell. The terrain visibility test compares the sampled minimum clearance to the analytic 8 km spherical chord on flat terrain and exercises an obstruction, antenna heights, nodata and the regional boundary.
+
 ## MarsPath V4
 
 - [Dataset checks](../data/validation/v4-datasets.json) independently matched 608 USGS polygon cell centres, all 777 original mineral catalogue records, all 1,855 PDS hydrated mineral rows and 605 TES cells, including 317 masked cells. The PDS derivative retains 1,851 distinct records and all source row numbers. The verifier checks output hashes and the relationship between raster colours and their source-derived lookup.

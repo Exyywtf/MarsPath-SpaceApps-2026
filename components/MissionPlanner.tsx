@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { asLonLat, locations } from "@/lib/atlas";
 import { coordinateLabel } from "@/lib/mars";
 import { missionObjectives, missionTiming, type MissionAssumptions, type MissionObjective, type MissionReturn } from "@/lib/missionPlan";
@@ -30,11 +31,12 @@ const objectiveNotes: Partial<Record<MissionObjective, [string, string]>> = {
   destination: ["Destination cards describe the evidence and terrain available at each location.", "/?place=jezero"],
 };
 
-export function MissionSetup({ mission, draft, onChange, onDraft, onObjective, onExample, showStudy, onStudy }: {
+export function MissionSetup({ mission, draft, onChange, onDraft, onObjective, onExample, showStudy, onStudy, communications }: {
   mission: MissionAssumptions; draft: PlannerDraft;
   onChange: (patch: Partial<MissionAssumptions>) => void; onDraft: (draft: PlannerDraft) => void;
   onObjective: (objective: MissionObjective) => void; onExample: () => void;
   showStudy: boolean; onStudy: (open: boolean) => void;
+  communications?: ReactNode;
 }) {
   const note = objectiveNotes[mission.objective];
   const speedInvalid = mission.speedKmh !== null && mission.speedKmh <= 0;
@@ -97,6 +99,7 @@ export function MissionSetup({ mission, draft, onChange, onDraft, onObjective, o
       Return to base
     </label>
     {mission.returnMode && <p className="small-note">Search from B directly to A. Required waypoints and research stops apply to the outbound leg.</p>}
+    {communications}
   </section>;
 }
 

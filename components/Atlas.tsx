@@ -50,7 +50,7 @@ import { rankAcceptedCandidates } from "@/lib/routeRanking";
 import { useMapLayout } from "@/lib/useMapLayout";
 import { useResultsReveal } from "@/lib/useResultsReveal";
 import { defaultClimatePreferences } from "@/lib/routeAnalysis";
-import type { MapHandle, MapInsets, MapRoute } from "./MarsMap";
+import type { MapHandle, MapInsets, MapMissionMarker, MapRoute } from "./MarsMap";
 import RoutePlanner, { terrainMetadata } from "./RoutePlanner";
 import regions from "@/data/regions.json";
 import { scientificLayers, layerValue, type LayerId } from "@/lib/layers";
@@ -63,6 +63,8 @@ import ScrollArea from "./ScrollArea";
 import type { DialogHandle } from "./AtlasDialog";
 import HeaderLinks from "./HeaderLinks";
 import { MissionJourney, MissionSensitivity, MissionSetup, missionPresets, type MissionPreset } from "./MissionPlanner";
+import { CommunicationsSetup, MissionConditions } from "./MissionConditions";
+import { downloadMission, openMissionBrief, type MissionBrief } from "@/lib/missionBrief";
 const MarsMap = dynamic(() => import("./MarsMap"), {
   ssr: false,
   loading: () => (
@@ -130,6 +132,8 @@ export default function Atlas() {
   const [mission, setMission] = useState<MissionAssumptions>(emptyMission);
   const [preset, setPreset] = useState<MissionPreset>();
   const [showStudy, setShowStudy] = useState(false);
+  const [showTerminator, setShowTerminator] = useState(false);
+  const [showVisibility, setShowVisibility] = useState(false);
   const updateMission = useCallback((patch: Partial<MissionAssumptions>) => setMission((old) => ({ ...old, ...patch })), []);
   const changeObjective = useCallback((objective: MissionObjective) => {
     updateMission({ objective });
@@ -238,6 +242,12 @@ export default function Atlas() {
   const openDirections = useCallback(() => open("directions"), [open]);
   const place = useCallback(
     (point: LonLat) => {
+      if (placement === "station") {
+        updateMission({ station: point });
+        expandResults();
+        setPlacement(null);
+        return;
+      }
       setDraft((old) =>
         placement === "start"
           ? { ...old, start: point }
@@ -250,7 +260,7 @@ export default function Atlas() {
       if (placement === "waypoint") expandResults();
       setPlacement(null);
     },
-    [expandResults, placement],
+    [expandResults, placement, updateMission],
   );
   const pick = useCallback(
     (p: Placement) => {
@@ -362,7 +372,26 @@ export default function Atlas() {
   const manual = active && active.geometryKey === engine.geometryKey && candidates
     ? candidates.findIndex((route) => route.id === active.id) : -1;
   const selectedIndex = manual >= 0 ? manual : Math.max(0, recommended);
+  const selectedRoute = engine.result?.routes[selectedIndex];
   const inbound = engine.inbound?.status === "ready" ? engine.inbound.route : undefined;
+  const { speedKmh, dwellMinutes, departure, returnMode, station, stationHeightM, observerHeightM } = mission;
+  const parameters = useMemo(() => ({ speedKmh, dwellMinutes, departure, returnMode, station, stationHeightM, observerHeightM }),
+    [speedKmh, dwellMinutes, departure, returnMode, station, stationHeightM, observerHeightM]);
+  const { generation, acceptedReturnKey, requestContext } = engine;
+  const readyForContext = !!(departure || station || returnMode);
+  const selectedId = selectedRoute?.id;
+  const contextKey = selectedId && generation !== undefined && readyForContext
+    ? JSON.stringify([generation, selectedId, acceptedReturnKey, parameters]) : "";
+  const lastContextKey = useRef("");
+  useEffect(() => {
+    const previousKey = lastContextKey.current;
+    lastContextKey.current = contextKey;
+    if (generation === undefined || (!contextKey && !previousKey)) return;
+    requestContext({ kind: "mission-context", id: generation, key: contextKey, routeId: selectedId,
+      parameters: contextKey ? parameters : undefined, returnKey: acceptedReturnKey });
+  }, [contextKey, generation, selectedId, parameters, acceptedReturnKey, requestContext]);
+  const missionContext = contextKey && engine.missionContext?.key === contextKey ? engine.missionContext.result : undefined;
+  const contextPending = Boolean(contextKey && !missionContext);
   const mapRoutes = useMemo<MapRoute[]>(() => {
     if (updating || !candidates) return noMapRoutes;
     const routes: MapRoute[] = candidates.map((route, index) => ({
@@ -375,8 +404,34 @@ export default function Atlas() {
     if (panel === "mission" && inbound)
       routes.push({ id: inbound.id, coordinates: inbound.coordinates, color: "#75d4c4", dash: [8, 7],
         selected: true, connectors: inbound.connectors });
+    if (panel === "mission" && showTerminator && missionContext?.daylight?.terminator)
+      missionContext.daylight.terminator.forEach((coordinates, i) => routes.push({
+        id: "solar-terminator-" + i, coordinates, color: "#e8d9f7", dash: [4, 6], selected: false,
+      }));
     return routes;
-  }, [candidates, inbound, panel, recommended, selectedIndex, updating]);
+  }, [candidates, inbound, missionContext, panel, recommended, selectedIndex, showTerminator, updating]);
+  const missionMarkers = useMemo<MapMissionMarker[]>(() => {
+    if (panel !== "mission") return [];
+    const dots: MapMissionMarker[] = showVisibility
+      ? [missionContext?.visibility?.outbound, missionContext?.visibility?.return].flatMap((record) =>
+          record?.samples.map(({ point, status }) => ({ point, status })) ?? [])
+      : [];
+    if (station) dots.push({ point: station, status: "station" });
+    return dots;
+  }, [missionContext, panel, showVisibility, station]);
+  function makeBrief(): MissionBrief | undefined {
+    if (generation === undefined || !selectedRoute || !engine.result) return;
+    const analysis = engine.analysis?.[selectedRoute.id], evidence = engine.evidence?.[selectedRoute.id];
+    return {
+      requestId: generation, geometryKey: engine.geometryKey, generatedAt: new Date().toISOString(),
+      mission, draft, settings, terrain: engine.result.meta, selected: selectedRoute, candidates: engine.result.routes,
+      ranking: engine.rankingPending ? undefined : result?.ranking, scores: engine.rankingPending ? undefined : result?.scores,
+      inbound: engine.inbound, analysis, evidence, context: missionContext,
+      analysisStatus: analysis ? "ready" : engine.analysisError ? "unavailable" : "pending",
+      evidenceStatus: evidence ? "ready" : engine.evidenceError ? "unavailable" : "pending",
+      contextStatus: contextPending ? "pending" : missionContext && !missionContext.error ? "ready" : "unavailable",
+    };
+  }
   const endMapFeedback = () => {
     if (routeFeedback === "drawing") map.current?.finishReveal();
     if (routeFeedback === "error") setDismissedError(engine.error);
@@ -570,6 +625,7 @@ export default function Atlas() {
           onMovePoint={movePoint}
           onRemoveEndpoint={removeEndpoint}
           routes={mapRoutes}
+          missionMarkers={missionMarkers}
           routeGeneration={engine.generation}
           recommendedRoute={mapRoutes[recommended]?.id}
           onRevealState={updateDrawing}
@@ -615,7 +671,7 @@ export default function Atlas() {
           >
             <Crosshair size={18} />
             <span>
-              {placement === "waypoint"
+              {placement === "station" ? "communications station" : placement === "waypoint"
                 ? "Choose a waypoint"
                 : "Choose " +
                   (placement === "start" ? "A · start" : "B · destination")}
@@ -1070,7 +1126,9 @@ export default function Atlas() {
                   },
                 }}>
               {visiblePanel === "mission" && <MissionSetup mission={mission} draft={draft} onChange={updateMission}
-                onDraft={setDraft} onObjective={changeObjective} onExample={missionExample} showStudy={showStudy} onStudy={setShowStudy} />}
+                onDraft={setDraft} onObjective={changeObjective} onExample={missionExample} showStudy={showStudy} onStudy={setShowStudy}
+                communications={<CommunicationsSetup mission={mission} start={draft.start} mapReady={mapReady} onChange={updateMission}
+                  onPlace={() => pick("station")} />} />}
               <RoutePlanner
                 draft={draft}
                 mapReady={mapReady}
@@ -1098,11 +1156,25 @@ export default function Atlas() {
                 rankingPending={engine.rankingPending}
                 climatePreferences={climatePreferences}
                 mission={visiblePanel === "mission"}
+                assumedSpeed={speedKmh}
+                onSpeed={(value) => updateMission({ speedKmh: value })}
+                missionActions={<div className="mission-exports">
+                  <button className="secondary-button" disabled={!selectedRoute} onClick={() => {
+                    const brief = makeBrief();
+                    if (brief) openMissionBrief(brief);
+                  }}>Generate Mission Brief</button>
+                  {visiblePanel === "mission" && <button className="text-button" disabled={!selectedRoute} onClick={() => {
+                    const brief = makeBrief();
+                    if (brief) downloadMission(brief);
+                  }}>Export mission GeoJSON</button>}
+                </div>}
                 missionResults={visiblePanel === "mission" && candidates?.[selectedIndex] && result && <>
                   <MissionJourney mission={mission} outbound={candidates[selectedIndex]} inbound={engine.inbound}
                     onChange={updateMission} revision={engine.geometryKey} />
                   <MissionSensitivity routes={candidates} baseline={baseResult?.scores} ranking={result.ranking}
                     scores={result.scores ?? []} preset={preset} onPreset={(value) => { setPreset(value); setActive(null); }} />
+                  <MissionConditions context={missionContext} pending={contextPending} terminator={showTerminator}
+                    onTerminator={setShowTerminator} visibility={showVisibility} onVisibility={setShowVisibility} onProfile={setProfilePoint} />
                 </>}
                 onClimatePreferences={setClimatePreferences}
                 onActive={(index) => {

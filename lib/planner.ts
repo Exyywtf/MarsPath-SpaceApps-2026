@@ -7,7 +7,7 @@ import {
 } from "./mars";
 import type { RouteResult, TerrainMeta } from "./routing";
 export type EndpointKind = "start" | "end";
-export type Placement = EndpointKind | "waypoint" | null;
+export type Placement = EndpointKind | "waypoint" | "station" | null;
 export type RoutingTier = "regional" | "coarse" | "geographic";
 export interface PlannerDraft {
   start: LonLat | null;
@@ -147,11 +147,13 @@ export function geographicRoute(draft: PlannerDraft): PlannedRoute {
   const points = draftPoints(draft);
   let distance = 0;
   const coordinates: LonLat[] = [];
+  const stopIndices = [0];
   for (let i = 1; i < points.length; i++) {
     distance += marsDistance(points[i - 1], points[i]);
     coordinates.push(
       ...greatCircle(points[i - 1], points[i]).slice(i === 1 ? 0 : 1),
     );
+    stopIndices.push(coordinates.length - 1);
   }
   return {
     id: "geographic",
@@ -163,6 +165,7 @@ export function geographicRoute(draft: PlannerDraft): PlannedRoute {
     connectors: [],
     reached: [],
     stops: points,
+    stopIndices,
     snapping: [],
   };
 }

@@ -14,6 +14,7 @@
 - Two geographic radiation views. One shows a modelled cosmic-ray scenario derived from published numerical tables. The other reprojects NASA’s historical PIA03480 and includes the original illustration.
 - USGS global geology, 2,628 records from three published mineral catalogues and masked TES apparent thermal inertia. The worker reports mapped-unit lengths, supported thermal summaries and distances to published catalogue points for the accepted route geometry.
 - Mission Planner shares the Directions draft and calculates an independent B-to-A return. The Jezero case compares four validated outbound candidates and a direct return. Ranking presets reuse the accepted paths. Data Quality & Coverage displays the validity masks used by the terrain planner.
+- Mission conditions include Mars24 daylight and geometric terrain visibility. A frozen Mission Brief includes the selected legs, profiles, comparison, assumptions and provenance. The versioned mission export retains the full geometry and analysis status.
 - Separate data and software terms. The original software is MIT licensed. GitHub is private and deployments use the Vercel CLI.
 
 See [the validation record](VALIDATION.md) for counts and limitations. The public methods page describes how to interpret each calculation.
@@ -21,6 +22,7 @@ See [the validation record](VALIDATION.md) for counts and limitations. The publi
 ## Limits
 
 - The coarse grid smooths local slopes and obstacles. Data coverage and test agreement do not establish physical alignment accuracy or astronaut safety.
+- Daylight uses a geometric horizon and Earth UTC supported by the 1972–2026 leap-second table. Terrain visibility excludes propagation, terrain shadows and equipment performance.
 - Local science scoring covers representative Jezero delta type locations and two objectives. The radiation model gives scenario context at coarse resolution with unknown absolute dose accuracy. The mineral catalogues represent targeted observations and carry zero ranking weight.
 - SWIM numerical depth products remain unavailable from the project and its paper-linked JPL viewer. The opt-in ice preference and Arcadia Planitia await those products. TES dust-cover validity and terms remain unresolved.
 - The official challenge Resources and Submission Guide could not be retrieved in the earlier eligibility check. Award eligibility and submission remain unverified.

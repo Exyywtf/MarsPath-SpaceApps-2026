@@ -1,8 +1,8 @@
 "use client";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { PlannerDraft, PlannerSettings } from "./planner";
 import type { ClimatePreferences, RouteAnalysis } from "./routeAnalysis";
-import type { ComparisonRequest, ComparisonResult, WorkerReply, WorkerRequest } from "./routeProtocol";
+import type { ComparisonRequest, ComparisonResult, MissionContext, WorkerReply, WorkerRequest } from "./routeProtocol";
 import { matchingRouteAnalyses, matchingRouteEvidence } from "./routeSnapshot";
 import type { RouteEvidence } from "./routeEvidence";
 import type { MissionReturn, ReturnMode } from "./missionPlan";
@@ -45,6 +45,12 @@ export function useRouteEngine(
   const requestedKey = useRef("");
   const [state, setState] = useState<State>({ geometryKey: "", requestKey: "" });
   const [inbound, setInbound] = useState<{ key: string; result: MissionReturn }>();
+  const [missionContext, setMissionContext] = useState<{ key: string; result: MissionContext }>();
+  const contextRequested = useRef("");
+  const requestContext = useCallback((message: Extract<WorkerRequest, { kind: "mission-context" }>) => {
+    contextRequested.current = message.key;
+    worker.current?.postMessage(message);
+  }, []);
   const returnKey = JSON.stringify([requestKey, returnMode]);
   const returnRequested = useRef("");
   useLayoutEffect(() => { input.current = { geometryKey, requestKey, comparison }; }, [geometryKey, requestKey, comparison]);
@@ -55,6 +61,10 @@ export function useRouteEngine(
     w.onmessage = ({ data }: MessageEvent<WorkerReply>) => {
       const { geometryKey, requestKey, comparison } = input.current;
       if (data.id !== requestId.current || requestKey !== requestedKey.current) return;
+      if (data.kind === "mission-context") {
+        if (data.key === contextRequested.current) setMissionContext({ key: data.key, result: data.result });
+        return;
+      }
       if (data.kind === "return") {
         if (data.key === returnRequested.current) setInbound({ key: data.key, result: data.result });
         return;
@@ -154,6 +164,9 @@ export function useRouteEngine(
     result: complete ? state.result : undefined,
     generation,
     inbound: returnMode && generation !== undefined && inbound?.key === returnKey ? inbound.result : undefined,
+    acceptedReturnKey: returnMode && generation !== undefined && inbound?.key === returnKey ? returnKey : undefined,
+    missionContext,
+    requestContext,
     error: complete ? state.error : undefined,
     analysis: complete ? state.analysis : undefined,
     displayAnalysis: complete ? state.analysis ?? state.previousAnalysis : previous?.analysis ?? previous?.previousAnalysis,

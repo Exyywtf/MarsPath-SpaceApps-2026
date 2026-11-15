@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { readFile } from "node:fs/promises";
 
 test("Jezero mission shares the draft, plans its return and compares a fixed candidate pool", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -55,4 +56,39 @@ test("terrain coverage inspection and shared Help work from the static pages", a
   expect((await help.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   await help.click();
   await expect(page.getByRole("dialog")).toBeVisible();
+});
+
+test("mission daylight and visibility export with both legs and a printable brief", async ({ page, context }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/?mission=jezero");
+  await page.getByRole("button", { name: "Try validated mission example" }).click();
+  await expect(page.getByText("Return · B to A", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Daylight & departure" }).click();
+  await expect(page.getByLabel("Inspect daylight on map")).toBeVisible();
+  await expect(page.locator(".mission-daylight")).toContainText("2026-11-15T15:00:00.000Z");
+  await page.getByLabel("Show solar terminator").check();
+  await page.getByRole("button", { name: "Communications assumptions" }).click();
+  await page.getByRole("button", { name: "Use A as station" }).click();
+  await page.getByLabel("Station antenna height (m)").fill("3");
+  await page.getByLabel("Observer antenna height (m)").fill("2");
+  await page.getByRole("button", { name: "Terrain line of sight" }).click();
+  await expect(page.getByLabel("Show visibility samples on map")).toBeVisible();
+  await expect(page.locator(".mission-visibility .visibility-leg")).toHaveCount(2);
+  const file = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export mission GeoJSON" }).click();
+  const exported = JSON.parse(await readFile(await (await file).path(), "utf8"));
+  expect(exported.mission.version).toBe("marspath-mission-v1");
+  expect(exported.mission.missionConditions.daylight.timeline.daylightSeconds).toBeGreaterThan(0);
+  expect(exported.mission.returnStatus).toBe("ready");
+  const roles = new Set(exported.features.map((feature: { properties: { leg: string } }) => feature.properties.leg));
+  expect([...roles]).toEqual(["outbound", "return"]);
+  const newTab = context.waitForEvent("page");
+  await page.getByRole("button", { name: "Generate Mission Brief" }).click();
+  const brief = await newTab;
+  await expect(brief.getByRole("heading", { name: "Jezero delta investigation" })).toBeVisible();
+  await expect(brief.getByRole("button", { name: "Print / Save as PDF" })).toBeVisible();
+  await expect(brief.getByRole("heading", { name: "Sources and reproducibility" })).toBeVisible();
+  await expect(brief.getByText(/Return line of sight/)).toBeVisible();
+  await brief.emulateMedia({ media: "print" });
+  await expect(brief.getByRole("button", { name: "Print / Save as PDF" })).toBeHidden();
 });

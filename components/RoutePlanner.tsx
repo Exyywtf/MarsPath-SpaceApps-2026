@@ -66,6 +66,9 @@ interface Props {
   onExample: () => void;
   mission?: boolean;
   missionResults?: ReactNode;
+  missionActions?: ReactNode;
+  assumedSpeed: number | null;
+  onSpeed: (value: number | null) => void;
   onFit: () => void;
   onProfile: (point: LonLat | null) => void;
   onExploreGoal: (tag: string) => void;
@@ -255,8 +258,7 @@ export default memo(function RoutePlanner(p: Props) {
   const exportEvidence = current ? p.exportEvidence?.[current.id] : undefined;
   const evidenceSection = current ? routeEvidenceSection(current, exportEvidence) : undefined;
   const [mappedUnit, setMappedUnit] = useState("");
-  const [assumedSpeed, setAssumedSpeed] = useState("");
-  const speed = Number(assumedSpeed);
+  const speed = p.assumedSpeed ?? 0;
   const travelTime = speed > 0 && current ? current.distance / 1000 / speed : NaN;
   const duration = Number.isFinite(travelTime) ? travelTime : undefined;
   const ranking = p.result?.ranking;
@@ -622,6 +624,7 @@ export default memo(function RoutePlanner(p: Props) {
               </button>
             ))}
           </div>
+          {p.missionActions}
           {p.missionResults}
           {current?.tier === "geographic" ? (
             <div className="data-note">
@@ -822,7 +825,8 @@ export default memo(function RoutePlanner(p: Props) {
               color={routeAppearance(p.active, recommended, current.tier === "geographic").color} onPoint={p.onProfile} />
             {!p.mission && <Accordion className="quality-details trip-duration" title={<>Travel time estimate</>}>
               <label>Assumed constant speed (km/h)
-                <input type="number" min="0" step="any" value={assumedSpeed} onChange={(e) => setAssumedSpeed(e.target.value)} />
+                <input type="number" min="0" step="any" value={p.assumedSpeed ?? ""}
+                  onChange={(event) => p.onSpeed(event.target.value === "" ? null : event.target.valueAsNumber)} />
               </label>
               <p className="small-note">{duration === undefined
                 ? "Enter a positive speed to estimate time from total distance."

@@ -12,7 +12,7 @@ export const factorInfo = {
   radiation: { name: "Modelled effective dose rate", unit: "mSv/year", precision: 0 },
 } as const;
 export type SpanRole = "terrain" | "connector" | "geographic";
-type Span = { a: LonLat; b: LonLat; role: SpanRole };
+type Span = { a: LonLat; b: LonLat; role: SpanRole; dwell?: true };
 export type FactorSample = {
   distance: number;
   length: number;
@@ -58,19 +58,28 @@ const degrees = 180 / Math.PI;
 const epsilon = 1e-10;
 const climateLng = 360/63, climateLat = 180/47;
 
-export function* orderedSpans(route: PlannedRoute): Generator<Span> {
+export function* orderedSpans(route: PlannedRoute, includeDwell = false): Generator<Span> {
   const points = route.coordinates;
+  const stopIndices = route.stopIndices ?? [];
   if (route.tier === "geographic") {
-    for (let i = 1; i < points.length; i++) yield { a: points[i-1], b: points[i], role: "geographic" };
+    let stop = 1;
+    for (let i = 1; i < points.length; i++) {
+      yield { a: points[i-1], b: points[i], role: "geographic" };
+      if (includeDwell && stop < stopIndices.length - 1 && stopIndices[stop] === i) {
+        yield { a: points[i], b: points[i], role: "geographic", dwell: true };
+        stop++;
+      }
+    }
     return;
   }
-  const stopIndices = route.stopIndices ?? [];
   let nextStop = 0;
   for (const [i, point] of points.entries()) {
     if (i) yield { a: points[i-1], b: point, role: "terrain" };
     while (stopIndices[nextStop] === i) {
       const [chosen, snapped] = route.connectors[nextStop];
       if (nextStop > 0) yield { a: snapped, b: chosen, role: "connector" };
+      if (includeDwell && nextStop > 0 && nextStop < stopIndices.length - 1)
+        yield { a: chosen, b: chosen, role: "connector", dwell: true };
       if (nextStop < stopIndices.length-1) yield { a: chosen, b: snapped, role: "connector" };
       nextStop++;
     }

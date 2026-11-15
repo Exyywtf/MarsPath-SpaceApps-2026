@@ -106,6 +106,13 @@ export interface MapRoute {
   selected: boolean;
   connectors?: LonLat[][];
 }
+export type MapMissionMarker = { point: LonLat; status: "clear" | "obstructed" | "unknown" | "station" };
+const missionMarkerStyles = Object.fromEntries(Object.entries({
+  clear: "#8cdfbd", obstructed: "#f2bb90", unknown: "#b4afdc", station: "#f8dab9",
+}).map(([status, color]) => [status, new Style({
+  image: new Circle({ radius: status === "station" ? 8 : 3.25, fill: new Fill({ color }), stroke: new Stroke({ color: "#121c20", width: 1.4 }) }),
+  text: status === "station" ? new Text({ text: "S", font: "700 10px sans-serif", fill: new Fill({ color: "#121c20" }) }) : undefined,
+})]));
 interface Props {
   selected: string | null;
   basemap: string;
@@ -124,6 +131,7 @@ interface Props {
   onMovePoint: (kind: MarkerKind, point: LonLat) => void;
   onRemoveEndpoint: (kind: EndpointKind) => void;
   routes: MapRoute[];
+  missionMarkers?: MapMissionMarker[];
   routeGeneration?: number;
   recommendedRoute?: string;
   onRevealState: (drawing: boolean) => void;
@@ -149,6 +157,16 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
     markers = useRef<VectorLayer<VectorSource>[]>([]);
   const scalar = useRef<ReturnType<typeof createScientificOverlay>>(null);
   const scienceLayer = useRef<VectorLayer<VectorSource> | null>(null);
+  const missionSource = useRef(new VectorSource());
+  useEffect(() => {
+    const source = missionSource.current;
+    source.clear();
+    if (props.missionMarkers?.length) source.addFeatures(props.missionMarkers.map((marker) => {
+      const feature = new Feature(new Point(marker.point));
+      feature.setStyle(missionMarkerStyles[marker.status]);
+      return feature;
+    }));
+  }, [props.missionMarkers]);
   const routeSource = useRef(new VectorSource()),
     endpointSource = useRef(new VectorSource()),
     exitingEndpointSource = useRef(new VectorSource()),
@@ -530,6 +548,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
         labelLayer,
         targets,
         routeLayer,
+        new VectorLayer({ source: missionSource.current, zIndex: 3 }),
         new VectorLayer({ source: exitingEndpointSource.current }),
         endpointLayer,
         profileLayer,

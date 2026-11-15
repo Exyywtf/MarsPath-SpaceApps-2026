@@ -18,6 +18,20 @@ export default function Methodology() {
       <h2 id="mission-validation">Jezero mission case</h2>
       <JezeroCaseEvidence />
       <EvidenceLink className="text-link" href="/?mission=jezero">Open the Jezero Mission Planner</EvidenceLink>
+      <h2>Daylight and terrain visibility</h2>
+      <p className="lede">
+        Mars24 converts Earth UTC to terrestrial time using the leap-second table through 2026, then estimates Mars season,
+        local mean and true solar time, elevation and azimuth. The calculation converts atlas latitudes to planetographic latitude.
+        The geometric horizon excludes terrain shadows and atmospheric extinction. Mission timelines sample travel and dwell at intervals
+        of up to one Earth minute and refine detected horizon crossings to one second.
+      </p>
+      <EvidenceLink className="text-link" href="https://www.giss.nasa.gov/tools/mars24/help/algorithm.html">NASA Mars24 equations and worked examples</EvidenceLink>
+      <EvidenceLink className="text-link" href="https://datacenter.iers.org/data/html/bulletinc-072.html">IERS leap-second bulletin</EvidenceLink>
+      <p className="lede">
+        Terrain visibility tests straight chords between hypothetical antenna locations and a numerical regional terrain model on the Mars sphere.
+        The model samples each chord at half-cell spacing or finer. The route samples are nominally 40 m apart, with a maximum of 512 positions per leg.
+        Missing terrain and unassessed connectors return unknown. Signal strength, communications range and equipment reliability remain unassessed.
+      </p>
       <h2>Coordinates and imagery</h2>
       <p className="lede">
         Positions use planetocentric latitude and east-positive longitude,
