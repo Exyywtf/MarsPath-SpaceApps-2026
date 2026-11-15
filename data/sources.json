@@ -364,6 +364,23 @@
     "accessed": "2026-11-15"
   },
   {
+    "id": "hydrated-mineral-sites",
+    "title": "Hydrated mineral sites from OMEGA and CRISM",
+    "institution": "Carter et al. (2013) · ESA Mars Express · NASA MRO · NASA PDS",
+    "type": "Published observations",
+    "url": "https://pds-geosciences.wustl.edu/mex/mex-m-omega-5-ddr-global-maps-v1/mexomg_2000/data/hydrous/",
+    "description": "PDS HYDROUS_SITES_GEO_MAP release and revision 0001 gives coordinates of hydrated mineral detections from OMEGA and CRISM. Instrument product IDs are preserved per site.",
+    "format": "PDS CSV and label, packaged as a static point catalogue",
+    "coverage": "Targeted detections across Mars, with uneven survey coverage",
+    "resolution": "0.01° printed coordinate precision. Absolute accuracy is unknown.",
+    "units": "Degrees and archive product IDs",
+    "crs": "Planetocentric latitude and signed east longitude",
+    "processing": "1,855 source rows yield 1,851 distinct records after four exact repeats are merged. All source row numbers are retained.",
+    "limitations": "The table supplies no mineral species, detection boundaries or ground sampling targets. Route distance to a record is research context with zero ranking weight.",
+    "usage": "NASA Open Data lists this archive as US public domain. Credit Carter et al. and the ESA OMEGA and NASA CRISM teams.",
+    "accessed": "2026-11-15"
+  },
+  {
     "id": "thermal-inertia",
     "title": "Mars nightside apparent thermal inertia",
     "institution": "Putzig, Mellon, Heet and Ward (2009) · NASA PDS",
@@ -393,7 +410,7 @@
     "units": "Dimensionless emissivity",
     "crs": "ASU catalogue lists planetocentric simple cylindrical, −180° to 180° E",
     "processing": "The downloaded PDS and VICAR arrays agree. The atlas links to the original product.",
-    "limitations": "The numerical label gives no missing-data code. A repeated lower value covers uniform polar rows, and redistribution terms remain unverified.",
+    "limitations": "The numerical label gives no missing-data code. A repeated lower value covers uniform polar rows. The Mars Trek metadata lists private access and use terms as TBD. Redistribution terms for the ASU download remain unverified.",
     "usage": "Follow ASU guidance and credit Ruff & Christensen. Source-only reference.",
     "accessed": "2026-11-15"
   },

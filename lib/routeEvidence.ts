@@ -28,9 +28,15 @@ export const evidenceProvenance = {
   },
   minerals: {
     ...scienceSources.minerals, checksum: explorationScience.minerals.data.sha256,
-    resolution: "Published record centres; detection footprints and absolute position accuracy unavailable",
+    resolution: "Published record points. Detection footprints and absolute position accuracy are unavailable.",
+    hydrated: {
+      ...scienceSources.hydrated, checksum: explorationScience.hydrated.data.sha256,
+      dataset: explorationScience.hydrated.dataset, product: explorationScience.hydrated.product,
+      release: explorationScience.hydrated.release, revision: explorationScience.hydrated.revision,
+      coordinatePrecisionDegrees: explorationScience.hydrated.printedCoordinatePrecisionDegrees,
+    },
   },
-  method: "Spherical Mars great-circle arcs split at 0.125° degree cell edges. Length-weighted grid evidence is reported per role. Centre distances are minima to the full arcs.",
+  method: "Spherical Mars great-circle arcs split at 0.125° cell edges. Length-weighted grid evidence is reported per role. Distances from catalogue points are minima to the full arcs.",
   rankingWeight: 0,
   ice: { ...scienceSources.ice, status: "Published numerical depth grids unavailable", rankingWeight: 0 },
 } as const;

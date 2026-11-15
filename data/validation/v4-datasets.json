@@ -62,5 +62,17 @@
     "records": 777,
     "crism": 135,
     "chloride": 642
+  },
+  "hydrated": {
+    "pdsRows": 1855,
+    "distinctRecords": 1851,
+    "exactRepeats": 4,
+    "pointBounds": [
+      -179.9,
+      -70.75,
+      179.78,
+      81.5
+    ],
+    "sha256": "ed5a296bd3ce3c727174aa263ea5ca41bef025527eea07cd0245732e74446b88"
   }
 }

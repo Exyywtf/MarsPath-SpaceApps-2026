@@ -26,6 +26,8 @@ const pointStyle = {
     stroke: new Stroke({ color: "#131b1c", width: 1.5 }) }) }),
   chloride: new Style({ image: new RegularShape({ points: 4, radius: 5, fill: new Fill({ color: mineralStyles.chloride.color }),
     stroke: new Stroke({ color: "#131b1c", width: 1.5 }) }) }),
+  hydrated: new Style({ image: new RegularShape({ points: 3, radius: 6, fill: new Fill({ color: mineralStyles.hydrated.color }),
+    stroke: new Stroke({ color: "#131b1c", width: 1.5 }) }) }),
 };
 
 export function createObservationLayer(): PointLayer {

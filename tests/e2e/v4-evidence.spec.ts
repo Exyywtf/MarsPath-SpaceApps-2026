@@ -35,6 +35,7 @@ test("science evidence is reported after geometry and stays separate from rankin
   await expect(evidence.getByRole("status")).toHaveText(/0% ranking weight/);
   await expect(evidence).toContainText("mapped at 0.125°");
   await expect(evidence).toContainText("Closest CRISM observation centre");
+  await expect(evidence).toContainText("Closest Hydrated mineral site");
   const selector = evidence.getByRole("combobox", { name: "Mapped unit to compare" });
   await selector.selectOption("HNt");
   await expect(evidence).toContainText(/mapped/);
@@ -44,6 +45,10 @@ test("science evidence is reported after geometry and stays separate from rankin
   const science = finalProps.explorationEvidence;
   expect(science.status).toBe("ready");
   expect(science.provenance.version).toBe("marspath-route-evidence-v1");
+  expect(science.provenance.datasetVersion).toBe("science-v2");
+  expect(science.provenance.minerals.hydrated.product).toBe("HYDROUS_SITES_GEO_MAP");
+  expect(science.roles.terrain.minerals.hydrated.distanceM).toBeGreaterThanOrEqual(0);
+  expect(science.roles.terrain.minerals.hydrated.observation.sourceRows[0]).toBeGreaterThan(0);
   expect(science.mappedUnitComparison).toBe("HNt");
   expect(science.roles.terrain.lengthM).toBeCloseTo(finalProps.assessedDistanceM, 4);
   expect(science.roles.terrain.geology.validLengthM).toBeCloseTo(science.roles.terrain.lengthM, 4);

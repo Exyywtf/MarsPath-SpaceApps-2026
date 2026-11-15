@@ -10,7 +10,7 @@ async function tapCoordinate(map: Locator, longitude: number, latitude: number) 
 
 test("registered geology, mineral markers and thermal cells retain the map view", async ({ page }) => {
   const requests: string[] = [];
-  page.on("request", (request) => { if (request.url().includes("/science-v1/")) requests.push(request.url()); });
+  page.on("request", (request) => { if (/\/science-v[12]\//.test(request.url())) requests.push(request.url()); });
   await page.goto("/?place=sirenum");
   const map = page.locator('#interactive-mars-map[data-ready="true"]');
   await expect(map).toHaveAttribute("data-animating", "false");
@@ -55,6 +55,28 @@ test("registered geology, mineral markers and thermal cells retain the map view"
   await expect(page.locator(".inspection-card>strong")).toHaveText("195 J m⁻² K⁻¹ s⁻½");
   await tapCoordinate(map, -138.625, -39.125);
   await expect(page.locator(".inspection-card>strong")).toHaveText("No numerical value");
+  await expect(map).toHaveAttribute("data-center", centre!);
+  await expect(map).toHaveAttribute("data-resolution", resolution!);
+});
+
+test("the PDS hydrated mineral layer shows published coordinates and product IDs", async ({ page }) => {
+  await page.goto("/?place=mawrth");
+  const map = page.locator('#interactive-mars-map[data-ready="true"]');
+  await expect(map).toHaveAttribute("data-animating", "false");
+  await page.getByRole("button", { name: "Layers", exact: true }).click();
+  await page.getByLabel(/Scientific destinations/).uncheck();
+  const centre = await map.getAttribute("data-center");
+  const resolution = await map.getAttribute("data-resolution");
+  await page.getByRole("button", { name: /^Mineral observations/ }).click();
+  await expect(map).toHaveAttribute("data-overlay", "minerals");
+  await expect(page.locator(".map-legend")).toContainText("Hydrated mineral site");
+  await expect(page.locator(".layer-information")).toContainText("1,851 NASA PDS hydrated mineral records");
+  await tapCoordinate(map, -17.04, 22.47);
+  const record = page.locator(".inspection-records li").filter({ hasText: "FRT0001654F" });
+  await expect(record).toContainText("22.47°N 17.04°W");
+  await expect(record).toContainText("PDS row 650 · species unspecified");
+  await expect(record.getByRole("link", { name: "Catalogue source" })).toHaveAttribute("href", /pds-geosciences\.wustl\.edu.*\/hydrous\//);
+  await expect(page.getByRole("link", { name: "Catalogue methods" })).toHaveAttribute("href", "/methodology/#exploration-science");
   await expect(map).toHaveAttribute("data-center", centre!);
   await expect(map).toHaveAttribute("data-resolution", resolution!);
 });

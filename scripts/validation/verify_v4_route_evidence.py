@@ -98,6 +98,7 @@ def verify(payload, geology, catalog, thermal, observations):
         if thermal_l and observed["thermal"]["mean"] is not None:
             assert abs(thermal_sum / thermal_l - observed["thermal"]["mean"]) < 1
         approach_error = 0
+        assert set(observed["minerals"]) == {entry["kind"] for entry in observations}
         for kind, actual_distance in observed["minerals"].items():
             rows = [i for i, entry in enumerate(observations) if entry["kind"] == kind]
             idx = min(rows, key=lambda i: nearest[i])
@@ -107,7 +108,7 @@ def verify(payload, geology, catalog, thermal, observations):
         packed[role] = {
             "lengthM": total, "lengthErrorM": length_error, "independentStepM": step,
             "maximumUnitLengthDifferenceM": unit_error, "thermalValidLengthDifferenceM": thermal_error,
-            "maximumCatalogueApproachErrorM": approach_error,
+            "maximumCatalogueApproachErrorM": approach_error, "cataloguesChecked": sorted(observed["minerals"]),
         }
     return {"tier": props["tier"], "roles": packed}
 
@@ -121,10 +122,19 @@ if __name__ == "__main__":
     temperature = packed_grid(MANIFEST["thermal"])
     unit_catalog = json.loads(asset(MANIFEST["geology"]["catalog"]).read_bytes())
     catalogues = json.loads(asset(MANIFEST["minerals"]["data"]).read_bytes())
-    record = {
-        source.stem: verify(json.loads(source.read_bytes()), geometry, unit_catalog, temperature, catalogues)
-        for source in args.exports
-    }
+    hydrated = json.loads((ROOT / "data/hydrated-sites.json").read_bytes())
+    sites = json.loads(asset(hydrated["data"]).read_bytes())
+    record = {}
+    for source in args.exports:
+        payload = json.loads(source.read_bytes())
+        provenance = payload["features"][0]["properties"]["explorationEvidence"]["provenance"]
+        observations = catalogues
+        if provenance["datasetVersion"] == "science-v2":
+            assert provenance["minerals"]["hydrated"]["checksum"] == hydrated["data"]["sha256"]
+            observations = catalogues + sites
+        else:
+            assert provenance["datasetVersion"] == "science-v1"
+        record[source.stem] = verify(payload, geometry, unit_catalog, temperature, observations)
     content = json.dumps(record, indent=2) + "\n"
     if args.write:
         (ROOT / "data" / "validation" / "v4-route-evidence.json").write_text(content, encoding="utf-8")

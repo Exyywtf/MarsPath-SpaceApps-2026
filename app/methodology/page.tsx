@@ -33,6 +33,8 @@ export default function Methodology() {
       <p className="lede">
         Terra Sirenum CRISM centres retain the interpretations in the authors’ catalogue, including possible detections.
         The chloride catalogue provides locations of records identified using THEMIS imagery.
+        The Carter et al. archive supplies 1,851 distinct OMEGA and CRISM hydrated mineral records, with instrument product IDs
+        and all original row numbers. The archive table gives published point locations and omits species.
         Mineral footprints and ground sampling locations remain unassessed.
       </p>
       <p className="lede">
@@ -41,11 +43,12 @@ export default function Methodology() {
         The source spacing is 0.05°. Apparent thermal inertia characterizes a modelled thermal response.
       </p>
       <EvidenceLink className="text-link" href="/sources/#geology">Geology, mineral and thermal sources</EvidenceLink>
+      <EvidenceLink className="text-link" href="/sources/#hydrated-mineral-sites">Hydrated mineral archive and limitations</EvidenceLink>
       <p className="lede">
         Once geometry is ready, the route worker splits each full spherical Mars arc at 0.125° grid boundaries.
         It reports mapped lengths, unit transitions and the length-weighted mean over supported thermal cells.
         Endpoint connectors and geographic lines have their own records. Mineral proximity is the minimum spherical
-        distance to the catalogue centre along each arc. These sources inform research comparisons and carry zero ranking weight.
+        distance from a published catalogue point to the full route arcs. These sources inform research comparisons and carry zero ranking weight.
         Where the depth grids are unavailable, ice evidence remains a cited reference.
       </p>
       <h2>Three levels of route support</h2>

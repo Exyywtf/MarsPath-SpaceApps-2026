@@ -684,14 +684,22 @@ export default function Atlas() {
               {inspection.observations.map((item) => (
                 <li key={`${item.kind}:${item.id}`}>
                   <strong>{mineralStyles[item.kind].label}</strong>
-                  <span>{item.kind === "crism" ? item.interpretation : item.label}</span>
-                  <span>{mineralStyles[item.kind].instrument} · {item.id}</span>
+                  {item.kind === "hydrated" ? <>
+                    <span>{coordinateLabel(item.point, 2)}</span>
+                    {item.omegaProduct && <span>ESA Mars Express · OMEGA · {item.omegaProduct}</span>}
+                    {item.crismProduct && <span>NASA MRO · CRISM · {item.crismProduct}</span>}
+                    <span>PDS {item.sourceRows.length === 1 ? "row" : "rows"} {item.sourceRows.join(", ")} · species unspecified</span>
+                  </> : <>
+                    <span>{item.kind === "crism" ? item.interpretation : item.label}</span>
+                    <span>{mineralStyles[item.kind].instrument} · {item.id}</span>
+                  </>}
                   <EvidenceLink href={mineralStyles[item.kind].source} target="_blank" rel="noreferrer">Catalogue source</EvidenceLink>
                 </li>
               ))}
             </ul>}
-            <EvidenceLink href={layer.sourcePage} target="_blank" rel="noreferrer">
-              Source & context</EvidenceLink>
+            {layer.presentation === "observations"
+              ? <EvidenceLink href="/methodology/#exploration-science">Catalogue methods</EvidenceLink>
+              : <EvidenceLink href={layer.sourcePage} target="_blank" rel="noreferrer">Source & context</EvidenceLink>}
           </aside>
         )}
         <footer className="map-footer" ref={footerRef}>

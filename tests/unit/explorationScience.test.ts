@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { gunzipSync } from "node:zlib";
 import { expect, it } from "vitest";
-import { decodeScienceGrid, explorationScience, sampleGeology, scienceCellIndex, scienceCellValue } from "../../lib/explorationScience";
+import { decodeScienceGrid, explorationScience, sampleGeology, scienceCellIndex, scienceCellValue, type MineralObservation } from "../../lib/explorationScience";
 import validation from "../../data/validation/v4-datasets.json";
 
 it("decodes grid runs, rejects malformed input and keeps missing cells distinct", () => {
@@ -15,6 +15,29 @@ it("decodes grid runs, rejects malformed input and keeps missing cells distinct"
   expect(scienceCellIndex(2, 2, [-180, -90])).toBe(2);
   expect(() => decodeScienceGrid(bytes.buffer, 2, 3)).toThrow("truncated");
   expect(() => decodeScienceGrid(bytes.buffer, 1, 2)).toThrow("run");
+});
+
+it("preserves the PDS hydrated sites, east-positive registration and source row identity", () => {
+  const { data, count, sourceRows, exactDuplicateRows, instrumentCounts } = explorationScience.hydrated;
+  const bytes = readFileSync(`public${data.url}`);
+  expect(bytes.length).toBe(data.bytes);
+  expect(createHash("sha256").update(bytes).digest("hex")).toBe(data.sha256);
+  const sites: Extract<MineralObservation, { kind: "hydrated" }>[] = JSON.parse(bytes.toString());
+  expect(sites).toHaveLength(count);
+  expect(new Set(sites.map((site) => site.id)).size).toBe(1851);
+  expect(sites.flatMap((site) => site.sourceRows).sort((a, b) => a - b)).toEqual(
+    Array.from({ length: sourceRows }, (_, i) => i + 1));
+  expect(sourceRows - count).toBe(exactDuplicateRows);
+  expect(sites.filter((site) => site.omegaProduct && site.crismProduct)).toHaveLength(instrumentCounts.both);
+  expect(sites.find((site) => site.id === "row-635")).toMatchObject({
+    point: [-18.2, 22.48], crismProduct: "FRT00003BFB",
+  });
+  expect(sites.find((site) => site.id === "row-20")).toMatchObject({
+    point: [-178, -29.2], omegaProduct: "ORB4436_2_DATA", crismProduct: "FRT00013039",
+  });
+  expect(sites.find((site) => site.id === "row-1492")).toMatchObject({
+    point: [82.8, -32.8], sourceRows: [1492, 1493], omegaProduct: "ORB2206_4_DATA",
+  });
 });
 
 it("matches the packaged geology, observation and thermal assets and uses source polygon IDs", () => {

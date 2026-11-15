@@ -1,0 +1,44 @@
+{
+  "dataset": "MEX-M-OMEGA-5-DDR-GLOBAL-MAPS-V1.0",
+  "product": "HYDROUS_SITES_GEO_MAP",
+  "release": "0001",
+  "revision": "0001",
+  "url": "https://pds-geosciences.wustl.edu/mex/mex-m-omega-5-ddr-global-maps-v1/mexomg_2000/data/hydrous/",
+  "study": "https://doi.org/10.1029/2012JE004145",
+  "termsUrl": "https://data.nasa.gov/dataset/omega-mars-global-maps",
+  "terms": "NASA Open Data lists this archive as US public domain. Credit Carter et al., ESA Mars Express OMEGA and NASA MRO CRISM.",
+  "credit": "Carter et al. (2013) \u00b7 ESA Mars Express OMEGA \u00b7 NASA MRO CRISM \u00b7 NASA PDS",
+  "coordinateSystem": "Planetocentric latitude and signed east longitude in degrees",
+  "printedCoordinatePrecisionDegrees": 0.01,
+  "pointBounds": [
+    -179.9,
+    -70.75,
+    179.78,
+    81.5
+  ],
+  "sourceRows": 1855,
+  "count": 1851,
+  "exactDuplicateRows": 4,
+  "instrumentCounts": {
+    "crism": 1338,
+    "omega": 348,
+    "both": 165
+  },
+  "processing": "Retain the published coordinates and product IDs. Merge exact repeats and retain their one-based source row numbers.",
+  "limitation": "Targeted detections with uneven survey coverage. The table supplies no species, detection boundaries or absolute position accuracy.",
+  "sources": [
+    {
+      "url": "https://pds-geosciences.wustl.edu/mex/mex-m-omega-5-ddr-global-maps-v1/mexomg_2000/data/hydrous/hydrous_sites_geo_map.csv",
+      "sha256": "e1ca76b883057f2dbc0fcc8b5d51da541834cdb8b45dbc9d83d2bcfd42c5f797"
+    },
+    {
+      "url": "https://pds-geosciences.wustl.edu/mex/mex-m-omega-5-ddr-global-maps-v1/mexomg_2000/data/hydrous/hydrous_sites_geo_map.lbl",
+      "sha256": "927e9f65b93c4894f365983f132957d5ba7e56ada0837ac666492f0c2c0d8dee"
+    }
+  ],
+  "data": {
+    "url": "/processed/science-v2/hydrated-sites.json",
+    "bytes": 202787,
+    "sha256": "ed5a296bd3ce3c727174aa263ea5ca41bef025527eea07cd0245732e74446b88"
+  }
+}

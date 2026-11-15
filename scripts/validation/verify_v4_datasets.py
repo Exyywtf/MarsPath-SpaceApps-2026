@@ -134,12 +134,46 @@ def minerals_checks(raw):
     return {"records": len(records), "crism": metadata["crismCount"], "chloride": metadata["chlorideCount"]}
 
 
+def hydrated_checks(raw):
+    metadata = json.loads((ROOT / "data" / "hydrated-sites.json").read_bytes())
+    table = raw / "hydrous-sites.csv"
+    bytecheck(metadata["sources"][0], table)
+    bytecheck(metadata["sources"][1], raw / "hydrous-sites.lbl")
+    with table.open(encoding="ascii", newline="") as stream:
+        rows = [(float(lon), float(lat), omega, crism) for lon, lat, omega, crism in csv.reader(stream)]
+    sites = json.loads(asset(metadata["data"]).read_bytes())
+    seen = {}
+    for site in sites:
+        x, y = site["point"]
+        identity = (x, y, site.get("omegaProduct", ""), site.get("crismProduct", ""))
+        assert identity not in seen
+        assert site["id"] == f'row-{site["sourceRows"][0]}'
+        seen[identity] = site["sourceRows"]
+    assert set(seen) == set(rows)
+    assert sorted(i for indices in seen.values() for i in indices) == list(range(1, len(rows) + 1))
+    for record, indices in seen.items():
+        assert all(rows[index - 1] == record for index in indices)
+    assert len(sites) == metadata["count"]
+    assert len(rows) == metadata["sourceRows"]
+    assert len(rows) - len(sites) == metadata["exactDuplicateRows"]
+    lon, lat, _, _ = zip(*seen)
+    assert metadata["pointBounds"] == [min(lon), min(lat), max(lon), max(lat)]
+    assert seen[(-18.2, 22.48, "", "FRT00003BFB")] == [635]
+    return {
+        "pdsRows": len(rows), "distinctRecords": len(sites), "exactRepeats": len(rows) - len(sites),
+        "pointBounds": metadata["pointBounds"], "sha256": metadata["data"]["sha256"],
+    }
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("snapshot", type=Path)
+    parser.add_argument("--hydrated", type=Path, help="Include the archived hydrated sites CSV and label in this directory")
     parser.add_argument("--write", action="store_true", help="Update the committed validation record")
     args = parser.parse_args()
     checks = {"geology": geology_checks(args.snapshot), "thermal": thermal_checks(args.snapshot), "minerals": minerals_checks(args.snapshot)}
+    if args.hydrated:
+        checks["hydrated"] = hydrated_checks(args.hydrated)
     output = json.dumps(checks, indent=2) + "\n"
     if args.write:
         (ROOT / "data" / "validation" / "v4-datasets.json").write_text(output)

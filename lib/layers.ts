@@ -100,11 +100,11 @@ const geology: CategoricalDataset = {
 };
 const minerals: ObservationsDataset = {
   id: "minerals", presentation: "observations", name: "Mineral observations", unit: "",
-  sampling: "Published observation and deposit record centres",
-  nativeResolution: "Coordinate precision varies by catalogue; observation footprints are unavailable here",
-  kind: "Published CRISM and THEMIS records", sourcePage: scienceSources.minerals.url,
-  sha256: explorationScience.minerals.data.sha256, terms: scienceSources.minerals.terms,
-  context: `${explorationScience.minerals.crismCount} Terra Sirenum CRISM observation centres and ${explorationScience.minerals.chlorideCount} chloride catalogue records. Coverage follows the studies’ observations. Each CRISM marker locates an image centre, and interpretations retain the authors’ qualifiers.`,
+  sampling: "Published observation centres and detection locations",
+  nativeResolution: "Coordinate precision varies by catalogue. The PDS table prints coordinates to 0.01°.",
+  kind: "Published OMEGA, CRISM and THEMIS records", sourcePage: scienceSources.minerals.url,
+  sha256: explorationScience.minerals.data.sha256, terms: scienceSources.minerals.terms + " " + scienceSources.hydrated.terms,
+  context: `${explorationScience.hydrated.count.toLocaleString("en-US")} NASA PDS hydrated mineral records, ${explorationScience.minerals.crismCount} Terra Sirenum CRISM observation centres and ${explorationScience.minerals.chlorideCount} chloride catalogue records. Surveys are uneven. The PDS table locates detections and omits species and footprints.`,
 };
 const thermal: NumericalDataset = {
   id: "thermal-inertia", presentation: "numerical", name: "Thermal inertia", unit: thermalUnit,

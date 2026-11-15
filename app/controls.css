@@ -144,8 +144,10 @@ html::-webkit-scrollbar, .scroll-viewport::-webkit-scrollbar { display: none; }
 .categorical-legend i { flex: 0 0 10px; height: 10px; border-radius: 2px; }
 .categorical-legend i[data-symbol="crism"] { border-radius: 50%; }
 .categorical-legend i[data-symbol="chloride"] { border-radius: 0; }
+.categorical-legend i[data-symbol="hydrated"] { border-radius: 0; clip-path: polygon(50% 0, 100% 92%, 0 92%); }
 .categorical-legend code { min-width: 4ch; font-family: var(--font-mono), monospace; }
 .inspection-card[data-categorical="true"] > strong { font-size: 16px; }
+.inspection-card .evidence-link { display: block; }
 .inspection-records li { display: grid; gap: 3px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 12px; }
 .route-evidence-filter { display: grid; gap: 6px; font-size: 13px; margin: 12px 0; }
 .route-evidence .route-evidence-metrics { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; margin: 8px 0; }

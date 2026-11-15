@@ -29,9 +29,11 @@ function MineralDistance({ entry }: { entry?: ObservationDistance }) {
   if (!entry) return <>Unavailable</>;
   const { observation, distanceM } = entry;
   const source = mineralStyles[observation.kind];
+  const label = observation.kind === "hydrated" ? `PDS row ${observation.sourceRows[0]}` :
+    observation.kind === "crism" ? observation.id : observation.label;
   return <><span>{distanceM < 1000 ? "Within 1 km of" : formatDistance(distanceM) + " from"} </span>
     <EvidenceLink href={source.source} target="_blank" rel="noreferrer">
-      {observation.kind === "crism" ? observation.id : observation.label}
+      {label}
     </EvidenceLink></>;
 }
 
@@ -94,7 +96,7 @@ export default function RouteEvidencePanel({ route, routes, evidence, current, p
         Endpoint and stop connectors are recorded separately in the export
         {connector.thermal ? ` · ${percentage(connector.thermal.validLengthM, connector.lengthM)} thermal coverage` : ""}.
       </p>}
-      <p className="small-note">Mapped units indicate regional geology. Mineral distances use catalogue centres. Thermal inertia describes apparent thermal response.</p>
+      <p className="small-note">Mapped units indicate regional geology. Mineral distances use published catalogue coordinates. Thermal inertia describes apparent thermal response.</p>
     </>}
     <EvidenceLink className="text-link" href="/methodology/#exploration-science">Grid, coverage and route evidence method</EvidenceLink>
     <EvidenceLink className="text-link" href={evidenceProvenance.ice.paper} target="_blank" rel="noreferrer">SWIM study · depth grids unavailable</EvidenceLink>
@@ -115,6 +117,6 @@ export function mappedUnitExplanation(routes: PlannedRoute[], chosen: PlannedRou
     const comparison = routeEvidenceSection(item, evidence?.[item.id])?.geology;
     return comparison?.validLengthM && Object.keys(comparison.unitLengthM).sort().join(",") !== distinct;
   });
-  return other ? `${chosen.name} and ${other.name} cross different mapped units at 0.125°. Geology, mineral centres and thermal inertia have zero score weight.`
-    : "Geology, mineral centres and thermal inertia add context with zero score weight.";
+  return other ? `${chosen.name} and ${other.name} cross different mapped units at 0.125°. Geology, mineral observations and thermal inertia have zero score weight.`
+    : "Geology, mineral observations and thermal inertia add context with zero score weight.";
 }

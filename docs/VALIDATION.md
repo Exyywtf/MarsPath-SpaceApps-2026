@@ -2,13 +2,13 @@
 
 ## MarsPath V4
 
-- [Dataset checks](../data/validation/v4-datasets.json) independently matched 608 USGS polygon cell centres, all 777 mineral catalogue records and 605 TES cells, including 317 masked cells. The verifier checks output hashes and the relationship between raster colours and their source-derived lookup.
-- [Route evidence checks](../data/validation/v4-route-evidence.json) cover four exported routes, including a regional Jezero path, a coarse date-line crossing, a Terra Sirenum route and a geographic connection. Independent Mars-sphere sampling agreed on mapped units, valid thermal lengths and closest catalogue approaches. The largest thermal coverage-length difference was 0.706 m. Ground alignment accuracy remains unknown.
+- [Dataset checks](../data/validation/v4-datasets.json) independently matched 608 USGS polygon cell centres, all 777 original mineral catalogue records, all 1,855 PDS hydrated mineral rows and 605 TES cells, including 317 masked cells. The PDS derivative retains 1,851 distinct records and all source row numbers. The verifier checks output hashes and the relationship between raster colours and their source-derived lookup.
+- [Route evidence checks](../data/validation/v4-route-evidence.json) cover a regional Jezero path, a coarse date-line crossing, a Terra Sirenum route and a geographic connection. Independent Mars-sphere sampling agreed on mapped units, valid thermal lengths and closest approaches for all three catalogues. The largest thermal coverage-length difference was 0.706 m, and the closest-approach differences were below 0.01 m. Ground alignment accuracy remains unknown.
 - The local static build passed 56 Playwright journeys each in Chromium and WebKit, together with 35 numerical and unit tests, TypeScript and ESLint. Gallery captures cover nine viewport sizes in both engines. Chromium used touch swipe emulation, and WebKit used touch taps and keyboard scrolling. Physical devices and hardware screen readers remain untested.
 - Production `558a524` matched 59 local export files byte for byte. Inspected rendered NASA imagery and collected separate live request timings. The local gallery and route trials isolated external imagery traffic. [Timing and asset-size record](../data/validation/v4-performance.json).
 - The final public deployment passed 56 Chromium and 56 WebKit journeys in 2.6 and 3.2 minutes. A dedicated entrance-frame regression now checks layer text stays at full opacity.
 
-Run `scripts/validation/verify_v4_datasets.py <snapshot>` with the original files named in the science manifest. Pass downloaded route GeoJSON files to `scripts/validation/verify_v4_route_evidence.py`. Both scripts read the committed derivatives and write validation records only with `--write`.
+Run `scripts/validation/verify_v4_datasets.py <snapshot>` with the original files named in the science manifest. Add `--hydrated <directory>` with the PDS table and label saved as `hydrous-sites.csv` and `hydrous-sites.lbl`. Pass downloaded route GeoJSON files to `scripts/validation/verify_v4_route_evidence.py`. Both scripts read the committed derivatives and write validation records only with `--write`.
 
 ## MarsPath V3.2
 

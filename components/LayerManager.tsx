@@ -261,9 +261,14 @@ function LayerDetails({ layer, radiation }: { layer: LayerDataset; radiation: bo
             rel="noreferrer"
           >
             Dataset source</EvidenceLink>
-          {layer.id === "minerals" && <EvidenceLink className="text-link" href={scienceSources.minerals.chloride} target="_blank" rel="noreferrer">
-            Chloride catalogue
-          </EvidenceLink>}
+          {layer.id === "minerals" && <>
+            <EvidenceLink className="text-link" href={scienceSources.minerals.chloride} target="_blank" rel="noreferrer">
+              Chloride catalogue
+            </EvidenceLink>
+            <EvidenceLink className="text-link" href={scienceSources.hydrated.url} target="_blank" rel="noreferrer">
+              NASA PDS hydrated mineral catalogue
+            </EvidenceLink>
+          </>}
           <EvidenceLink
             className="text-link"
             href={"/sources/#" + sourceAnchor(layer.id)}

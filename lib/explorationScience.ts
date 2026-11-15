@@ -1,7 +1,8 @@
 import manifest from "../data/exploration-science.json";
+import hydrated from "../data/hydrated-sites.json";
 import { normalizeLon, type LonLat } from "./mars";
 
-export const explorationScience = manifest;
+export const explorationScience = { ...manifest, version: "science-v2", hydrated };
 export const thermalUnit = "J m⁻² K⁻¹ s⁻½";
 export const scienceSources = {
   geology: {
@@ -15,6 +16,10 @@ export const scienceSources = {
     chloride: "https://data.caltech.edu/records/kasms-vp209",
     credit: "Leask et al. (2024); Leask & Ehlmann (2021), after Osterloo et al. (2010)",
     terms: "The two Caltech data deposits are CC0 1.0. Credit the authors and instrument teams.",
+  },
+  hydrated: {
+    url: hydrated.url, study: hydrated.study, termsUrl: hydrated.termsUrl,
+    credit: hydrated.credit, terms: hydrated.terms,
   },
   thermal: {
     url: "https://pds-geosciences.wustl.edu/missions/mgs/tes-timap.html",
@@ -35,14 +40,15 @@ export const scienceSources = {
 export const mineralStyles = {
   crism: { label: "CRISM observation centre", color: "#63e1d1", instrument: "MRO · CRISM", source: scienceSources.minerals.url },
   chloride: { label: "Chloride catalogue record", color: "#ffbb65", instrument: "Mars Odyssey · THEMIS", source: scienceSources.minerals.chloride },
+  hydrated: { label: "Hydrated mineral site", color: "#d8b9ff", source: scienceSources.hydrated.url },
 } as const;
 
 type Asset = { url: string; sha256: string; bytes: number };
 export type ScienceGrid = { width: number; height: number; cells: Uint16Array };
 type ObservationCentre = { id: string; point: LonLat };
-export type MineralObservation = ObservationCentre & (
-  { kind: "crism"; interpretation: string } | { kind: "chloride"; label: string }
-);
+type InitialObservation = ObservationCentre & ({ kind: "crism"; interpretation: string } | { kind: "chloride"; label: string });
+type HydratedSite = ObservationCentre & { kind: "hydrated"; sourceRows: number[]; omegaProduct?: string; crismProduct?: string };
+export type MineralObservation = InitialObservation | HydratedSite;
 export type GeologicUnit = (typeof manifest.geology.units)[number];
 const unitByCode = new Map(manifest.geology.units.map((unit) => [unit.code, unit]));
 
@@ -103,7 +109,12 @@ export const loadGeology = lazy(async () => {
 });
 export type GeologyGrid = Awaited<ReturnType<typeof loadGeology>>;
 export const loadThermalInertia = lazy(() => readGrid(manifest.thermal));
-export const loadMineralObservations = lazy(() => readJson<MineralObservation[]>(manifest.minerals.data));
+const loadInitialObservations = lazy(() => readJson<InitialObservation[]>(manifest.minerals.data));
+const loadHydratedSites = lazy(() => readJson<HydratedSite[]>(hydrated.data));
+export const loadMineralObservations = lazy(async () => {
+  const [original, sites] = await Promise.all([loadInitialObservations(), loadHydratedSites()]);
+  return [...original, ...sites];
+});
 
 export function scienceCellIndex(width: number, height: number, [lon, lat]: LonLat) {
   if (!Number.isFinite(lon) || !Number.isFinite(lat) || Math.abs(lat) > 90) return -1;

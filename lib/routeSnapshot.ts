@@ -30,9 +30,11 @@ export function matchingRouteEvidence(
 ) {
   return matchingPaths(previous, next, evidence, ({ provenance }) =>
     provenance.version === evidenceProvenance.version &&
+    provenance.datasetVersion === evidenceProvenance.datasetVersion &&
     provenance.geology.checksum === evidenceProvenance.geology.checksum &&
     provenance.thermal.checksum === evidenceProvenance.thermal.checksum &&
-    provenance.minerals.checksum === evidenceProvenance.minerals.checksum);
+    provenance.minerals.checksum === evidenceProvenance.minerals.checksum &&
+    provenance.minerals.hydrated?.checksum === evidenceProvenance.minerals.hydrated.checksum);
 }
 
 function matchingPaths<T>(
