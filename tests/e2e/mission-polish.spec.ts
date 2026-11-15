@@ -55,7 +55,14 @@ test("mission navigation and populated metrics align across desktop, tablet and 
     await page.screenshot({ path: `${captures}/${browserName}-${width}-daylight.png` });
     const overflow = await page.locator('.mission-panel [data-active="true"] .panel-scroll').evaluate((el) => el.scrollWidth - el.clientWidth);
     expect(overflow).toBeLessThanOrEqual(1);
-    await expect(page.locator(".plan-summary")).toHaveCSS("margin-top", "24px");
+    const summarySpacing = await page.locator(".plan-summary").evaluate((el) => {
+      const summary = el.getBoundingClientRect();
+      const setup = el.parentElement!.previousElementSibling!.getBoundingClientRect();
+      const status = el.parentElement!.querySelector(".route-status")!.getBoundingClientRect();
+      return { above: summary.top - setup.bottom, below: status.top - summary.bottom };
+    });
+    expect(summarySpacing.above).toBeCloseTo(16, 0);
+    expect(summarySpacing.below).toBeCloseTo(summarySpacing.above, 0);
   }
 });
 

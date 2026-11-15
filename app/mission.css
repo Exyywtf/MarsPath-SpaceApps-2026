@@ -10,7 +10,7 @@
 .mission-panel .accordion-content { display: grid; gap: 12px; padding-block: 8px 12px; }
 .mission-panel .accordion-content > :is(p, dl, ul, ol) { margin-block: 0; }
 .mission-panel .point-actions .accordion-content { padding-block: 12px 2px; }
-.mission-panel .plan-summary { margin-block: 24px 12px; }
+.mission-panel .plan-summary { margin-block: 16px; }
 .mission-panel .route-planning:not([hidden]) { padding-top: 16px; }
 .mission-panel .route-evidence-metrics > div { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; }
 .mission-panel .route-evidence-metrics dd { margin: 0; text-align: left; overflow-wrap: anywhere; }
