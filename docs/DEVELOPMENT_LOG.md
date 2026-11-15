@@ -281,3 +281,9 @@ Inspected the supplied 31 files and live NASA service metadata during planning. 
 - Moved **Loading demo…** into the same viewport position as **Calculating routes…** and shared its 140 ms fade and four-pixel slide. On phones both use the route notice’s left inset. The dialog reserves space above the player so it stays in place during loading.
 - Checked the start, middle and end of both transitions. Type checking, lint, 44 numerical and unit tests, the static build and focused browser checks passed. Chromium and WebKit each passed all three production checks, including the position and playback tests at 1440 × 900 and 320 × 568.
 - Promoted application `633e129` as Vercel deployment `dpl_4FBq68sTcMuJF2nAsPiJzUnZWK1H`. The staged video renditions and route worker matched the competition release hashes. [Release manifest](https://marspath-spaceapps-2026.vercel.app/release.json)
+
+## 2026-11-15 — Public source and competition link
+
+- Made the existing [MarsPath repository](https://github.com/Exyywtf/MarsPath-SpaceApps-2026) public after confirming the choice with the owner. The canonical branch remains `main`, and the rewritten commit identities remain in place.
+- Promoted application `5b86b21` as `dpl_32BZXDj3LHtj47eUT3nJwmwG4HY6`. The GitHub button links directly to the repository from Atlas, Sources, Methodology and Demo. The previous deployment remains available for rollback. The terrain worker and both demo renditions retain the competition release hashes.
+- Type checking, lint, 44 numerical and unit tests, and the static build passed. Chromium and WebKit passed the shared navigation and demo dialog checks locally and on production. Signed-out browser checks confirmed the GitHub button at 1440 × 900, 834 × 1194, 390 × 844 and 320 × 568 and opened the repository from desktop keyboard and phone touch layouts.
