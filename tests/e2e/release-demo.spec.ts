@@ -48,7 +48,70 @@ test("shared navigation and demo dialog preserve focus, playback and volume", as
   }
 });
 
+for (const viewport of [{ width: 1440, height: 900 }, { width: 320, height: 568 }]) {
+  test(`demo loading uses the calculation notice's position at ${viewport.width}px`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await page.addInitScript(() => {
+      const post = Worker.prototype.postMessage;
+      Worker.prototype.postMessage = function (message, ...args: unknown[]) {
+        if (message?.kind !== "calculate") Reflect.apply(post, this, [message, ...args]);
+      };
+    });
+    const media = Promise.withResolvers<void>();
+    await page.route(url => url.pathname === demo.video, async route => {
+      await media.promise;
+      await route.continue();
+    });
+    const measure = (node: Element) => {
+      const rect = node.getBoundingClientRect();
+      const style = getComputedStyle(node);
+      return {
+        x: matchMedia("(max-width: 650px)").matches ? rect.left : rect.left + rect.width / 2,
+        y: rect.top,
+        left: style.left,
+        top: style.top,
+        duration: style.transitionDuration,
+        easing: style.transitionTimingFunction,
+      };
+    };
+    try {
+      await page.goto("/?mission=jezero");
+      await page.getByRole("button", { name: "Try validated mission example" }).click();
+      const calculating = page.locator(".route-feedback").filter({ hasText: "Calculating routes…" });
+      await expect(calculating).toHaveCSS("opacity", "1");
+      const anchor = await calculating.evaluate(measure);
+
+      await page.getByRole("button", { name: "Watch demo" }).click();
+      const dialog = page.getByRole("dialog", { name: demo.title });
+      const surface = dialog.locator(".dialog-surface");
+      await surface.evaluate(async node => {
+        await Promise.all(node.getAnimations().map(animation => animation.finished));
+      });
+      const before = (await surface.boundingBox())!;
+      await dialog.getByRole("button", { name: "Play demo" }).click();
+      const loading = dialog.locator(":scope > .demo-loading");
+      await expect(loading).toHaveCSS("opacity", "1");
+      const position = await loading.evaluate(measure);
+      expect(position.left).toBe(anchor.left);
+      expect(position.top).toBe(anchor.top);
+      expect(position.x).toBeCloseTo(anchor.x, 0);
+      expect(position.y).toBeCloseTo(anchor.y, 0);
+      expect(position.duration).toBe(anchor.duration);
+      expect(position.easing).toBe(anchor.easing);
+      expect(position.y + (await loading.boundingBox())!.height).toBeLessThanOrEqual(before.y);
+      expect(await surface.boundingBox()).toEqual(before);
+
+      media.resolve();
+      await expect(dialog.getByRole("button", { name: "Pause demo" })).toBeVisible();
+      await expect(loading).toHaveCSS("opacity", "0");
+    } finally {
+      media.resolve();
+    }
+  });
+}
+
 test("direct watch page plays the approved demo end to end", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
   const requests: string[] = [];
   page.on("request", (request) => {
     if (new URL(request.url()).pathname.endsWith(".mp4")) requests.push(request.url());
@@ -58,8 +121,21 @@ test("direct watch page plays the approved demo end to end", async ({ page }) =>
   const video = page.locator("video");
   await expect(video).not.toHaveAttribute("src");
   expect(requests).toHaveLength(0);
-  await page.getByRole("button", { name: "Play demo" }).click();
+  const mediaGate = Promise.withResolvers<void>();
+  await page.route(url => url.pathname === demo.video, async route => {
+    await mediaGate.promise;
+    await route.continue();
+  });
+  const loading = page.locator("body > .demo-loading");
+  try {
+    await page.getByRole("button", { name: "Play demo" }).click();
+    await expect(loading).toHaveCSS("opacity", "1");
+    await expect(loading).toHaveCSS("transition-property", "none");
+  } finally {
+    mediaGate.resolve();
+  }
   await expect(video).toHaveAttribute("src", demo.video);
+  await expect(loading).toHaveCSS("opacity", "0");
   await expect.poll(
     () => video.evaluate((node: HTMLVideoElement) => node.ended),
     { timeout: 42_000, intervals: [400, 1_000, 2_000] },

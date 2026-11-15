@@ -10,6 +10,15 @@
 .demo-page #demo-player > .lede { margin-block: 0 var(--space-4); }
 .demo-page-links { display: flex; flex-wrap: wrap; gap: 0 var(--space-4); margin-top: var(--space-2); }
 .demo-dialog .demo-description { font-size: var(--type-body); margin: 0 0 var(--space-3); }
+.demo-loading { position: fixed; }
+.demo-loading[data-visible="true"] { transition-delay: 150ms; }
+.demo-dialog[open] {
+  /* Reserve the 46px feedback box and an 8px gap outside the surface. */
+  grid-template-rows:
+    minmax(calc(var(--feedback-top) + 54px - max(16px, env(safe-area-inset-top))), 1fr)
+    minmax(0, auto) minmax(0, 1fr);
+}
+.demo-dialog > .dialog-surface { grid-row: 2; }
 .demo-screen {
   width: 100%;
   aspect-ratio: 16 / 9;

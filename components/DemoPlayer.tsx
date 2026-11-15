@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useRef, useState, type RefObject } from "react";
-import { Pause, Play, Volume2, VolumeX } from "lucide-react";
+import { createPortal } from "react-dom";
+import { LoaderCircle, Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { demo } from "@/lib/site";
 
 function needsQuietVideo(video: HTMLVideoElement) {
@@ -29,11 +30,15 @@ export default function DemoPlayer({ videoRef }: { videoRef?: RefObject<HTMLVide
   const [deviceVolume, setDeviceVolume] = useState(false);
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [feedbackHost, setFeedbackHost] = useState<HTMLElement | null>(null);
 
   const attach = useCallback((node: HTMLVideoElement | null) => {
     video.current = node;
     if (videoRef) videoRef.current = node;
-    if (node) setDeviceVolume(needsQuietVideo(node));
+    if (node) {
+      setDeviceVolume(needsQuietVideo(node));
+      setFeedbackHost(node.closest("dialog") ?? document.body);
+    }
   }, [videoRef]);
 
   function error() {
@@ -95,7 +100,12 @@ export default function DemoPlayer({ videoRef }: { videoRef?: RefObject<HTMLVide
             setVolume(next);
           }} />}
     </div>
-    {loading && <p className="demo-status" role="status">Loading demo…</p>}
+    {feedbackHost && createPortal(<>
+      <div className="floating-feedback demo-loading" data-visible={loading} aria-hidden="true">
+        <span><LoaderCircle size={17} /> Loading demo…</span>
+      </div>
+      <span className="sr-only" role="status" aria-atomic="true">{loading ? "Loading demo…" : ""}</span>
+    </>, feedbackHost)}
     {failed && <p className="demo-status" role="status">Playback failed. <a className="evidence-link" href={deviceVolume ? demo.quietVideo : demo.video}>Open the MP4</a></p>}
   </section>;
 }

@@ -673,7 +673,7 @@ export default function Atlas() {
             setScienceFocus((old) => ({ id, revision: (old?.revision ?? 0) + 1 }));
           }}
         />
-        <div className="route-feedback" data-visible={!!routeFeedback}>
+        <div className="floating-feedback route-feedback" data-visible={!!routeFeedback}>
           {routeFeedback === "calculating" && (
             <span aria-hidden="true"><LoaderCircle size={17} /> Calculating routes…</span>
           )}
