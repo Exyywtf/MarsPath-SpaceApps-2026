@@ -8,6 +8,8 @@
 
 The main rendition preserves the video and audio streams of the approved 28.500-second 2560 × 1440, 60 fps cut from Remotion commit `a8f008f`. The master SHA-256 is `f95bb4121ccfaea0c670792f906bd867cf0af6ed2ec01dfaff863770bc595934`. The web file adds descriptive credits and SI metadata. The 1080p60 device-volume rendition uses the same 1,710 pictures after scaling and attenuates the audio by 12.04 dB.
 
+The production application is `deef56d` on Vercel deployment `dpl_5cpYJmYH2JRXpavex9JhsAseRYr5`. [Public release manifest](https://marspath-spaceapps-2026.vercel.app/release.json) · [Development log](DEVELOPMENT_LOG.md)
+
 - [Main rendition](https://marspath-spaceapps-2026.vercel.app/media/marspath-demo-f95bb412.mp4)
 - [Device-volume rendition](https://marspath-spaceapps-2026.vercel.app/media/marspath-demo-f95bb412-quiet.mp4)
 - [Source and media terms](../THIRD_PARTY_NOTICES.md)
