@@ -30,7 +30,8 @@ Dependency copyright and license files remain in installed packages. Next.js, Re
 - Hydrated mineral sites use NASA PDS `MEX-M-OMEGA-5-DDR-GLOBAL-MAPS-V1.0`, product `HYDROUS_SITES_GEO_MAP`, release and revision `0001`. Credit Carter et al. (2013), ESA Mars Express OMEGA and NASA MRO CRISM. NASA Open Data lists the archive as US public domain. [Original table and label](https://pds-geosciences.wustl.edu/mex/mex-m-omega-5-ddr-global-maps-v1/mexomg_2000/data/hydrous/) · [Study](https://doi.org/10.1029/2012JE004145) · [NASA dataset terms](https://data.nasa.gov/dataset/omega-mars-global-maps).
 - Apparent thermal inertia uses the archived nightside MGS TES data and its interpolation mask. Credit Putzig, Mellon, Heet and Ward (2009), NASA PDS product MGS-M-TES-5-TIMAP-V1.0. [Original PDS archive](https://pds-geosciences.wustl.edu/missions/mgs/tes-timap.html).
 - Embla Carousel 8.6 uses the MIT license. The pinned dependency packages include their license files. [Embla license](https://github.com/davidjerleke/embla-carousel/blob/v8.6.0/LICENSE).
-The optional GitHub navigation icon uses GitHub Primer’s MIT-licensed [Octicons mark](https://github.com/primer/octicons/blob/main/icons/mark-github-16.svg). The GitHub mark identifies the repository link.
+
+The GitHub navigation icon uses GitHub Primer’s MIT-licensed [Octicons mark](https://github.com/primer/octicons/blob/main/icons/mark-github-16.svg). The GitHub mark identifies the repository link.
 
 ## V5 terrain and archived observations
 

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const siteUrl = "https://marspath-spaceapps-2026.vercel.app";
-export const repositoryUrl = "https://github.com/Exyywtf/marspath-spaceapps-2026";
+export const repositoryUrl = "https://github.com/Exyywtf/MarsPath-SpaceApps-2026";
 export const demo = {
   title: "MarsPath demo",
   description: "Follow a Jezero mission from route planning and science objectives to a downloadable Mission Brief.",

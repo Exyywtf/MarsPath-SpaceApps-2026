@@ -1,5 +1,5 @@
 import { devices, expect, test } from "@playwright/test";
-import { demo } from "../../lib/site";
+import { demo, repositoryUrl } from "../../lib/site";
 
 test("shared navigation and demo dialog preserve focus, playback and volume", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -12,7 +12,11 @@ test("shared navigation and demo dialog preserve focus, playback and volume", as
     await page.goto(path);
     const utility = page.locator(".header-links");
     expect(await utility.locator(":scope > :is(a,button)").evaluateAll(links => links.map(link => link.getAttribute("title"))))
-      .toEqual(["Scientific sources", "Methodology", ...(await utility.getByTitle("GitHub").count() ? ["GitHub"] : []), "Watch demo", "Help"]);
+      .toEqual(["Scientific sources", "Methodology", "GitHub", "Watch demo", "Help"]);
+    const github = utility.getByRole("link", { name: "MarsPath on GitHub (opens in a new tab)", exact: true });
+    await expect(github).toHaveAttribute("href", repositoryUrl);
+    await expect(github).toHaveAttribute("target", "_blank");
+    await expect(github).toHaveAttribute("rel", "noopener noreferrer");
     const trigger = utility.getByRole("button", { name: "Watch demo" });
     await trigger.focus();
     await page.keyboard.press("Enter");
