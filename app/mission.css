@@ -2,24 +2,47 @@
 .document-nav .header-links { margin-left: auto; }
 .header-links > a[aria-current="page"] { color: var(--accent); }
 .mission-tab-compact { display: none; }
-.mission-setup { display: grid; gap: 10px; padding: 0 0 16px; border-bottom: 1px solid var(--line); }
+.mission-setup { display: grid; gap: 16px; padding: 0 0 16px; border-bottom: 1px solid var(--line); }
+.mission-group { display: grid; gap: 8px; min-width: 0; }
+.mission-panel .mission-setup > *, .mission-panel .mission-group > p { margin-block: 0; }
+.mission-panel .quality-details { margin-block: 16px; padding-top: 0; }
+.mission-panel .mission-setup .quality-details { margin-block: 0; }
+.mission-panel .accordion-content { display: grid; gap: 12px; padding-block: 8px 12px; }
+.mission-panel .accordion-content > :is(p, dl, ul, ol) { margin-block: 0; }
+.mission-panel .point-actions .accordion-content { padding-block: 12px 2px; }
+.mission-panel .plan-summary { margin-block: 24px 12px; }
+.mission-panel .route-planning:not([hidden]) { padding-top: 16px; }
+.mission-panel .route-evidence-metrics > div { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; }
+.mission-panel .route-evidence-metrics dd { margin: 0; text-align: left; overflow-wrap: anywhere; }
+.mission-panel .mission-measure { white-space: nowrap; overflow-wrap: normal; }
+.mission-readout-group { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.mission-panel .factor-detail .accordion-title > span:last-child { white-space: nowrap; flex: 0 0 auto; }
 .mission-setup > .primary-button { justify-content: center; }
 .mission-fields { display: grid; gap: 10px; }
 .mission-fields label { display: grid; gap: 5px; color: var(--muted); font-size: 13px; min-width: 0; }
+.mission-panel .mission-fields { gap: 12px; }
+.mission-panel .mission-fields label { gap: 6px; font-size: 14px; }
 .mission-fields :is(input,select) { min-height: 44px; min-width: 0; width: 100%; font-size: 16px; }
 .mission-fields input { color: var(--ink); background: #172222; border: 1px solid #73877a; border-radius: 7px; padding: 8px 10px; }
 .mission-check { min-height: 44px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
 .mission-check input { width: 18px; height: 18px; accent-color: var(--accent); }
 .mission-card-links { display: grid; gap: 6px; }
 .mission-card-links button { justify-content: center; }
-.mission-journey { margin: 16px 0; padding: 14px; border: 1px solid var(--line); border-radius: 9px; background: #20302a; }
-.mission-journey h2 { margin: 0 0 8px; font-size: 16px; overflow-wrap: anywhere; }
+.mission-journey { container-type: inline-size; margin: 16px 0; padding: 16px; border: 1px solid var(--line); border-radius: 9px; background: #20302a; }
+.mission-journey h2 { margin: 0 0 12px; font-size: 18px; overflow-wrap: anywhere; }
 .mission-journey dl { margin: 0; }
-.mission-journey dl > div { display: flex; flex-wrap: wrap; gap: 4px 10px; justify-content: space-between; padding: 8px 0; border-top: 1px solid var(--line); }
-.mission-journey dt { color: var(--muted); font-size: 13px; }
-.mission-journey dd { margin: 0; text-align: right; }
+.mission-journey dl > div { display: grid; align-content: start; gap: 6px; padding: 12px 0; border-top: 1px solid var(--line); min-width: 0; }
+.mission-journey dt { color: var(--muted); font-size: 14px; }
+.mission-journey dd { display: grid; gap: 6px; margin: 0; text-align: left; min-width: 0; }
 .mission-journey dd small { display: block; font-size: 12px; color: var(--muted); }
-.mission-journey dd strong { font: 500 14px var(--font-mono), monospace; }
+.mission-journey dd strong { font: 500 20px/1.4 var(--font-mono), monospace; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.mission-journey .mission-leg-metrics { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.mission-leg-metrics > span { white-space: nowrap; }
+.mission-totals { display: grid; gap: 0 16px; }
+.mission-journey > .small-note { margin-block: 4px 0; }
+@container (min-width: 480px) {
+  .mission-totals { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 .mission-presets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
 .mission-presets button { justify-content: center; }
 .mission-presets button[aria-pressed="true"] { background: #44362c; border-color: var(--accent); color: #ffe0c4; }

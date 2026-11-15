@@ -50,10 +50,10 @@ export function MissionConditions({ context, pending, terminator, onTerminator, 
       {pending && <p role="status" className="small-note">Calculating mission conditions…</p>}
       {solar?.start && <dl className="route-evidence-metrics">
         <div><dt>Departure</dt><dd>{solar.departureUtc}</dd></div>
-        <div><dt>Season</dt><dd>Ls {solar.ls.toFixed(1)}°</dd></div>
-        <div><dt>Start local time</dt><dd>{solarClock(solar.start.meanTime)} LMST · {solarClock(solar.start.trueTime)} LTST</dd></div>
-        <div><dt>Solar elevation</dt><dd>{solar.start.elevation.toFixed(1)}°</dd></div>
-        <div><dt>Azimuth from north</dt><dd>{solar.start.azimuth === null ? "Undefined" : solar.start.azimuth.toFixed(1) + "°"}</dd></div>
+        <div><dt>Season</dt><dd className="mission-measure">Ls {solar.ls.toFixed(1)}°</dd></div>
+        <div><dt>Start local time</dt><dd className="mission-readout-group"><span className="mission-measure">{solarClock(solar.start.meanTime)} LMST</span>{" "}<span className="mission-measure">{solarClock(solar.start.trueTime)} LTST</span></dd></div>
+        <div><dt>Solar elevation</dt><dd className="mission-measure">{solar.start.elevation.toFixed(1)}°</dd></div>
+        <div><dt>Azimuth from north</dt><dd className="mission-measure">{solar.start.azimuth === null ? "Undefined" : solar.start.azimuth.toFixed(1) + "°"}</dd></div>
         <div><dt>Geometric horizon at A</dt><dd>{solar.window.status === "crossings"
           ? `${solarClock(solar.window.sunriseLtst)} sunrise · ${solarClock(solar.window.sunsetLtst)} sunset LTST`
           : solar.window.status === "polar-day" ? "Continuous daylight" : "Continuous darkness"}</dd></div>

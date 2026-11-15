@@ -50,7 +50,7 @@ export function MissionSetup({ mission, draft, onChange, onDraft, onObjective, o
       <EvidenceLink className="text-link" href="/methodology/#mission-validation">Case inputs, checks and limits</EvidenceLink>
       <EvidenceLink className="text-link" href="https://science.nasa.gov/mission/mars-2020-perseverance/location-map/" target="_blank" rel="noreferrer">Perseverance traverse context</EvidenceLink>
     </Accordion>
-    <div className="mission-fields">
+    <div className="mission-group"><div className="mission-fields">
       <label>Mission name<input value={mission.name} maxLength={90} onChange={(event) => onChange({ name: event.target.value })} /></label>
       <label>Research objective
         <StyledSelect value={mission.objective} onChange={(event) => onObjective(event.target.value as MissionObjective)}>
@@ -62,6 +62,7 @@ export function MissionSetup({ mission, draft, onChange, onDraft, onObjective, o
       </label>}
     </div>
     {note && <p className="small-note">{note[0]} <EvidenceLink href={note[1]}>Source</EvidenceLink></p>}
+    </div>
     <Accordion title="Choose endpoints from destinations" className="quality-details">
       <div className="mission-fields">
         {(["start", "end"] as const).map((side) => <label key={side}>
@@ -93,12 +94,13 @@ export function MissionSetup({ mission, draft, onChange, onDraft, onObjective, o
       {dwellInvalid && <p className="data-note" id="mission-dwell-error">Enter a stop duration of zero or more minutes.</p>}
       <p className="small-note">Illustrative constant-speed schedule. Blank dwell time adds zero minutes per stop.</p>
     </Accordion>
-    <label className="mission-check">
+    <div className="mission-group"><label className="mission-check">
       <input type="checkbox" checked={mission.returnMode !== null}
         onChange={(event) => onChange({ returnMode: event.target.checked ? "terrain" : null })} />
       Return to base
     </label>
     {mission.returnMode && <p className="small-note">Search from B directly to A. Required waypoints and research stops apply to the outbound leg.</p>}
+    </div>
     {communications}
   </section>;
 }
@@ -111,23 +113,29 @@ export function MissionJourney({ mission, outbound, inbound, onChange, revision 
   const complete = !mission.returnMode || !!back;
   const timing = missionTiming(outbound, back, mission);
   const time = timing.elapsedSeconds;
-  const leg = (route: PlannedRoute, name: string, detail?: string) => <div>
+  const leg = (route: PlannedRoute, name: string, detail?: string) => <div className="mission-leg">
     <dt>{name}</dt>
     <dd><strong>{formatDistance(route.distance)}</strong>
       <small>{detail ?? route.name} · {route.tier} planning</small>
-      {route.terrain && <small>↑ {formatDistance(route.terrain.ascent)} · ↓ {formatDistance(route.terrain.descent)} · {formatDistance(route.distance - route.assessedDistance)} connectors</small>}
+      {route.terrain && <small className="mission-leg-metrics">
+        <span>↑ {formatDistance(route.terrain.ascent)}</span>{" "}
+        <span>↓ {formatDistance(route.terrain.descent)}</span>{" "}
+        <span>{formatDistance(route.distance - route.assessedDistance)} connectors</span>
+      </small>}
     </dd>
   </div>;
   return <section className="mission-journey" aria-label="Mission journey" data-request={revision}>
     <h2>{mission.name || "Mission journey"}</h2>
-    <dl>
+    <dl className="mission-legs">
       {leg(outbound, "Outbound · A to B")}
       {back && leg(back, "Return · B to A")}
+    </dl>
+    {(back || time !== undefined) && <dl className="mission-totals">
       {back && <div><dt>Round-trip distance</dt><dd><strong>{formatDistance(timing.distanceM)}</strong></dd></div>}
       {time !== undefined && <div><dt>{complete && back ? "Estimated round-trip duration" : "Estimated outbound duration"}</dt>
         <dd><strong>{(time / 3600).toLocaleString(undefined, { maximumFractionDigits: 2 })} Earth hours</strong>
           <small>{timing.stopCount} outbound {timing.stopCount === 1 ? "stop" : "stops"} · {timing.dwellSeconds! / 60} min dwell</small></dd></div>}
-    </dl>
+    </dl>}
     <p className="small-note">
       {formatDistance(outbound.assessedDistance + (back?.assessedDistance ?? 0))} assessed terrain ·
       {" "}{outbound.tier === "geographic" ? "geographic distance only" : "alignment accuracy and rock-scale hazards are unresolved"}

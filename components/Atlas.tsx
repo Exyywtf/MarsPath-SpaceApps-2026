@@ -589,6 +589,11 @@ export default function Atlas() {
             <Route size={18} />
             <span>Directions</span>
           </button>
+          <button className={panel === "mission" ? "nav-active mission-tab" : "mission-tab"}
+            aria-label="Mission Planner" aria-pressed={panel === "mission"} onClick={() => open("mission")}>
+            <Compass size={18} aria-hidden="true" /><span className="mission-tab-full">Mission Planner</span>
+            <span className="mission-tab-compact">Mission</span>
+          </button>
           <button
             className={panel === "layers" ? "nav-active" : ""}
             aria-pressed={panel === "layers"}
@@ -596,11 +601,6 @@ export default function Atlas() {
           >
             <Layers size={18} />
             <span>Layers</span>
-          </button>
-          <button className={panel === "mission" ? "nav-active mission-tab" : "mission-tab"}
-            aria-label="Mission Planner" aria-pressed={panel === "mission"} onClick={() => open("mission")}>
-            <Compass size={18} aria-hidden="true" /><span className="mission-tab-full">Mission Planner</span>
-            <span className="mission-tab-compact">Mission</span>
           </button>
         </nav>
         <HeaderLinks help={
@@ -849,6 +849,7 @@ export default function Atlas() {
             "workflow-panel sheet-" +
             sheet +
             (visiblePanel === "directions" ? " directions-panel" : "") +
+            (visiblePanel === "mission" ? " mission-panel" : "") +
             (visiblePanel === "location" ? " detail-panel" : "")
           }
           aria-label={title}
