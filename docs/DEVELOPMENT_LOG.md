@@ -275,3 +275,9 @@ Inspected the supplied 31 files and live NASA service metadata during planning. 
 - The signed-out Jezero export reproduced 2,804.010 m Shortest and 6,585.671 m Science first through D-tcl, with the same four candidates and 2,876.345 m return. The live Mission Brief printed to three A4 pages. Production returned the approved asset hashes and valid byte ranges for both MP4s.
 - Preserved a private original Git bundle and commit map. The leased rewrite preserved all 51 historical trees and replaced the original email in each commit identity. GitHub still resolves the original commit objects when queried by SHA. The repository stays private and the public GitHub action remains pending.
 - Application `deef56db8002454c182b167702c18d1436694318` was promoted as `dpl_5cpYJmYH2JRXpavex9JhsAseRYr5`. The protected stage matched ten files from the tested prebuilt export, then its temporary verification credential was revoked. The prior production deployment `dpl_HtXsPw7XxUQyZA9BsAp4qNpLswLX` remains available for rollback. The submission handoff is local outside Git and the static export.
+
+## 2026-11-15 — Demo loading feedback
+
+- Moved **Loading demo…** into the same viewport position as **Calculating routes…** and shared its 140 ms fade and four-pixel slide. On phones both use the route notice’s left inset. The dialog reserves space above the player so it stays in place during loading.
+- Checked the start, middle and end of both transitions. Type checking, lint, 44 numerical and unit tests, the static build and focused browser checks passed. Chromium and WebKit each passed all three production checks, including the position and playback tests at 1440 × 900 and 320 × 568.
+- Promoted application `633e129` as Vercel deployment `dpl_4FBq68sTcMuJF2nAsPiJzUnZWK1H`. The staged video renditions and route worker matched the competition release hashes. [Release manifest](https://marspath-spaceapps-2026.vercel.app/release.json)
