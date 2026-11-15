@@ -6,6 +6,7 @@
     "dev": "npm run build:worker && next dev --hostname 0.0.0.0",
     "build": "npm run build:worker && next build && node scripts/prepare-static.mjs",
     "start": "node scripts/serve.mjs",
+    "stage:demo": "node scripts/stage-demo.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",

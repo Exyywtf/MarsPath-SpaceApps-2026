@@ -7,13 +7,15 @@ import ScrollArea from "./ScrollArea";
 export type DialogHandle = { open: (returnFocus?: HTMLElement | null) => void };
 
 export default function AtlasDialog({
-  ref, id, title, closeLabel, wide = false, children,
+  ref, id, title, closeLabel, wide = false, className, onDismiss, children,
 }: {
   ref?: Ref<DialogHandle>;
   id: string;
   title: string;
   closeLabel: string;
   wide?: boolean;
+  className?: string;
+  onDismiss?: () => void;
   children: ReactNode;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -34,6 +36,7 @@ export default function AtlasDialog({
   function dismiss() {
     const node = dialog.current;
     if (!node?.open || node.dataset.closing) return;
+    onDismiss?.();
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
       finishClosing();
       return;
@@ -70,7 +73,7 @@ export default function AtlasDialog({
   return (
     <dialog
       ref={dialog}
-      className={"atlas-dialog" + (wide ? " reference-dialog" : " help-dialog")}
+      className={["atlas-dialog", wide ? "reference-dialog" : "help-dialog", className].filter(Boolean).join(" ")}
       aria-labelledby={id}
       onCancel={(event) => { event.preventDefault(); dismiss(); }}
       onPointerDown={(event) => { outsidePress.current = event.target === dialog.current; }}

@@ -4,6 +4,10 @@ import PageTransition from "@/components/PageTransition";
 import validation from "@/data/validation/v2-independent.json";
 import DocumentNav from "@/components/DocumentNav";
 import { JezeroCaseEvidence } from "@/components/MissionPlanner";
+import { pageMetadata } from "@/lib/site";
+
+export const metadata = pageMetadata("/methodology/", "Methodology — MarsPath",
+  "Learn how MarsPath searches terrain, compares mission candidates and reports scientific evidence and coverage.");
 export default function Methodology() {
   return (
     <PageTransition page="methodology"><main className="document-page methodology-page page-view">
@@ -289,14 +293,18 @@ export default function Methodology() {
       </p>
       <h2>AI assistance and licensing</h2>
       <p className="lede">
-        AI assisted implementation, research navigation, design, processing,
-        validation and documentation. Scientific evidence comes from cited
-        institutions and publications. No generated Mars surface photographs or
-        invented measurements are used. Original software is MIT licensed;
-        imagery, datasets and fonts retain separate terms. MCD outputs retain
-        noncommercial conditions and attribution; the user confirmed its
-        required author notice was sent. NASA names and imagery do not imply
-        endorsement.
+        We used OpenAI Codex to explore implementation options and assist with
+        research, design, coding, data processing, validation and writing. The
+        atlas uses genuine mission imagery and measurements from the cited
+        institutions and publications. Route search and ranking use deterministic
+        calculations. We also used Codex for demo editing, editorial graphics and
+        synthesized instrumental audio. The demo shows real atlas recordings.
+      </p>
+      <p className="lede">
+        The original software is MIT licensed. Imagery, scientific data and
+        fonts retain their own terms. We sent the required notice to the MCD
+        authors for the retained climatology snapshot. Its noncommercial use
+        conditions and attribution still apply.
       </p>
       <div className="notice">
         Research and education, not operational navigation. Unknown hazards

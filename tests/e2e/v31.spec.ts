@@ -41,7 +41,7 @@ test("fresh startup fits the whole globe through all nine layouts", async ({ pag
         edges,
         fitsPage: document.documentElement.scrollWidth <= innerWidth,
         background: getComputedStyle(document.querySelector(".map-area")!).backgroundColor,
-        headerFits: [...document.querySelectorAll(".topbar a, .topbar button")].every((control) => {
+        headerFits: [...document.querySelectorAll(".topbar :is(a, button):not(dialog *)")].every((control) => {
           const rect = control.getBoundingClientRect();
           const header = document.querySelector(".topbar")!.getBoundingClientRect();
           return rect.left >= header.left && rect.right <= header.right;

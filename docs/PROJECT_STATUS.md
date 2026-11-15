@@ -16,13 +16,14 @@
 - Mission Planner shares the Directions draft and calculates an independent B-to-A return. The Jezero case compares four validated outbound candidates and a direct return. Ranking presets reuse the accepted paths. Data Quality & Coverage displays the validity masks used by the terrain planner.
 - Mission conditions include Mars24 daylight and geometric terrain visibility. A frozen Mission Brief includes the selected legs, profiles, comparison, assumptions and provenance. The versioned mission export retains the full geometry and analysis status.
 - Archived MEDA pressure and five calibrated local sensor temperature channels from sols 30–32, with exact spacecraft-clock position matches, original product identifiers and preserved gaps. The historical series loads on demand and carries zero route weight.
+- A public watch page, reusable demo dialog and distinct share previews for the atlas and the competition video.
 - Separate data and software terms. The original software is MIT licensed. GitHub is private and deployments use the Vercel CLI.
 
 See [the validation record](VALIDATION.md) for counts and limitations. The public methods page describes how to interpret each calculation.
 
 ## V5 handoff
 
-The verified production application is `2c15d6a`, deployment `dpl_3WNTw9HioHSosjZtTH7Qc37EbqEQ`. [Open MarsPath](https://marspath-spaceapps-2026.vercel.app/) · [Release checks](../data/validation/v5-release.json).
+The V5 scientific validation is recorded against application `2c15d6a`, deployment `dpl_3WNTw9HioHSosjZtTH7Qc37EbqEQ`. See the development log for later releases. [Open MarsPath](https://marspath-spaceapps-2026.vercel.app/) · [V5 release checks](../data/validation/v5-release.json).
 
 1. Open [Jezero Mission Planner](https://marspath-spaceapps-2026.vercel.app/?mission=jezero).
 2. Choose **Try validated mission example** and wait for **Compare routes** and the **Return · B to A** result.
@@ -39,4 +40,4 @@ The GitHub header link awaits owner publication and a successful unauthenticated
 - Daylight uses a geometric horizon and Earth UTC supported by the 1972–2026 leap-second table. Terrain visibility excludes propagation, terrain shadows and equipment performance.
 - Local science scoring covers representative Jezero delta type locations and two objectives. The radiation model gives scenario context at coarse resolution with unknown absolute dose accuracy. The mineral catalogues represent targeted observations and carry zero ranking weight.
 - SWIM numerical depth products remain unavailable from the project and its paper-linked JPL viewer. The opt-in ice preference and Arcadia Planitia await those products. TES dust-cover validity and terms remain unresolved.
-- The official challenge Resources and Submission Guide could not be retrieved in the earlier eligibility check. Award eligibility and submission remain unverified.
+- The official challenge Resources tab lists JPL Mars Trek, which serves the atlas imagery. Team details and final judging eligibility depend on the competition portal. [Challenge resources](https://www.spaceappschallenge.org/2026/challenges/interplanetary-survival-guide-martian-map/?tab=resources)

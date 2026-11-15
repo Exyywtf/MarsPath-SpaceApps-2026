@@ -1,54 +1,15 @@
-# Submission preparation
+# Competition release
 
-## Project description
+[Open MarsPath](https://marspath-spaceapps-2026.vercel.app/) · [Watch the MarsPath demo](https://marspath-spaceapps-2026.vercel.app/demo/) · [Try the Jezero mission](https://marspath-spaceapps-2026.vercel.app/?mission=jezero)
 
-MarsPath is a planet-wide Mars atlas and mission-planning tool. It brings NASA orbital imagery, thirteen scientific destinations and inspectable numerical layers into one map. Users can set endpoints anywhere on Mars and see which calculations the terrain supports. In Jezero they can compare routes on the 20 m terrain grid and evaluate published geological type locations as science stops.
+**MarsPath** is the project name for the 2026 NASA Space Apps Challenge, *Interplanetary Survival Guide: Martian Map*. JPL Mars Trek is listed in the challenge Resources tab and supplies live orbital tiles in MarsPath. [Challenge resources](https://www.spaceappschallenge.org/2026/challenges/interplanetary-survival-guide-martian-map/?tab=resources) · [Submission guide](https://www.spaceappschallenge.org/resources/project-submission-guide/)
 
-## Problem and originality
+## Public demo
 
-Future surface explorers need to connect scientific opportunities with terrain evidence. MarsPath shows which parts of a route have terrain support, how terrain resolution limits the result, and why a science detour changes the comparison. Atmospheric layers come from a fixed, numerical MCD 6.2 climatology snapshot and show the sampling and model context alongside each readout.
+The main rendition preserves the video and audio streams of the approved 28.500-second 2560 × 1440, 60 fps cut from Remotion commit `a8f008f`. The master SHA-256 is `f95bb4121ccfaea0c670792f906bd867cf0af6ed2ec01dfaff863770bc595934`. The web file adds descriptive credits and SI metadata. The 1080p60 device-volume rendition uses the same 1,710 pictures after scaling and attenuates the audio by 12.04 dB.
 
-## NASA data and technical approach
+- [Main rendition](https://marspath-spaceapps-2026.vercel.app/media/marspath-demo-f95bb412.mp4)
+- [Device-volume rendition](https://marspath-spaceapps-2026.vercel.app/media/marspath-demo-f95bb412-quiet.mp4)
+- [Source and media terms](../THIRD_PARTY_NOTICES.md)
 
-- NASA Mars Trek: Viking global optical mosaic, MOLA relief, regional CTX and HiRISE imagery.
-- USGS/NASA MGS MOLA numerical DEM and a 0.25° derivative for global elevation inspection and coarse routing.
-- USGS/NASA Mars 2020 CTX DTM: 20 m native numerical terrain for Jezero planning.
-- NASA mission/image pages, IAU/USGS representative coordinates and a peer-reviewed Eridania study for source-linked descriptions.
-- Next.js static export, OpenLayers planetary coordinates, TypeScript A* in a cancellable browser worker, independently checked against Python Dijkstra.
-
-## Validation and limitations
-
-An independent Python solver checked twelve V2 route calculations on real terrain, including a date-line crossing and a Jezero science stop. V3 adds route-linked environmental profiles and two radiation views. The numerical radiation view describes one published cosmic-ray scenario and carries zero route weight. All 22 V3 production browser journeys passed, covering NASA imagery, all thirteen destinations, overlays, mobile directions and keyboard workflows. Fine routing and local science scoring cover the supported Jezero terrain. See the public methodology and `docs/VALIDATION.md`.
-
-## Links
-
-- Application: https://marspath-spaceapps-2026.vercel.app/
-- Sources: https://marspath-spaceapps-2026.vercel.app/sources/
-- Methods: https://marspath-spaceapps-2026.vercel.app/methodology/
-- GitHub (currently private): https://github.com/Exyywtf/marspath-spaceapps-2026
-- Original software license: MIT. Retain scientific-image/data credits and dependency notices.
-
-## Demo guidance
-
-1. Open the whole planet and select a destination outside Jezero, such as Mawrth or Terra Sirenum. Show the source and representative-coordinate caveat.
-2. Select atmospheric temperature in Layers. Inspect a numerical value and explain the fixed model context.
-3. Open Directions and choose **Try Jezero terrain example**. Compare the routes, drag an endpoint, and show the three published delta type locations under Science objectives.
-4. Link the elevation profile to the map, open **Why this route?**, and export the result.
-5. Compare the fine Jezero tier with the coarse global tier and show the provenance on the methods page.
-
-Prepare any video/slide format only after checking the current official submission guide; its detailed requirements could not be independently retrieved in this session.
-
-## Checklist
-
-- [x] Working public application, source archive and methods page.
-- [x] MIT original-software license and separate data/image notices.
-- [x] NASA sources, AI-use disclosure and limitations prepared.
-- [x] Accurate Git history and validation records.
-- [ ] Confirm registration/team membership in the Universal Event.
-- [ ] Verify the live official Resources tab includes at least one NASA resource actually used; do not assert Global Awards eligibility without this check.
-- [ ] Review the current Project Submission Guide, fields, demo limits and licensing/public-code requirements. Repeated guide/challenge fetches returned 502 or SSL errors.
-- [ ] Publish the GitHub repository only with approval or a verified submission requirement, and test judge access without a signed-in account.
-- [ ] Record or prepare the team's final demo in the required format and verify public access.
-- [ ] Team reviews and submits through its Space Apps project page by the applicable deadline.
-
-The user confirmed Universal Event / Asia-Dubai. Published event timeline: November 14, 2026 at 09:00 to November 15, 2026 at 23:59 in the applicable local clock. Sources: https://www.spaceappschallenge.org/2026/ and https://github.com/nasa/spaceapps/discussions/1827 . Actual submission is not performed by this script or application.
+The project owner completes the team and portal details and submits for judging. The copy-and-paste handoff stays in a local file outside this repository.

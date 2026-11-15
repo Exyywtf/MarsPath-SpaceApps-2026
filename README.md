@@ -1,86 +1,61 @@
 # MarsPath
 
-A planet-wide Mars atlas with 14 scientific destinations, 42 credited mission images, inspectable science layers and numerical route comparisons.
+**Plan science traverses on Mars.** Explore real orbital imagery, compare terrain-aware routes and bring the evidence into a mission brief.
 
-**Live app:** https://marspath-spaceapps-2026.vercel.app/
+[Open MarsPath](https://marspath-spaceapps-2026.vercel.app/) · [Watch the demo](https://marspath-spaceapps-2026.vercel.app/demo/) · [Try the Jezero mission](https://marspath-spaceapps-2026.vercel.app/?mission=jezero)
 
-**Sources and methods:** https://marspath-spaceapps-2026.vercel.app/sources/
+![MarsPath Mission Planner compares four outbound candidates over real orbital imagery of the Jezero delta](public/share/marspath-jezero-2026-v1.jpg)
 
-Built for NASA Space Apps 2026. Research and education only; no NASA endorsement or astronaut-safety certification.
+*Jezero Crater. Orbital imagery courtesy of NASA / JPL / USGS Mars Trek.*
 
-## Try the application
+## A route changes with the goal
 
-1. Search or filter the destinations in **Explore**. Browse each captioned image gallery and use any destination as A or B.
-2. Open **Layers** and choose an overlay. Click the map to inspect numerical fields or a mapped unit. Click a mineral marker for its catalogue record.
-3. Open **Directions**. Set A and B on the map, enter coordinates, or use **Try Jezero terrain example**. Drag endpoints and add up to three ordered stops.
-4. Compare route metrics, select a science objective in Jezero, or compare coverage of a mapped geologic unit. Export the selected route and its evidence as Mars coordinates in a GeoJSON-shaped file.
-5. Open **Mission Planner** and use **Try validated mission example**. Compare the independent return, change ranking presets, inspect daylight, then choose **Generate Mission Brief** and **Print / Save as PDF**. [Open the mission](https://marspath-spaceapps-2026.vercel.app/?mission=jezero).
-6. Oxia’s card offers **Plan detailed Oxia route** for the supported native terrain window and an explicit example. Jezero’s **Historical observations · MEDA** viewer preserves the archived pressure and calibrated sensor records.
+Set a start, a destination and up to three waypoints. MarsPath uses elevation, slope and valid terrain coverage to calculate candidate routes. Compare their distance and modelled terrain costs, then add a science objective to see which candidate best fits the mission.
+
+At Jezero, **Shortest** recommends **2.80 km** outbound. **Science first** recommends **6.59 km** and reaches a published delta outcrop. The solver compares the same four candidates in both views. The result helps you decide whether the science stop is worth the extra 3.78 km. [Stack et al. outcrop locations](https://pmc.ncbi.nlm.nih.gov/articles/PMC7116714/#Tab2)
+
+[![Watch the 28.5-second MarsPath demo, showing the validated Jezero decision](public/share/marspath-demo-f95bb412-v1.jpg)](https://marspath-spaceapps-2026.vercel.app/demo/)
+
+## Explore and plan
+
+- Browse 14 destinations and 42 individually credited images. NASA Mars Trek provides the live orbital imagery. The Space Apps challenge lists Mars Trek among its resources. [Official challenge resources](https://www.spaceappschallenge.org/2026/challenges/interplanetary-survival-guide-martian-map/?tab=resources)
+- Compare regional CTX terrain at Jezero and Oxia with coarse 0.25° global MOLA terrain. View terrain resolution, coverage and unassessed connectors on the map.
+- Inspect elevation, geology, mineral observations, apparent thermal inertia, modelled climate and radiation. Historical MEDA readings and fixed model scenarios are labelled separately.
+- Plan a direct return leg, estimate geometric daylight and explore terrain line of sight from a hypothetical station. Save a browser-printable Mission Brief or export both legs and their provenance as mission GeoJSON.
+
+[Sources and attribution](https://marspath-spaceapps-2026.vercel.app/sources/) · [Methodology and limitations](https://marspath-spaceapps-2026.vercel.app/methodology/) · [Independent validation](docs/VALIDATION.md)
 
 ## Run locally
 
-Requires Node.js 24 (tested with 24.13.1) and npm. Dependency versions and lockfile are pinned.
+Use Node.js and npm. The application uses Next.js App Router, React and OpenLayers. A cancellable TypeScript worker runs A* on fixed scientific rasters in the browser. Production is a static export on Vercel.
 
-```powershell
+```sh
 npm ci
 npm run dev
 ```
 
-For the production static export:
+To preview the static export locally:
 
-```powershell
+```sh
 npm run build
 npm start
 ```
 
-Open http://127.0.0.1:3000. `npm start` serves exported files; it does not use Next.js server features. Vercel runs the same build. The worker is bundled explicitly with esbuild before Next.js compilation.
+For local demo playback, place the two public MP4 renditions in a local directory and run `npm run stage:demo -- <rendition-directory>` after building. [Demo and rendition details](docs/SUBMISSION.md)
 
-## Verify
-
-```powershell
+```sh
 npm run typecheck
 npm run lint
 npm test
 npx playwright install chromium webkit
-# Start the static export with npm start, then:
-npm run test:e2e -- --browser chromium
-npm run test:e2e -- --browser webkit
+npm run test:e2e -- --browser=chromium
+npm run test:e2e -- --browser=webkit
 ```
 
-Set `BASE_URL` to the deployed site to run browser tests against production. The NASA tile checks need network access. Vitest exercises both controlled grids and real Jezero, Oxia and MOLA terrain. Normal tests leave validation records untouched. To regenerate the records, first make the original rasters available, then run:
+## Scientific limits and credits
 
-```powershell
-py -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements-gis.txt
-.\.venv\Scripts\python.exe scripts/gis/process_terrain.py
-.\.venv\Scripts\python.exe scripts/gis/process_v2_layers.py
-$env:UPDATE_VALIDATION = '1'
-npm test
-Remove-Item Env:UPDATE_VALIDATION
-.\.venv\Scripts\python.exe scripts/validation/verify_routes.py --write
-.\.venv\Scripts\python.exe scripts/validation/verify_v2.py --write
-.\.venv\Scripts\python.exe scripts/gis/process_radiation.py --write
-```
+MarsPath is for research and education. Regional models leave rock-scale hazards and alignment accuracy unresolved. Global terrain uses a coarser grid. Daylight is geometric, line of sight assumes a terrain surface and antenna heights, and radiation describes one scenario. Archived observations and modelled fields carry their dates, coverage and assumptions.
 
-The GIS scripts preserve the originals. `scripts/gis/process_v2_layers.py` uses the supplied MOLA raster and the retained numerical MCD ASCII export to regenerate the 0.25° terrain derivative, climate arrays, and overlay PNGs. The build uses the tracked derivatives directly. Keep the large original rasters out of Git.
+Created by **MarsPath contributors** for the 2026 NASA Space Apps Challenge, *Interplanetary Survival Guide: Martian Map*. The original software uses the [MIT License](LICENSE). [Third-party notices](THIRD_PARTY_NOTICES.md) cover data, imagery, fonts, libraries and demo media separately.
 
-For V4, download the original assets under the names listed in [the science manifest](data/exploration-science.json) into an ignored snapshot directory. Run `scripts/gis/process_v4_science.py <snapshot>` to rebuild the derivatives and `scripts/validation/verify_v4_datasets.py <snapshot>` to check them independently. The validation script accepts `--write` to regenerate its record.
-
-## Architecture
-
-Next.js static export serves React and OpenLayers with a custom 3,396,190 m Mars sphere. NASA WMTS imagery loads directly from Mars Trek. A persistent worker caches terrain, computed legs, environmental profiles and exploration summaries for the current route candidates. The application reveals result geometry before the profiles and science summaries finish. Images and scientific data derivatives load when needed.
-
-## Limits and release scope
-
-- Fine terrain routing uses the 20 m Jezero DEM and the native 20.23 m Oxia CTX window. The global MOLA tier uses 0.25° cells with approximately 14.8 km north–south spacing. Unresolved connections can use distance-only geographic planning.
-- Local science comparisons use three published representative Jezero delta type locations. Global science themes link to regions and original evidence.
-- Geology, mineral catalogue proximity and apparent thermal inertia add route context with zero ranking weight. SWIM ice consistency and the TES dust-cover index remain references while their release checks are unresolved.
-- MCD overlays show one climatology snapshot. Climate preferences can rank existing paths when the grid resolves a difference. Radiation provides one numerical cosmic-ray scenario and an approximately registered historical illustration. Its absolute dose accuracy is unknown and it carries zero route weight.
-- Terrain coverage and numerical validation measure inputs and calculations. Safety, rock-scale obstacles and physical alignment accuracy remain outside the model.
-- GitHub is private. The public Vercel deployment is managed through the CLI.
-
-See `docs/PROJECT_STATUS.md`, `docs/VALIDATION.md`, and the in-app methods page for details.
-
-## License and attribution
-
-Original software: MIT (`LICENSE`). Scientific data, imagery and dependencies retain their original terms; see `THIRD_PARTY_NOTICES.md` and `docs/IMAGE_CREDITS.md`. AI assisted coding, research navigation, processing, design and documentation; see `docs/AI_DISCLOSURE.md`.
+We used OpenAI Codex to explore implementation and editorial options, research original sources, assist analysis and validation, code, write and design the interface, and produce the demo edit and synthesized audio. The atlas and video use genuine planetary imagery and mission data. MarsPath's routing and comparisons run deterministic algorithms. [AI assistance and science methods](https://marspath-spaceapps-2026.vercel.app/methodology/)

@@ -18,7 +18,7 @@ Full machine-readable records: `data/provenance.json`, `data/audit.json`, `publi
 
 ## Global MOLA
 
-The supplied original is preserved and checksummed in `data/audit.json`. Rasterio creates a 720×360 average numerical overview (0.5° cells), preserving nodata. The original is never bundled. Global relief imagery comes from NASA Trek, a distinct visualization source.
+The supplied original is preserved and checksummed in `data/audit.json`. MarsPath uses a 1440×720 numerical grid with 0.25° cells for coarse terrain routing. The derivative averages valid samples and preserves nodata. Its manifest is `public/processed/mola-quarter.json`. The original raster remains outside the export. Separate relief imagery comes from NASA Mars Trek.
 
 ## Oxia CTX native window
 
@@ -30,4 +30,4 @@ The authors’ complete `03_CTX.zip` passed its published MD5 and every member C
 
 ## Images
 
-Original source-page image URLs and access dates are stored in `data/locations.json`. Derivatives preserve content, reduce maximum dimensions to 1100×700, and encode JPEG quality 88. No geographic details are generated. Source screenshots remain untouched and excluded from quantitative use.
+Every destination gallery uses individually credited derivatives of original mission imagery. `data/gallery.json` records source and image URLs, dimensions, credits, terms and checksums. Images support visual interpretation. The route engine uses the separate numerical grids.

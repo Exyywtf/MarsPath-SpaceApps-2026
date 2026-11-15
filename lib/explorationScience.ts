@@ -31,7 +31,7 @@ export const scienceSources = {
     credit: "Ruff & Christensen (2002) · Arizona State University",
   },
   ice: {
-    url: "https://swim.psi.edu/SWIM4MIMProducts.php",
+    url: "https://pubs.usgs.gov/publication/70263883",
     paper: "https://doi.org/10.3847/PSJ/ad9b24",
     credit: "Morgan et al. (2025) · Subsurface Water Ice Mapping",
   },

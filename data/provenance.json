@@ -76,7 +76,7 @@
   },
   "originalLocalAudit": {
     "filename": "Mars_MGS_MOLA_DEM_mosaic_global_463m.tif",
-    "fullPath": "C:\\Users\\Admin\\dev\\marspath-spaceapps-2026\\all our mars info\\Mars_MGS_MOLA_DEM_mosaic_global_463m.tif",
+    "archivePath": "all our mars info/Mars_MGS_MOLA_DEM_mosaic_global_463m.tif",
     "bytes": 2125771142,
     "format": ".tif",
     "sha256": "38a4eb0b4452855b8dabfac40a367b458555ab4c01b31235807ad0a53c031f4c",

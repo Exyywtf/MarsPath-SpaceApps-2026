@@ -249,7 +249,6 @@ export default function Atlas() {
     (point: LonLat) => {
       if (placement === "station") {
         updateMission({ station: point });
-        expandResults();
         setPlacement(null);
         return;
       }
@@ -262,24 +261,23 @@ export default function Atlas() {
               ? { ...old, waypoints: [...old.waypoints, point] }
               : old,
       );
-      if (placement === "waypoint") expandResults();
       setPlacement(null);
     },
-    [expandResults, placement, updateMission],
+    [placement, updateMission],
   );
   const pick = useCallback(
     (p: Placement) => {
       if (p && !mapReady) return;
+      interruptScroll();
       setPlacement(p);
       switchPanel(panel === "mission" ? "mission" : "directions");
-      setSheet(p ? "peek" : "half");
       setOnboarding(false);
       if (p)
         document
           .getElementById("interactive-mars-map")
           ?.focus({ preventScroll: true });
     },
-    [mapReady, panel, switchPanel],
+    [interruptScroll, mapReady, panel, switchPanel],
   );
   const mapDidInitialize = useCallback(() => {
     mapInitialized.current = true;
@@ -486,7 +484,6 @@ export default function Atlas() {
       if (e.key === "Escape") {
         if (placement) {
           setPlacement(null);
-          setSheet("half");
         } else {
           switchPanel(null);
           document.querySelector<HTMLElement>(".nav-explore")?.focus();
@@ -584,6 +581,7 @@ export default function Atlas() {
             className={
               "nav-explore" + (panel === "places" ? " nav-active" : "")
             }
+            aria-label="Explore"
             aria-pressed={panel === "places"}
             onClick={() => open("places")}
           >
@@ -592,6 +590,7 @@ export default function Atlas() {
           </button>
           <button
             className={panel === "directions" ? "nav-active" : ""}
+            aria-label="Directions"
             aria-pressed={panel === "directions"}
             onClick={openDirections}
           >
@@ -605,6 +604,7 @@ export default function Atlas() {
           </button>
           <button
             className={panel === "layers" ? "nav-active" : ""}
+            aria-label="Layers"
             aria-pressed={panel === "layers"}
             onClick={() => open("layers")}
           >
@@ -710,10 +710,7 @@ export default function Atlas() {
             <button
               aria-label="Cancel point placement"
               className="icon-button"
-              onClick={() => {
-                setPlacement(null);
-                setSheet("half");
-              }}
+              onClick={() => setPlacement(null)}
             >
               <X size={18} />
             </button>
@@ -855,6 +852,7 @@ export default function Atlas() {
           tabIndex={-1}
           ref={panelRef}
           data-open={!!panel}
+          data-placing={placement !== null || undefined}
           inert={!panel}
           aria-hidden={!panel || undefined}
           className={
@@ -937,7 +935,7 @@ export default function Atlas() {
               </button>
             </div>
           </div>
-          <div className="workflow-stack" inert={sheet === "peek" && placement !== null}>
+          <div className="workflow-stack">
             <ScrollArea className="workflow-view" viewportClassName="panel-scroll" label="Explore destinations"
               active={panel === "places"} {...workflowState("places")}>
                 <label className="search">
