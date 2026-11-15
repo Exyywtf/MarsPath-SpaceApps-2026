@@ -128,7 +128,7 @@ const quality: CoverageDataset = {
   id: "coverage", presentation: "coverage", name: "Data Quality & Coverage", unit: "",
   interpolate: false, sha256: coverage.global.maskSha256,
   sampling: "Valid cell masks from the route grids",
-  nativeResolution: "20 m regional terrain · 0.25° global route grid",
+  nativeResolution: "Jezero 20 m · Oxia 20.23 m · 0.25° global route grid",
   kind: "Terrain data availability", sourcePage: "https://astrogeology.usgs.gov/search/map/mars_mgs_mola_dem_463m",
   context: "Inspect which terrain grid supports a point. Regional and coarse masks describe data availability. Alignment accuracy and rock-scale hazards remain unresolved.",
   terms: "USGS / NASA numerical terrain and credited regional sources.",

@@ -1,0 +1,35 @@
+{
+  "dataset": "meda-sols-30-32-v1",
+  "sha256": "c66fb6a2ab6cddae1709832122b170e29e05942bcbd883e08786da74ed517c72",
+  "productCount": 9,
+  "checks": [
+    {
+      "sol": 30,
+      "samplesMatched": 168,
+      "positionsMatched": 168,
+      "nativePressureRecords": 47661,
+      "nativeGapsMatched": 11,
+      "missingTemperatureRecords": 11
+    },
+    {
+      "sol": 31,
+      "samplesMatched": 175,
+      "positionsMatched": 175,
+      "nativePressureRecords": 50430,
+      "nativeGapsMatched": 11,
+      "missingTemperatureRecords": 12
+    },
+    {
+      "sol": 32,
+      "samplesMatched": 177,
+      "positionsMatched": 177,
+      "nativePressureRecords": 50753,
+      "nativeGapsMatched": 10,
+      "missingTemperatureRecords": 10
+    }
+  ],
+  "measurementTolerance": "Exact equality to the original CSV values",
+  "timestampToleranceSeconds": 0.001,
+  "positionMatching": "Exact original spacecraft-clock key",
+  "routeRankingWeight": 0
+}

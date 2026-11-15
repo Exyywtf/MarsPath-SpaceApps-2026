@@ -52,6 +52,7 @@ import { useResultsReveal } from "@/lib/useResultsReveal";
 import { defaultClimatePreferences } from "@/lib/routeAnalysis";
 import type { MapHandle, MapInsets, MapMissionMarker, MapRoute } from "./MarsMap";
 import RoutePlanner, { terrainMetadata } from "./RoutePlanner";
+import { oxiaTerrain, regionalTerrains } from "@/lib/terrainRegistry";
 import regions from "@/data/regions.json";
 import { scientificLayers, layerValue, type LayerId } from "@/lib/layers";
 import type { OverlayState } from "@/lib/scientificOverlay";
@@ -65,6 +66,7 @@ import HeaderLinks from "./HeaderLinks";
 import { MissionJourney, MissionSensitivity, MissionSetup, missionPresets, type MissionPreset } from "./MissionPlanner";
 import { CommunicationsSetup, MissionConditions } from "./MissionConditions";
 import { downloadMission, openMissionBrief, type MissionBrief } from "@/lib/missionBrief";
+import HistoricalObservations from "./HistoricalObservations";
 const MarsMap = dynamic(() => import("./MarsMap"), {
   ssr: false,
   loading: () => (
@@ -76,6 +78,7 @@ const MarsMap = dynamic(() => import("./MarsMap"), {
 type Workflow = "places" | "layers" | "directions" | "mission" | "location";
 type Panel = Workflow | null;
 const noMapRoutes: MapRoute[] = [];
+const allTerrainBounds = regionalTerrains.map(({ bounds }) => bounds);
 const CoordinateReadout = memo(
   forwardRef<{ set: (s: string) => void }>(function CoordinateReadout(_, ref) {
     const [text, setText] = useState("Planetocentric · east-positive");
@@ -87,6 +90,7 @@ export default function Atlas() {
   const [scienceSections, setScienceSections] = useState({ objectives: false, outcrops: false });
   const [scienceFocus, setScienceFocus] = useState<{ id: string; revision: number } | null>(null);
   const map = useRef<MapHandle>(null),
+    mapInitialized = useRef(false),
     pendingFocus = useRef<((target: MapHandle) => void) | null>(null),
     focusFrame = useRef(0),
     readout = useRef<{ set: (s: string) => void }>(null),
@@ -277,6 +281,7 @@ export default function Atlas() {
     [mapReady, panel, switchPanel],
   );
   const mapDidInitialize = useCallback(() => {
+    mapInitialized.current = true;
     setMapReady(true);
     const focus = pendingFocus.current;
     if (focus) {
@@ -287,10 +292,10 @@ export default function Atlas() {
   const moveCamera = useCallback((action: (target: MapHandle) => void) => {
     cancelAnimationFrame(focusFrame.current);
     focusFrame.current = requestAnimationFrame(() => {
-      if (map.current && mapReady) action(map.current);
+      if (map.current && mapInitialized.current) action(map.current);
       else pendingFocus.current = action;
     });
-  }, [mapReady]);
+  }, []);
   useEffect(() => () => cancelAnimationFrame(focusFrame.current), []);
   const movePoint = useCallback(
     (kind: EndpointKind | number, point: LonLat) =>
@@ -365,6 +370,17 @@ export default function Atlas() {
     const [west, south, east, north] = terrainMetadata.bounds;
     const focus = (target: MapHandle) => target.fitRoute([[west, south], [east, north]]);
     moveCamera(focus);
+  }, [moveCamera, open]);
+  const featureOxia = useCallback((withExample: boolean) => {
+    if (withExample) {
+      setDraft({ start: asLonLat(oxiaTerrain.examples[0][0]), end: asLonLat(oxiaTerrain.examples[0][1]), waypoints: [] });
+      setSettings({ ...defaultSettings, objectives: [] });
+      setClimatePreferences(defaultClimatePreferences);
+      setPlacement(null);
+    }
+    open("directions");
+    const [west, south, east, north] = oxiaTerrain.bounds;
+    moveCamera((target) => target.fitRoute([[west, south], [east, north]]));
   }, [moveCamera, open]);
   const candidates = result?.routes;
   const scores = result?.scores;
@@ -629,7 +645,7 @@ export default function Atlas() {
           routeGeneration={engine.generation}
           recommendedRoute={mapRoutes[recommended]?.id}
           onRevealState={updateDrawing}
-          terrainBounds={terrainMetadata.bounds}
+          terrainBounds={allTerrainBounds}
           getInsets={getMapInsets}
           getLayout={getLayout}
           layer={requestedLayer}
@@ -1175,6 +1191,7 @@ export default function Atlas() {
                     scores={result.scores ?? []} preset={preset} onPreset={(value) => { setPreset(value); setActive(null); }} />
                   <MissionConditions context={missionContext} pending={contextPending} terminator={showTerminator}
                     onTerminator={setShowTerminator} visibility={showVisibility} onVisibility={setShowVisibility} onProfile={setProfilePoint} />
+                  {result.meta?.id === terrainMetadata.id && <HistoricalObservations />}
                 </>}
                 onClimatePreferences={setClimatePreferences}
                 onActive={(index) => {
@@ -1240,6 +1257,13 @@ export default function Atlas() {
                   {location.id === "jezero" && <div className="mission-card-links">
                     <button className="secondary-button" onClick={missionExample}>Try validated mission example</button>
                     <button className="text-button" onClick={() => { setShowStudy(true); open("mission"); }}>Validated Case Study</button>
+                  </div>}
+                  {location.id === "jezero" && <HistoricalObservations />}
+                  {location.id === "oxia" && <div className="mission-card-links">
+                    <button className="secondary-button" onClick={() => featureOxia(false)}>Plan detailed Oxia route</button>
+                    <button className="text-button" onClick={() => featureOxia(true)}>Try Oxia terrain example</button>
+                    <p className="small-note">Native 20.23 m CTX grid in a 30 km window around the supported landing-site terrain.
+                      The Gazetteer marker represents the wider named region.</p>
                   </div>}
                   <button
                     className="text-button"

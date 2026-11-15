@@ -35,6 +35,12 @@
 .mission-alternates { padding-left: 18px; color: var(--muted); font-size: 13px; }
 .visibility-leg + .visibility-leg { padding-top: 8px; border-top: 1px solid var(--line); }
 .mission-exports { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0; }
+.observation-plot { margin: 12px 0 6px; padding-bottom: 6px; background: #10191c; border: 1px solid var(--line); border-radius: 6px; }
+.observation-chart { display: block; width: 100%; }
+.observation-axis { display: flex; justify-content: space-between; padding-inline: 4%; font: 12px var(--font-mono), monospace; color: var(--ink); }
+.observation-slider { display: grid; gap: 4px; font-size: 13px; }
+.observation-slider input { width: 100%; min-height: 44px; accent-color: var(--accent); }
+.observation-product { overflow-wrap: anywhere; font-family: var(--font-mono), monospace; }
 @media (max-width: 420px) {
   .topbar nav button { gap: 4px; padding-inline: 4px; font-size: 13px; }
   .topbar nav svg { width: 15px; flex-shrink: 0; }

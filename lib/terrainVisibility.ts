@@ -30,11 +30,16 @@ function antenna(terrain: Terrain, point: LonLat, height: number) {
   return sphericalVector(point).map((component) => component * (MARS_RADIUS + elevation + height)) as SphericalVector;
 }
 
+function raySpacing(terrain: Terrain) {
+  const latitude = Math.max(Math.abs(terrain.meta.bounds[1]), Math.abs(terrain.meta.bounds[3]));
+  return terrain.meta.pixelSize * Math.cos(latitude * Math.PI / 180) / 2;
+}
+
 export function terrainRay(terrain: Terrain, station: SphericalVector | null, point: LonLat, height: number) {
   const observer = antenna(terrain, point, height);
   if (!station || !observer) return { status: "unknown" as const };
   const delta = observer.map((component, i) => component - station[i]) as SphericalVector;
-  const steps = Math.max(2, Math.ceil(Math.hypot(...delta) / (terrain.meta.pixelSize / 2)));
+  const steps = Math.max(2, Math.ceil(Math.hypot(...delta) / raySpacing(terrain)));
   if (!Number.isFinite(steps) || steps > 8192) return { status: "unknown" as const };
   let minimum = Infinity;
   for (let i = 1; i < steps; i++) {
@@ -84,7 +89,7 @@ export async function routeVisibility(
   }
   return {
     source: terrain.meta.sourcePage, dataset: terrain.meta.id, checksum: terrain.meta.derivedSha256 ?? terrain.meta.sha256,
-    station: stationPoint, resolutionM: terrain.meta.pixelSize, rayStepM: terrain.meta.pixelSize / 2,
+    station: stationPoint, resolutionM: terrain.meta.pixelSize, rayStepM: raySpacing(terrain),
     spacingM: distance / intervals, samples,
   };
 }

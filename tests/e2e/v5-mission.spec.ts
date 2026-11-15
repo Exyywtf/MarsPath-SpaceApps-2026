@@ -92,3 +92,47 @@ test("mission daylight and visibility export with both legs and a printable brie
   await brief.emulateMedia({ media: "print" });
   await expect(brief.getByRole("button", { name: "Print / Save as PDF" })).toBeHidden();
 });
+
+test("pending mission exports and superseded conditions preserve the current departure and removal state", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.addInitScript(() => {
+    const property = Object.getOwnPropertyDescriptor(Worker.prototype, "onmessage")!;
+    const held: (() => void)[] = [];
+    (window as typeof window & { releaseMissionReplies: () => void }).releaseMissionReplies = () => {
+      for (const deliver of held.splice(0)) deliver();
+    };
+    Object.defineProperty(Worker.prototype, "onmessage", { ...property, set(listener: (event: MessageEvent) => void) {
+      property.set!.call(this, (event: MessageEvent) => {
+        if (event.data.kind === "mission-context" && document.documentElement.dataset.holdMission === "yes") {
+          held.push(() => listener.call(this, event));
+          document.documentElement.dataset.heldMissions = String(held.length);
+        } else listener.call(this, event);
+      });
+    } });
+  });
+  await page.goto("/?mission=jezero");
+  await page.evaluate(() => { document.documentElement.dataset.holdMission = "yes"; });
+  await page.getByRole("button", { name: "Try validated mission example" }).click();
+  await expect(page.getByText("Return · B to A", { exact: true })).toBeVisible();
+  await expect(page.locator("html")).toHaveAttribute("data-held-missions", /[1-9]/);
+  const file = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export mission GeoJSON" }).click();
+  const exported = JSON.parse(await readFile(await (await file).path(), "utf8"));
+  expect(exported.mission.contextStatus).toBe("pending");
+  expect(exported.mission.missionConditions).toBeUndefined();
+  await page.evaluate(() => { delete document.documentElement.dataset.holdMission; });
+  await page.getByLabel("Departure (Earth UTC)").fill("2026-11-15T18:00");
+  await page.getByRole("button", { name: "Daylight & departure" }).click();
+  await expect(page.locator(".mission-daylight")).toContainText("2026-11-15T18:00:00.000Z");
+  const release = () => (window as typeof window & { releaseMissionReplies: () => void }).releaseMissionReplies();
+  await page.evaluate(release);
+  await expect(page.locator(".mission-daylight")).not.toContainText("2026-11-15T15:00:00.000Z");
+  await page.evaluate(() => { document.documentElement.dataset.holdMission = "yes"; delete document.documentElement.dataset.heldMissions; });
+  await page.getByLabel("Departure (Earth UTC)").fill("2026-11-15T19:00");
+  await expect(page.locator("html")).toHaveAttribute("data-held-missions", /[1-9]/);
+  await page.getByRole("button", { name: "Edit route", exact: true }).click();
+  await page.getByRole("button", { name: "Remove point A", exact: true }).click();
+  await page.evaluate(release);
+  await expect(page.locator(".route-option")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Export mission GeoJSON" })).toHaveCount(0);
+});

@@ -37,6 +37,22 @@
       ],
       "maskSha256": "8c3d18e027550734541868c71a13479d220754cf6d06c3eb130c491aa0fc8925",
       "imageSha256": "bada61d56486218e9fd3187678520bbaa35e99ff684d88c12cc15cf4183fd8e1"
+    },
+    {
+      "id": "oxia-ctx-native",
+      "imageUrl": "/processed/coverage-v1/oxia-ctx-native.png",
+      "imageSize": [
+        1483,
+        1483
+      ],
+      "bounds": [
+        -24.661623794230337,
+        17.876760781786604,
+        -24.15538422487529,
+        18.38300035114156
+      ],
+      "maskSha256": "50ecc24c3fb66107ba5a705af26e35bce51fa2c8a3f15e0a16b2af1d75b4243c",
+      "imageSha256": "ec3ed61d19edfd74baaa8c13bdee520ff84ffa0f96b6736fd7bc5a86a694f2df"
     }
   ]
 }

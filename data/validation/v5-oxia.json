@@ -1,0 +1,127 @@
+{
+  "terrain": "oxia-ctx-native",
+  "sourceSha256": "6b307414f20bdd254d78124175c60c1477d14c67b3cb00200052467dcad4a021",
+  "arrayChecksums": {
+    "elevationUrl": "5444cda5c4bdb43ac2f043a3c7b3a4e4ed4d9901cfd03b081f0520db41d0dd93",
+    "slopeUrl": "e4e7f061ff75099e0b07c77d77651d80a2ebc145c47754744a95b6263ba8fa47",
+    "validUrl": "50ecc24c3fb66107ba5a705af26e35bce51fa2c8a3f15e0a16b2af1d75b4243c"
+  },
+  "slopeSourceMaxErrorDegrees": 0.0,
+  "width": 1483,
+  "height": 1483,
+  "pixelSizeM": 20.234118238599976,
+  "draft": {
+    "start": [
+      -24.4337647837485,
+      18.12988056646408
+    ],
+    "end": [
+      -24.393484089760733,
+      18.11963971206041
+    ],
+    "waypoints": []
+  },
+  "settings": {
+    "maxSlope": 20,
+    "riskWeight": 4,
+    "objectives": [],
+    "distanceWeight": 35,
+    "terrainWeight": 45,
+    "scienceWeight": 20,
+    "geographicOnly": false
+  },
+  "outbound": [
+    {
+      "id": "shortest",
+      "name": "Shortest feasible",
+      "distanceM": 2529.635851361551,
+      "assessedDistanceM": 2529.6358513607506,
+      "ascentM": 32.20947265625,
+      "descentM": 14.9541015625,
+      "maximumSlopeDegrees": 4.048689365386963,
+      "riskIntegralM": 25.64562005087718,
+      "costErrorM": 4.2361989471828565e-07,
+      "distanceErrorM": 1.4679244486615062e-09,
+      "targetsReached": [],
+      "seconds": 0.485
+    },
+    {
+      "id": "terrain",
+      "name": "Lower modelled terrain risk",
+      "distanceM": 2529.6763208341536,
+      "assessedDistanceM": 2529.676320833353,
+      "ascentM": 32.48095703125,
+      "descentM": 15.2255859375,
+      "maximumSlopeDegrees": 3.002251625061035,
+      "riskIntegralM": 15.116098860346533,
+      "costErrorM": 4.298326530260965e-07,
+      "distanceErrorM": 4.7457433538511395e-09,
+      "targetsReached": [],
+      "seconds": 0.469
+    }
+  ],
+  "return": {
+    "id": "return-terrain",
+    "name": "Lower modelled terrain risk",
+    "distanceM": 2529.6763208341554,
+    "assessedDistanceM": 2529.676320833355,
+    "ascentM": 15.2255859375,
+    "descentM": 32.48095703125,
+    "maximumSlopeDegrees": 3.002251625061035,
+    "riskIntegralM": 15.116098860346538,
+    "costErrorM": 4.298335625207983e-07,
+    "distanceErrorM": 4.748926585307345e-09,
+    "targetsReached": [],
+    "seconds": 0.515
+  },
+  "rankings": [
+    {
+      "weights": [
+        35,
+        45,
+        20
+      ],
+      "winner": "terrain",
+      "scores": [
+        0.5625,
+        0.4375
+      ]
+    },
+    {
+      "weights": [
+        100,
+        0,
+        0
+      ],
+      "winner": "shortest",
+      "scores": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "weights": [
+        0,
+        0,
+        100
+      ],
+      "winner": "shortest",
+      "scores": [
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "timing": {
+    "roundTripDistanceM": 5059.312172195707,
+    "elapsedEarthSeconds": 9106.761909952273,
+    "dwellSeconds": 0
+  },
+  "tolerances": {
+    "distanceM": 0.0001,
+    "terrainCostM": 0.0001,
+    "ascentM": 1e-06,
+    "slopeDegrees": 1e-06,
+    "rankingScore": 1e-08
+  }
+}

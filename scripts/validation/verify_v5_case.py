@@ -40,6 +40,18 @@ class ReferenceGrid:
             assert original.shape == (self.height, self.width)
             assert np.array_equal(~np.ma.getmaskarray(original).ravel(), valid == 1)
             assert np.array_equal(original.data.ravel()[valid == 1], self.elevation[valid == 1])
+            if "sourceWindow" in meta:
+                padded = dataset.read(1, window=Window(round(x_off) - 1, round(y_off) - 1, self.width + 2, self.height + 2), masked=True).filled(np.nan).astype(float)
+                dy, dx = np.gradient(padded)
+                dx, dy = dx[1:-1, 1:-1], dy[1:-1, 1:-1]
+            else:
+                numeric = original.filled(np.nan).astype(float)
+                numeric[numeric < -3e38] = np.nan
+                dy, dx = np.gradient(numeric)
+            latitude = (self.y0 + (np.arange(self.height) + 0.5) * self.b) / meta["radius"]
+            slope = np.degrees(np.arctan(np.hypot(dx / (abs(self.a) * np.cos(latitude)[:, None]), dy / abs(self.b)))).astype("<f4").ravel()
+            self.slope_source_error = float(np.max(abs(slope[valid == 1] - self.slope[valid == 1])))
+            assert self.slope_source_error < 1e-6
             crs = dataset.crs.to_wkt()
         from pyproj import CRS
         projected = CRS.from_wkt(crs)
@@ -172,6 +184,7 @@ def verify(payload, source):
         assert rankings[1]["winner"] != rankings[2]["winner"]
     return {
         "terrain": meta["id"], "sourceSha256": meta["sha256"], "arrayChecksums": grid.checksums,
+        "slopeSourceMaxErrorDegrees": grid.slope_source_error,
         "width": meta["width"], "height": meta["height"], "pixelSizeM": meta["pixelSize"],
         "draft": draft, "settings": settings, "outbound": outbound, "return": reverse, "rankings": rankings,
         "timing": {"roundTripDistanceM": expected_distance, "elapsedEarthSeconds": expected_time, "dwellSeconds": dwell},

@@ -54,7 +54,7 @@ export function resolveCapability(request: PlannerRequest): {
     meta,
     reason:
       regional
-        ? `${meta.name} · ${meta.pixelSize} m projected grid`
+        ? `${meta.name} · ${Number(meta.pixelSize.toFixed(2))} m projected grid`
         : "Global MOLA · 0.25° derived cells (~14.8 km north–south)",
   };
 }

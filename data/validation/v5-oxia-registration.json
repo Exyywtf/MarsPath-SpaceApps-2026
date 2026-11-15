@@ -1,0 +1,37 @@
+{
+  "referenceSha256": "38a4eb0b4452855b8dabfac40a367b458555ab4c01b31235807ad0a53c031f4c",
+  "reference": "Preserved USGS MGS MOLA 463 m numerical DEM",
+  "sampling": "Every 24th source row and column, valid cells only. Nearest MOLA sample.",
+  "interpretations": {
+    "nativeEqcLatitude": {
+      "samples": 36939,
+      "medianDifferenceM": 0.92236328125,
+      "medianAbsoluteDifferenceM": 7.83837890625,
+      "centredRmsDifferenceM": 19.881990432739258
+    },
+    "ifPlanetographicToCentric": {
+      "samples": 36939,
+      "medianDifferenceM": 22.05859375,
+      "medianAbsoluteDifferenceM": 46.393310546875,
+      "centredRmsDifferenceM": 73.37754821777344
+    }
+  },
+  "conclusion": "Retain native equirectangular angular coordinates. Agreement with coarse MOLA does not establish absolute alignment accuracy.",
+  "dataset": "oxia-ctx-native",
+  "sourceSha256": "6b307414f20bdd254d78124175c60c1477d14c67b3cb00200052467dcad4a021",
+  "archiveMd5": "9d01c587dd2287d7c4de6ac272cbf03d",
+  "archiveCrc": "all members passed",
+  "nativeWindow": {
+    "column": 2230,
+    "row": 2269,
+    "width": 1483,
+    "height": 1483
+  },
+  "gridSpacingM": 20.234118238599976,
+  "validCells": 2199289,
+  "arrayChecksums": {
+    "elevation": "5444cda5c4bdb43ac2f043a3c7b3a4e4ed4d9901cfd03b081f0520db41d0dd93",
+    "slope": "e4e7f061ff75099e0b07c77d77651d80a2ebc145c47754744a95b6263ba8fa47",
+    "valid": "50ecc24c3fb66107ba5a705af26e35bce51fa2c8a3f15e0a16b2af1d75b4243c"
+  }
+}

@@ -72,8 +72,8 @@ export default function Methodology() {
       <h2>Three levels of route support</h2>
       <ul>
         <li>
-          <strong>Regional terrain:</strong> native 20 m projected Jezero CTX
-          elevation cells, with latitude-corrected surface spacing.
+          <strong>Regional terrain:</strong> native 20 m Jezero CTX and 20.23 m Oxia CTX
+          elevation cells, with latitude-corrected surface spacing. Oxia covers a native-aligned window about 30 km across.
         </li>
         <li>
           <strong>Coarse terrain:</strong> MOLA elevations averaged to a 1440 ×
@@ -89,6 +89,26 @@ export default function Methodology() {
           explicitly labelled geographic result.
         </li>
       </ul>
+      <p className="lede">
+        The Oxia archive passed its published MD5 and all ZIP member CRC checks. Source elevations remain at their original grid centres.
+        The native equirectangular coordinates were checked against the independently supplied MOLA grid, with a median absolute elevation
+        difference of 7.84 m across 36,939 samples. The source WKT includes a Mars ellipsoid. A further latitude conversion worsens the MOLA agreement.
+        MarsPath retains the native angular coordinates. Absolute alignment accuracy remains unknown.
+      </p>
+      <EvidenceLink className="text-link" href="/sources/#oxia-ctx">Oxia terrain source and registration limits</EvidenceLink>
+      <h2 id="historical-observations">Archived MEDA measurements</h2>
+      <p className="lede">
+        The historical viewer preserves 520 pressure measurements selected from sols 30–32, with five calibrated temperature channels
+        and position records matched at the exact spacecraft clock. Thirty-three selected pressure times have no matching temperature record.
+        These channels remain missing. Source gaps interrupt the profiles. UTC uses the NAIF Mars 2020 clock kernel and its leap-second source.
+        Some temperature and position label endpoints differ from the CSV clocks by half a second, which is recorded in the metadata.
+      </p>
+      <p className="lede">
+        The three mast temperature sensors are about 1.45 m above the surface and the two rover-frame sensors are about 0.84 m.
+        Calibrated local readings retain rover thermal effects. The source ATS products have no quality flag fields.
+        Archived observations carry zero route weight. Their season, times, height and position differ from the MCD climatology scenario.
+      </p>
+      <EvidenceLink className="text-link" href="/sources/#meda-observations">MEDA products, sensor context and limitations</EvidenceLink>
       <p className="lede">
         A failed regional search retains its failure. Choosing a geographic
         connection after that failure is explicit. Global connections are

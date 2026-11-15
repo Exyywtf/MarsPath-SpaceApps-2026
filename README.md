@@ -14,6 +14,8 @@ Built for NASA Space Apps 2026. Research and education only; no NASA endorsement
 2. Open **Layers** and choose an overlay. Click the map to inspect numerical fields or a mapped unit. Click a mineral marker for its catalogue record.
 3. Open **Directions**. Set A and B on the map, enter coordinates, or use **Try Jezero terrain example**. Drag endpoints and add up to three ordered stops.
 4. Compare route metrics, select a science objective in Jezero, or compare coverage of a mapped geologic unit. Export the selected route and its evidence as Mars coordinates in a GeoJSON-shaped file.
+5. Open **Mission Planner** and use **Try validated mission example**. Compare the independent return, change ranking presets, inspect daylight, then choose **Generate Mission Brief** and **Print / Save as PDF**. [Open the mission](https://marspath-spaceapps-2026.vercel.app/?mission=jezero).
+6. Oxia’s card offers **Plan detailed Oxia route** for the supported native terrain window and an explicit example. Jezero’s **Historical observations · MEDA** viewer preserves the archived pressure and calibrated sensor records.
 
 ## Run locally
 
@@ -45,7 +47,7 @@ npm run test:e2e -- --browser chromium
 npm run test:e2e -- --browser webkit
 ```
 
-Set `BASE_URL` to the deployed site to run browser tests against production. The NASA tile checks need network access. Vitest exercises both controlled grids and real Jezero and MOLA terrain. Normal tests leave validation records untouched. To regenerate the records, first make the original rasters available, then run:
+Set `BASE_URL` to the deployed site to run browser tests against production. The NASA tile checks need network access. Vitest exercises both controlled grids and real Jezero, Oxia and MOLA terrain. Normal tests leave validation records untouched. To regenerate the records, first make the original rasters available, then run:
 
 ```powershell
 py -m venv .venv
@@ -70,7 +72,7 @@ Next.js static export serves React and OpenLayers with a custom 3,396,190 m Mars
 
 ## Limits and release scope
 
-- Fine terrain routing uses the 20 m Jezero DEM. The global MOLA tier uses 0.25° cells with approximately 14.8 km north–south spacing. Unresolved connections can use distance-only geographic planning.
+- Fine terrain routing uses the 20 m Jezero DEM and the native 20.23 m Oxia CTX window. The global MOLA tier uses 0.25° cells with approximately 14.8 km north–south spacing. Unresolved connections can use distance-only geographic planning.
 - Local science comparisons use three published representative Jezero delta type locations. Global science themes link to regions and original evidence.
 - Geology, mineral catalogue proximity and apparent thermal inertia add route context with zero ranking weight. SWIM ice consistency and the TES dust-cover index remain references while their release checks are unresolved.
 - MCD overlays show one climatology snapshot. Climate preferences can rank existing paths when the grid resolves a difference. Radiation provides one numerical cosmic-ray scenario and an approximately registered historical illustration. Its absolute dose accuracy is unknown and it carries zero route weight.

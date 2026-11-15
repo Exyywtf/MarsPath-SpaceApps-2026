@@ -64,6 +64,7 @@ test("Sources listbox centres each row and supports keyboard and outside dismiss
   const filter = page.getByRole("button", { name: /Filter source type/ });
   const menu = page.getByRole("listbox");
   const options = menu.getByRole("option");
+  const lastClassification = [...new Set(sources.map((source) => source.type))].at(-1)!;
   const centerOffset = (node: Element) => {
     const row = node.getBoundingClientRect(), text = node.querySelector("span")!.getBoundingClientRect();
     return Math.abs(text.x + text.width / 2 - row.x - row.width / 2);
@@ -80,14 +81,14 @@ test("Sources listbox centres each row and supports keyboard and outside dismiss
   }
   await page.keyboard.press("End");
   await page.keyboard.press("Enter");
-  await expect(filter).toHaveText("Peer-reviewed geology");
+  await expect(filter).toHaveText(lastClassification);
   await expect(filter).toBeFocused();
   expect((await filter.boundingBox())!.width).toBe(triggerBox.width);
   expect(await filter.evaluate(centerOffset)).toBeLessThan(0.5);
   await expect(page.locator(".source-count")).toHaveText("1 source");
   await filter.press("ArrowDown");
   const selected = menu.getByRole("option", { selected: true });
-  await expect(selected).toHaveText("Peer-reviewed geology");
+  await expect(selected).toHaveText(lastClassification);
   expect(await selected.evaluate(centerOffset)).toBeLessThan(0.5);
   await menu.evaluate((node) => Promise.all(node.getAnimations().map((a) => a.finished.catch(() => undefined))));
   const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();

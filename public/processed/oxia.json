@@ -1,0 +1,85 @@
+{
+  "id": "oxia-ctx-native",
+  "name": "Oxia CTX numerical terrain",
+  "sourceUrl": "https://ndownloader.figshare.com/files/30475302",
+  "sourcePage": "https://doi.org/10.21954/ou.rd.16451220.v1",
+  "sha256": "6b307414f20bdd254d78124175c60c1477d14c67b3cb00200052467dcad4a021",
+  "archiveMd5": "9d01c587dd2287d7c4de6ac272cbf03d",
+  "archiveSha256": "99995950d494eda33c3915c968e94cf2fd2fe1f58029bd931189676efee18171",
+  "derivedSha256": "508b6a09cd8214430f832561c5cee28781e31021d3df6e953f6ed9e7c964874b",
+  "arrayChecksums": {
+    "elevation": "5444cda5c4bdb43ac2f043a3c7b3a4e4ed4d9901cfd03b081f0520db41d0dd93",
+    "slope": "e4e7f061ff75099e0b07c77d77651d80a2ebc145c47754744a95b6263ba8fa47",
+    "valid": "50ecc24c3fb66107ba5a705af26e35bce51fa2c8a3f15e0a16b2af1d75b4243c"
+  },
+  "width": 1483,
+  "height": 1483,
+  "pixelSize": 20.234118238599976,
+  "radius": 3396190,
+  "transform": [
+    20.234118238599976,
+    0.0,
+    -6616.466639403952,
+    0.0,
+    -20.234118238599997,
+    1089646.7853847481
+  ],
+  "bounds": [
+    -24.661623794230337,
+    17.876760781786604,
+    -24.15538422487529,
+    18.38300035114156
+  ],
+  "equirectangular": {
+    "centralMeridian": 335.45
+  },
+  "crs": "PROJCS[\"Equirectangular_Mars_Oxia_Planum\",GEOGCS[\"GCS_Mars_2000\",DATUM[\"D_Mars_2000\",SPHEROID[\"Mars_2000_IAU_IAG\",3396190,169.894447223612]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Equirectangular\"],PARAMETER[\"standard_parallel_1\",0],PARAMETER[\"central_meridian\",335.45],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH]]",
+  "sourceWindow": {
+    "column": 2230,
+    "row": 2269,
+    "width": 1483,
+    "height": 1483
+  },
+  "sourceNodata": -3.4028230607370965e+38,
+  "units": "m elevation tied vertically to MOLA; degrees derived slope",
+  "validCells": 2199289,
+  "totalCells": 2199289,
+  "elevationRange": [
+    -3194.284912109375,
+    -2835.870361328125
+  ],
+  "elevationUrl": "/processed/oxia-elevation.f32",
+  "slopeUrl": "/processed/oxia-slope.f32",
+  "validUrl": "/processed/oxia-valid.u8",
+  "examples": [
+    [
+      [
+        -24.4337647837485,
+        18.12988056646408
+      ],
+      [
+        -24.393484089760733,
+        18.11963971206041
+      ]
+    ],
+    [
+      [
+        -24.408504009552814,
+        18.109740219470194
+      ],
+      [
+        -24.400994049656788,
+        18.114860646672028
+      ]
+    ]
+  ],
+  "terms": "CC BY 4.0",
+  "credit": "Fawdon et al. (2021), The geography of Oxia Planum. Derivatives by MarsPath.",
+  "processing": "Native-aligned 1483-cell square about 30 km across, centred on the valid source footprint midpoint. No elevation resampling. Finite-difference slopes use a one-cell source halo and latitude-dependent east-west distances. Finite source nodata masked before arithmetic.",
+  "limitations": [
+    "Filename describes 20 m data. Affine grid spacing is 20.2341182386 m.",
+    "The authors report MOLA vertical control and manual spline registration to HRSC. Absolute alignment accuracy is unknown.",
+    "The source WKT contains an ellipsoid, while its equirectangular equations map directly to the angular grid. The MOLA registration check supports retaining these native angular coordinates.",
+    "Terrain grid cannot resolve rock-scale obstacles or establish traversability."
+  ]
+}

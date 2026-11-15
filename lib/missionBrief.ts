@@ -9,6 +9,7 @@ import type { RouteEvidence } from "./routeEvidence";
 import type { Ranking } from "./routeRanking";
 import { coordinateLabel, type LonLat } from "./mars";
 import { scienceTargets } from "./science";
+import { reduceProfilePoints } from "./profileDisplay";
 
 export type MissionBrief = {
   requestId: number;
@@ -88,14 +89,16 @@ function displayPoints<T>(points: T[]) {
 }
 
 function routeDiagram(outbound: PlannedRoute, inbound?: PlannedRoute) {
-  const out = unwrapRoute(displayPoints(outbound.coordinates));
+  const fullOut = unwrapRoute(outbound.coordinates);
+  const out = displayPoints(fullOut);
   const end = out.at(-1);
   let returning = inbound ? unwrapRoute(displayPoints(inbound.coordinates)) : [];
   if (end && returning.length) {
     const offset = Math.round((end[0] - returning[0][0]) / 360) * 360;
     returning = returning.map(([lon, lat]) => [lon + offset, lat]);
   }
-  const all = [...out, ...returning];
+  const stopPoints = (outbound.stopIndices ?? []).slice(1, -1).map((index) => fullOut[index]).filter(Boolean);
+  const all = [...out, ...returning, ...stopPoints];
   if (all.length < 2) return "";
   const xs = all.map(([lon]) => lon), ys = all.map(([, lat]) => lat);
   const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
@@ -104,10 +107,15 @@ function routeDiagram(outbound: PlannedRoute, inbound?: PlannedRoute) {
   const project = ([lon, lat]: LonLat) => [300 + (lon - (x0+x1)/2) * lonScale*scale, 100 - (lat - (y0+y1)/2)*scale];
   const points = (path: LonLat[]) => path.map((p) => project(p).map((x) => x.toFixed(2)).join(",")).join(" ");
   const [ax, ay] = project(out[0]), [bx, by] = project(out.at(-1)!);
+  const stops = stopPoints.map((point, i) => {
+    const [x, y] = project(point);
+    return `<circle cx="${x}" cy="${y}" r="4" fill="#172522"/><text x="${x + 7}" y="${y - 7}" font-size="12">Stop ${i + 1}</text>`;
+  }).join("");
   return `<svg viewBox="0 0 600 200" role="img" aria-label="Route geometry diagram. Solid outbound, dashed return.">
     <rect x="1" y="1" width="598" height="198" fill="#f6f7f1" stroke="#a7b5ae"/>
     <polyline fill="none" points="${points(out)}" stroke="#9b4314" stroke-width="3"/>
     ${returning.length ? `<polyline fill="none" points="${points(returning)}" stroke="#187362" stroke-dasharray="5 4" stroke-width="2"/>` : ""}
+    ${stops}
     <text x="${ax-12}" y="${ay-9}" font-size="14">A</text><text x="${bx+8}" y="${by-8}" font-size="14">B</text>
     <text x="563" y="189" font-size="11">N ↑</text></svg>
     <p class="caption">Centred Mars longitude/latitude diagram. Solid outbound · dashed return.</p>`;
@@ -115,7 +123,7 @@ function routeDiagram(outbound: PlannedRoute, inbound?: PlannedRoute) {
 
 function profileDiagram(route: PlannedRoute, label: string) {
   const fullProfile = route.terrain?.profile ?? [];
-  const profile = displayPoints(fullProfile);
+  const profile = reduceProfilePoints(fullProfile.map((point) => ({ ...point, value: point.elevation })));
   if (profile.length < 2) return "";
   const [lo, hi] = fullProfile.reduce(([lo, hi], { elevation }) =>
     [Math.min(lo, elevation), Math.max(hi, elevation)], [Infinity, -Infinity]);
@@ -141,6 +149,7 @@ function environmentRows(analysis: RouteAnalysis | undefined, leg: string) {
 export function renderMissionBrief(brief: MissionBrief) {
   const { mission, selected, context, candidates } = brief;
   const inbound = back(brief), timing = missionTiming(selected, inbound, mission);
+  const stops = selected.stops?.slice(1, -1) ?? [];
   const name = mission.name || "MarsPath mission";
   const objective = (mission.objective === "custom" ? mission.customObjective : missionObjectives.find(([id]) => id === mission.objective)?.[1]) || "Unspecified";
   const terrain = brief.terrain;
@@ -179,6 +188,7 @@ ${routeDiagram(selected, inbound)}${profileDiagram(selected, "Outbound")}${inbou
 ${candidates.map((route, i) => row([route.name, formatDistance(route.distance), number(brief.scores?.[i], 3)])).join("")}</tbody></table>
 <p>Weights · ${escapeHtml(Object.entries(brief.ranking?.weights ?? {}).map(([label, weight]) => label + " " + (weight * 100).toFixed(0) + "%").join(" · ") || "Pending")}</p>
 <p>Published outcrops reached · ${escapeHtml(selected.reachedTargets?.map((id) => scienceTargets.find((target) => target.id === id)?.name ?? id).join(", ") || "None")}</p>
+${stops.length ? `<h3>Outbound stops</h3><ol>${stops.map((point) => `<li>${escapeHtml(coordinateLabel(point, 5))} · ${escapeHtml(mission.dwellMinutes ?? 0)} min dwell</li>`).join("")}</ol>` : ""}
 <p>Mapped geology and surface evidence · ${escapeHtml(brief.evidenceStatus)}${brief.evidence ? " · " + escapeHtml(brief.evidence.provenance.datasetVersion) : ""}.</p>
 </section><section><h2>Mission conditions</h2>
 <p>Outbound environmental analysis · ${escapeHtml(brief.analysisStatus)}. Mission conditions · ${escapeHtml(brief.contextStatus)}.</p>
@@ -197,8 +207,8 @@ ${([["Outbound", context?.visibility?.outbound], ["Return", context?.visibility?
 <p>Geometric daylight leaves shadows, dust and extinction unassessed. Terrain visibility leaves signal propagation and equipment reliability unassessed.</p>
 </section><section><h2>Sources and reproducibility</h2><p>Mission format ${version} · request ${brief.requestId}. Mars east-positive planetocentric coordinates.
 Alignment accuracy and rock-scale terrain remain unresolved. Distance and duration are model estimates.</p>
-<ul>${terrain ? `<li>${link(terrain.sourcePage, terrain.name)} · ${terrain.angularStep ? `${terrain.angularStep}°` : `${number(terrain.pixelSize, 2)} m`} grid · <code>${escapeHtml(terrain.derivedSha256 ?? terrain.sha256)}</code></li>` : ""}
-${refs.map((factor) => `<li>${link(factor.source, factor.credit)} · <code>${escapeHtml(factor.checksum)}</code></li>`).join("")}
+<ul>${terrain ? `<li>${link(terrain.sourcePage, terrain.credit ?? terrain.name)} · ${terrain.angularStep ? `${terrain.angularStep}°` : `${number(terrain.pixelSize, 2)} m`} grid${terrain.terms ? " · " + escapeHtml(terrain.terms) : ""} · <code>${escapeHtml(terrain.derivedSha256 ?? terrain.sha256)}</code></li>` : ""}
+${refs.map((factor) => `<li>${link(factor.source, factor.credit)} · ${link(factor.terms, /^https:\/\//.test(factor.terms) ? "Usage terms" : factor.terms)} · <code>${escapeHtml(factor.checksum)}</code></li>`).join("")}
 ${context?.daylight ? `<li>${link(context.daylight.provenance.source, context.daylight.provenance.model)} · ${link(context.daylight.provenance.clockSource, "UTC leap-second source")}</li>` : ""}
 <li>${link("https://pmc.ncbi.nlm.nih.gov/articles/PMC7116714/#Tab2", "Stack et al. (2020), Jezero outcrop type locations")}</li></ul>
 </section></article><script>document.getElementById("print").addEventListener("click",()=>window.print());</script></body></html>`;

@@ -27,6 +27,9 @@ export interface TerrainMeta {
   derivedSha256?: string;
   validCells?: number;
   totalCells?: number;
+  equirectangular?: { centralMeridian: number };
+  credit?: string;
+  terms?: string;
 }
 export interface Terrain {
   meta: TerrainMeta;
@@ -58,7 +61,12 @@ export interface RouteRequest {
   waypoints?: LonLat[];
 }
 export function terrainProjected(meta: TerrainMeta, point: LonLat): LonLat {
-  return meta.grid === "geographic" ? [((point[0] + 180) % 360 + 360) % 360 - 180, point[1]] : lonLatToProjected(point);
+  if (meta.grid === "geographic") return [((point[0] + 180) % 360 + 360) % 360 - 180, point[1]];
+  if (meta.equirectangular) {
+    const lon = ((point[0] - meta.equirectangular.centralMeridian + 180) % 360 + 360) % 360 - 180;
+    return [lon * Math.PI / 180 * meta.radius, point[1] * Math.PI / 180 * meta.radius];
+  }
+  return lonLatToProjected(point);
 }
 export function cellCoordinate(meta: TerrainMeta, index: number): LonLat {
   const x = index % meta.width,
@@ -68,10 +76,12 @@ export function cellCoordinate(meta: TerrainMeta, index: number): LonLat {
       meta.transform[2] + (x + 0.5) * meta.transform[0],
       meta.transform[5] + (y + 0.5) * meta.transform[4],
     ];
-  return projectedToLonLat(
+  const point = projectedToLonLat(
     meta.transform[2] + (x + 0.5) * meta.transform[0],
     meta.transform[5] + (y + 0.5) * meta.transform[4],
   );
+  if (meta.equirectangular) point[0] = ((point[0] + meta.equirectangular.centralMeridian + 180) % 360 + 360) % 360 - 180;
+  return point;
 }
 export function coordinateCell(meta: TerrainMeta, point: LonLat): number {
   if (!point.every(Number.isFinite) || Math.abs(point[1]) > 90) return -1;

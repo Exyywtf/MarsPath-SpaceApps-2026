@@ -93,7 +93,7 @@ export function MissionConditions({ context, pending, terminator, onTerminator, 
           if (!record || typeof record === "string") return null;
           return <div className="visibility-leg" key={label as string}>
             <strong>{label as string}</strong>
-            <p className="small-note">{record.samples.length} samples · {record.spacingM.toFixed(1)} m spacing · {record.resolutionM} m DTM</p>
+            <p className="small-note">{record.samples.length} samples · {record.spacingM.toFixed(1)} m spacing · {Number(record.resolutionM.toFixed(2))} m DTM</p>
             <ul className="categorical-legend">{(Object.keys(statusNames) as Visibility[]).map((status) =>
               <li key={status}><i style={{ backgroundColor: visibilityColors[status] }} />
                 {statusNames[status]} · {record.samples.filter((sample) => sample.status === status).length}</li>

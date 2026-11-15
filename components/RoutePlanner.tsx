@@ -760,13 +760,13 @@ export default memo(function RoutePlanner(p: Props) {
                   <dt>Derived terrain grid</dt>
                   <dd>
                     {p.result?.tier === "regional"
-                      ? "20 m projected"
+                      ? `${Number(p.result.meta!.pixelSize.toFixed(2))} m projected`
                       : "0.25° (~14.8 km N–S)"}
                   </dd>
                   <dt>Native source spacing</dt>
                   <dd>
                     {p.result?.tier === "regional"
-                      ? "20 m projected"
+                      ? `${Number(p.result.meta!.pixelSize.toFixed(2))} m projected`
                       : "463.0935 m projected"}
                   </dd>
                   <dt>Valid cells in dataset</dt>

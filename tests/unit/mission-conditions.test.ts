@@ -7,6 +7,7 @@ import { MARS_RADIUS, projectedToLonLat } from "../../lib/mars";
 import { jezeroTerrain } from "../../lib/terrainRegistry";
 import { testTerrainRay } from "../../lib/terrainVisibility";
 import type { Terrain } from "../../lib/routing";
+import { reduceProfilePoints } from "../../lib/profileDisplay";
 
 it("reproduces the two published NASA Mars24 worked examples", () => {
   const frame = solarFrame(Date.parse("2000-01-06T00:00:00Z"))!;
@@ -26,6 +27,22 @@ it("reproduces the two published NASA Mars24 worked examples", () => {
   expect(position.azimuth).toBeCloseTo(179.99383, 4);
   expect(Math.abs(position.trueTime - 0.00025) * 3600).toBeLessThan(0.5);
   expect(localSun(spirit, [point[0] - 360, point[1]]).trueTime).toBeCloseTo(position.trueTime, 8);
+});
+
+it("retains narrow profile extrema and missing-data transitions in the report and interactive chart", () => {
+  const points = Array.from({ length: 1200 }, (_, distance) => ({ distance, value: 0 as number | null }));
+  points[39].value = 100;
+  points[1111].value = -50;
+  points[502].value = null;
+  const displayed = reduceProfilePoints(points);
+  expect(displayed).toContain(points[39]);
+  expect(displayed).toContain(points[1111]);
+  expect(displayed).toContain(points[501]);
+  expect(displayed).toContain(points[502]);
+  expect(displayed).toContain(points[503]);
+  expect(displayed[0]).toBe(points[0]);
+  expect(displayed.at(-1)).toBe(points.at(-1));
+  expect(displayed.length).toBeLessThan(points.length);
 });
 
 it("handles UTC leaps, polar day and darkness, and the geometric terminator", () => {

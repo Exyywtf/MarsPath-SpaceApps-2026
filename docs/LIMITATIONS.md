@@ -1,6 +1,8 @@
 # Known limitations
 
-- Fine routing covers the published Jezero CTX DTM footprint. The global tier uses averaged 0.25° MOLA cells. Geographic connections report great-circle distance for unresolved terrain legs.
+- Fine routing covers the Jezero CTX DTM footprint and a native-aligned 30 km Oxia CTX window. Oxia’s actual spacing is 20.234 m and its Gazetteer marker represents a wider region outside that window. The global tier uses averaged 0.25° MOLA cells. Geographic connections report great-circle distance for unresolved terrain legs.
+- Mars24 daylight uses a geometric horizon. Terrain shadows and extinction remain unresolved. Terrain line of sight assumes a spherical Mars reference and hypothetical antenna heights. Radio propagation and equipment reliability remain unassessed.
+- MEDA pressure and local sensor temperatures describe archived Perseverance conditions during sols 30–32. The calibrated temperatures retain rover influences and the products provide no flag fields. Exact clock matches are required for the selected temperature and position records. Their time, season and height differ from the MCD scenario.
 - 20 m terrain cannot reveal individual rocks, small scarps, soil strength, local obstacles or actual astronaut traversability. No safety guarantees.
 - Finite-difference slope and terrain-cost weights are modelling choices. Absolute elevation precision and inter-product alignment uncertainty are not converted into invented confidence percentages.
 - Jezero science comparisons use three representative published delta outcrops and two objectives. Other regions expose their sourced evidence. Local science optimization outside Jezero remains unsupported.

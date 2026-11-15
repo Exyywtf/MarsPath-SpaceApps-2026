@@ -135,7 +135,7 @@ interface Props {
   routeGeneration?: number;
   recommendedRoute?: string;
   onRevealState: (drawing: boolean) => void;
-  terrainBounds: number[];
+  terrainBounds: number[][];
   getInsets: (width: number, height: number) => MapInsets;
   getLayout: () => MapLayout;
   onInspect?: (point: LonLat, observationIds?: string[]) => void;
@@ -1080,8 +1080,7 @@ const MarsMap = forwardRef<MapHandle, Props>(function MarsMap(props, ref) {
   }, []);
   useEffect(() => {
     boundsSource.current.clear();
-    const [w, s, e, n] = props.terrainBounds;
-    boundsSource.current.addFeature(
+    for (const [w, s, e, n] of props.terrainBounds) boundsSource.current.addFeature(
       new Feature(
         new Polygon([
           [

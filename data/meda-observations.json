@@ -1,0 +1,45 @@
+{
+  "id": "meda-sols-30-32-v1",
+  "url": "/processed/meda-sols-30-32-v1.json",
+  "sha256": "c66fb6a2ab6cddae1709832122b170e29e05942bcbd883e08786da74ed517c72",
+  "bytes": 169847,
+  "source": "https://doi.org/10.17189/1522849",
+  "sensorSource": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8550605/",
+  "credit": "Mars 2020 MEDA team / NASA Planetary Data System Atmospheres Node",
+  "terms": "PDS publicly released science data. Cite the MEDA bundle and individual product identifiers.",
+  "sampling": "First pressure observation in each occupied five-minute LMST bin. Original measurements and timestamps retained.",
+  "checks": [
+    {
+      "sol": 30,
+      "nativePressureRecords": 47661,
+      "nativeTemperatureRecords": 95885,
+      "packagedSamples": 168,
+      "gaps": 11,
+      "temperatureGaps": 11,
+      "missingExactPositions": 0,
+      "missingExactTemperatures": 11
+    },
+    {
+      "sol": 31,
+      "nativePressureRecords": 50430,
+      "nativeTemperatureRecords": 101393,
+      "packagedSamples": 175,
+      "gaps": 11,
+      "temperatureGaps": 11,
+      "missingExactPositions": 0,
+      "missingExactTemperatures": 12
+    },
+    {
+      "sol": 32,
+      "nativePressureRecords": 50753,
+      "nativeTemperatureRecords": 102011,
+      "packagedSamples": 177,
+      "gaps": 10,
+      "temperatureGaps": 10,
+      "missingExactPositions": 0,
+      "missingExactTemperatures": 10
+    }
+  ],
+  "utcStart": "2021-03-21T00:11:53.795Z",
+  "utcStop": "2021-03-24T01:14:08.868Z"
+}

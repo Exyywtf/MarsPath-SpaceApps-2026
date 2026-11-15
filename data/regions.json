@@ -30,20 +30,21 @@
       17.28
     ],
     "coordinateSystem": "Planetocentric, east-positive Mars sphere R=3396190 m",
-    "level": "B",
-    "routingManifest": "/processed/mola-quarter.json",
+    "level": "C",
+    "routingManifest": "/processed/oxia.json",
     "routingBounds": [
-      -180,
-      -90,
-      180,
-      90
+      -24.661623794230337,
+      17.876760781786604,
+      -24.15538422487529,
+      18.38300035114156
     ],
     "sourceIds": [
       "trek",
       "gazetteer",
-      "oxia"
+      "oxia",
+      "oxia-ctx"
     ],
-    "availability": "Global imagery and 0.25° MOLA coarse terrain routing. No fine regional DEM or verified local science-stop registry is enabled. Geographic fallback for unresolved connections."
+    "availability": "Native 20.23 m CTX regional terrain in a 30 km supported landing-site window. The Gazetteer marker represents the wider named region. Global MOLA coarse terrain outside the footprint. Local verified science stops are unavailable."
   },
   {
     "id": "valles",

@@ -20,6 +20,14 @@ Full machine-readable records: `data/provenance.json`, `data/audit.json`, `publi
 
 The supplied original is preserved and checksummed in `data/audit.json`. Rasterio creates a 720×360 average numerical overview (0.5° cells), preserving nodata. The original is never bundled. Global relief imagery comes from NASA Trek, a distinct visualization source.
 
+## Oxia CTX native window
+
+The authors’ complete `03_CTX.zip` passed its published MD5 and every member CRC. The preserved elevation TIFF has SHA-256 `6b307414f20bdd254d78124175c60c1477d14c67b3cb00200052467dcad4a021`. The processor crops a native-aligned 1,483-cell square about 30 km across, centred on the valid source footprint midpoint. Original elevation samples remain unchanged. A source halo supports finite-difference slopes. The WKT, affine transform, exact 20.2341182386 m spacing, nodata, crop offsets, source terms and derivative hashes are in `public/processed/oxia.json`. The numerical MOLA comparison is recorded in `data/validation/v5-oxia-registration.json`. [Source and CC BY 4.0 terms](https://doi.org/10.21954/ou.rd.16451220.v1).
+
+## MEDA sols 30–32
+
+`scripts/gis/process_meda.py` checks the nine PDS CSV files against their XML sizes, MD5s and record counts. It retains the first pressure sample in each occupied five-minute LMST bin and matches the temperature and position records by their original spacecraft clocks. Missing records remain null. UTC is derived with the checksummed NAIF kernels listed in the derivative. Half-second label endpoint discrepancies are recorded. Product IDs, original URLs, labels, fields and checksums are in `public/processed/meda-sols-30-32-v1.json`. The small series loads on demand. [PDS archive](https://doi.org/10.17189/1522849).
+
 ## Images
 
 Original source-page image URLs and access dates are stored in `data/locations.json`. Derivatives preserve content, reduce maximum dimensions to 1100×700, and encode JPEG quality 88. No geographic details are generated. Source screenshots remain untouched and excluded from quantitative use.

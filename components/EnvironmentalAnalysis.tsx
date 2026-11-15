@@ -8,6 +8,7 @@ import { formatDistance, type PlannedRoute } from "@/lib/planner";
 import { climateIds, factorInfo, type ClimateBand, type ClimatePreferences, type FactorId, type RouteAnalysis } from "@/lib/routeAnalysis";
 import type { ClimateId } from "@/lib/layers";
 import type { Ranking } from "@/lib/routeRanking";
+import { reduceProfilePoints } from "@/lib/profileDisplay";
 
 type Metric = FactorId | "elevation" | "distance" | "ascent" | "slope";
 const labels: Record<Metric, string> = {
@@ -108,29 +109,6 @@ type Point = { distance: number; value: number | null; coordinates: LonLat; conn
 type Track = FactorId | "elevation";
 const empty: Point[] = [];
 
-function reducePoints(points: Point[]) {
-  if (points.length < 200) return points;
-  const indices = new Set([0,points.length-1]), step = Math.ceil(points.length/100);
-  let previousMissing = points[0].value === null;
-  for (let start=0; start<points.length; start+=step) {
-    let low: number | undefined, high: number | undefined;
-    for (let i=start; i<Math.min(points.length,start+step); i++) {
-      const value = points[i].value, missing = value === null;
-      if (missing !== previousMissing) {
-        indices.add(i);
-        if (i) indices.add(i-1);
-        previousMissing = missing;
-      }
-      if (value === null) continue;
-      if (low === undefined || value < points[low].value!) low = i;
-      if (high === undefined || value > points[high].value!) high = i;
-    }
-    if (low !== undefined) indices.add(low);
-    if (high !== undefined) indices.add(high);
-  }
-  return [...indices].sort((a,b) => a-b).map((i) => points[i]);
-}
-
 export const RouteProfile = memo(function RouteProfile({
   route, analysis, color, onPoint,
 }: {
@@ -179,7 +157,7 @@ export const RouteProfile = memo(function RouteProfile({
     const y = (value: number) => 143-(value-min)/(max-min)*120;
     let path = "", drawing = false;
     const isolated = [];
-    const points = reducePoints(displayed);
+    const points = reduceProfilePoints(displayed);
     for (const [i, point] of points.entries()) {
       if (point.value === null) { drawing = false; continue; }
       if (points[i-1]?.value == null && points[i+1]?.value == null) isolated.push([x(point.distance),y(point.value)]);
